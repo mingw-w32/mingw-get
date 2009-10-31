@@ -52,16 +52,19 @@ LIBS = @LIBS@
 %.$(OBJEXT): %.cpp
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
 
-all: pkginfo$(EXEEXT)
+all: pkginfo$(EXEEXT) mingw-get$(EXEEXT)
 
 pkginfo$(EXEEXT):  driver.$(OBJEXT) pkginfo.$(OBJEXT)
 	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) $+
+
+mingw-get$(EXEEXT): clistub.$(OBJEXT)
+	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $+
 
 driver.$(OBJEXT):  pkginfo.h
 pkginfo.$(OBJEXT): pkginfo.l pkginfo.h
 
 clean:
-	rm -f *.$(OBJEXT) *.dll pkginfo$(EXEEXT)
+	rm -f *.$(OBJEXT) *.dll pkginfo$(EXEEXT) mingw-get$(EXEEXT)
 
 distclean: clean
 	rm -f config.* Makefile
