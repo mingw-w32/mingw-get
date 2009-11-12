@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <libgen.h>
+#include <process.h>
 
 #define EXIT_FATAL  EXIT_FAILURE + 1
 
@@ -197,7 +198,7 @@ int main( int argc, char **argv )
     wchar_t *libexec_path = AppPathNameW( MINGW_GET_GUI );
     char gui_program[1 + snprintf( NULL, 0, "%S", libexec_path )];
     snprintf( gui_program, sizeof( gui_program ), "%S", libexec_path );
-    int status = execv( gui_program, argv );
+    int status = execv( gui_program, (const char* const*)(argv) );
 
     /* If we get to here, then the GUI could not be started...
      * Issue a diagnostic message, before abnormal termination.
