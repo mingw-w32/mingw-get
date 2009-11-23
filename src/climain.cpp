@@ -72,7 +72,6 @@ EXTERN_C int climain( int argc, char **argv )
      */
     free( (void *)(dfile) );
 
-#if 0
     /* Merge all package lists, as specified in the "repository"
      * section of the "profile", into the XML database tree...
      */
@@ -82,6 +81,7 @@ EXTERN_C int climain( int argc, char **argv )
        */
       dmh_notify( DMH_FATAL, "%s: invalid application profile\n", dbase.Value() );
 
+#if 0
     /* Now schedule the specified action for each additionally
      * specified command line argument, (each of which is assumed
      * to represent a package name...
