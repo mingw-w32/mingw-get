@@ -75,23 +75,30 @@ EXTERN_C int climain( int argc, char **argv )
     /* Merge all package lists, as specified in the "repository"
      * section of the "profile", into the XML database tree...
      */
-    if( dbase.BindRepositories() == NULL )
+    if( dbase.BindRepositories( action == ACTION_UPDATE ) == NULL )
       /*
        * ...bailing out, on an invalid profile specification...
        */
       dmh_notify( DMH_FATAL, "%s: invalid application profile\n", dbase.Value() );
 
 #if 0
-    /* Now schedule the specified action for each additionally
-     * specified command line argument, (each of which is assumed
-     * to represent a package name...
+    /* If the requested action was "update", then we've already done it,
+     * as a side effect of binding the cached repository catalogues...
      */
-    while( --argc )
-      dbase.Schedule( (unsigned long)(action), *++argv );
+    if( action != ACTION_UPDATE )
+    {
+      /* ...otherwise, we still need to schedule and execute the action request...
+       *
+       * so, schedule the specified action for each additionally specified command
+       * line argument, (each of which is assumed to represent a package name)...
+       */
+      while( --argc )
+	dbase.Schedule( (unsigned long)(action), *++argv );
 
-    /* ...and finally, execute all scheduled actions...
-     */
-    dbase.ExecuteActions();
+      /* ...and finally, execute all scheduled actions...
+       */
+      dbase.ExecuteActions();
+    }
 #endif
 
     /* If we get this far, then all actions completed successfully;

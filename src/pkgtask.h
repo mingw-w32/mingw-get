@@ -31,9 +31,12 @@
 enum
 {
   action_none = 0,
+
   action_remove,
   action_install,
   action_upgrade,
+
+  action_update,
 
   end_of_actions
 };
@@ -44,6 +47,7 @@ enum
 #define ACTION_REMOVE   (unsigned long)(action_remove)
 #define ACTION_INSTALL  (unsigned long)(action_install)
 #define ACTION_UPGRADE  (unsigned long)(action_upgrade)
+#define ACTION_UPDATE   (unsigned long)(action_update)
 
 #define STRICTLY_GT	ACTION_MASK + 1
 #define STRICTLY_LT	STRICTLY_GT << 1

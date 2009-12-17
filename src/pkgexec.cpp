@@ -42,7 +42,9 @@ EXTERN_C const char *action_name( unsigned long index )
     "no change",	/* unused; zero cannot test true in a bitwise test  */
     "remove",		/* remove a previously installed package	    */
     "install",		/* install a new package			    */
-    "upgrade"		/* update previously installed packages		    */
+    "upgrade",		/* upgrade previously installed packages	    */
+
+    "update"		/* update local copy of repository catalogues	    */
   };
 
   /* For specified "index", return a pointer to the associated keyword,
