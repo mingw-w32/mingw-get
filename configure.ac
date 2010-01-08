@@ -3,7 +3,7 @@
 # $Id$
 #
 # Written by Keith Marshall <keithmarshall@users.sourceforge.net>
-# Copyright (C) 2009, MinGW Project
+# Copyright (C) 2009, 2010, MinGW Project
 #
 #
 # Configuration script for mingw-get
@@ -22,7 +22,10 @@
 # MinGW Project, accept liability for any damages, however caused,
 # arising from the use of this software.
 #
-  AC_INIT([mingw-get],[0.0],[http://mingw.org/reporting_bugs])
+  AC_INIT([mingw-get],[0.1-alpha-1],[http://mingw.org/reporting_bugs])
+
+  AC_SUBST([COPYRIGHT_HOLDER],["MinGW Project"])
+  AC_SUBST([YEARS_OF_ISSUE],["2009, 2010"])
 
 # We need both C and C++ compilers; check how to invoke them
 #
@@ -40,7 +43,7 @@
 
 # Create a makefile
 #
-  AC_CONFIG_FILES([Makefile])
+  AC_CONFIG_FILES([version.c Makefile])
   AC_OUTPUT
 #
 # $RCSfile$: end of file
