@@ -49,6 +49,7 @@ LIBS = -Wl,-Bstatic -lz -lbz2 -llzma -Wl,-Bdynamic -lwininet
 CORE_DLL_OBJECTS = climain.$(OBJEXT) \
    pkgbind.$(OBJEXT) pkginet.$(OBJEXT) pkgstrm.$(OBJEXT) pkgname.$(OBJEXT) \
    pkgexec.$(OBJEXT) pkgfind.$(OBJEXT) pkginfo.$(OBJEXT) pkgspec.$(OBJEXT) \
+   pkgkeys.$(OBJEXT) \
    mkpath.$(OBJEXT)  xmlfile.$(OBJEXT) keyword.$(OBJEXT) \
    tinyxml.$(OBJEXT) tinyxmlparser.$(OBJEXT) \
    tinystr.$(OBJEXT) tinyxmlerror.$(OBJEXT) \
@@ -74,12 +75,12 @@ mingw-get-0.dll: $(CORE_DLL_OBJECTS)
 dmh.$(OBJEXT):     dmh.h
 climain.$(OBJEXT): pkgbase.h pkgtask.h tinyxml.h tinystr.h dmh.h
 
-pkgname.$(OBJEXT): pkgbase.h dmh.h
-pkgfind.$(OBJEXT): pkgbase.h tinyxml.h tinystr.h
-pkgbind.$(OBJEXT): pkgbase.h tinyxml.h tinystr.h dmh.h
-pkgexec.$(OBJEXT): pkgbase.h pkgtask.h tinyxml.h tinystr.h mkpath.h dmh.h
-pkgspec.$(OBJEXT): pkgbase.h pkginfo.h tinyxml.h tinystr.h vercmp.h
-pkginet.$(OBJEXT): pkgbase.h pkgtask.h pkgstrm.h mkpath.h dmh.h
+pkgname.$(OBJEXT): pkgbase.h pkgkeys.h dmh.h
+pkgfind.$(OBJEXT): pkgbase.h pkgkeys.h tinyxml.h tinystr.h
+pkgbind.$(OBJEXT): pkgbase.h pkgkeys.h tinyxml.h tinystr.h dmh.h
+pkgexec.$(OBJEXT): pkgbase.h pkgkeys.h pkgtask.h tinyxml.h tinystr.h mkpath.h dmh.h
+pkgspec.$(OBJEXT): pkgbase.h pkgkeys.h pkginfo.h tinyxml.h tinystr.h vercmp.h
+pkginet.$(OBJEXT): pkgbase.h pkgkeys.h pkgtask.h pkgstrm.h mkpath.h dmh.h
 pkgstrm.$(OBJEXT): pkgstrm.h
 
 # Dependencies for stand alone pkginfo tool;
