@@ -65,4 +65,10 @@ EXTERN_C_DECL const char *sysroot_key;
 EXTERN_C_DECL const char *tarname_key;
 EXTERN_C_DECL const char *uri_key;
 
+/* Some standard values, which may be associated with certain
+ * of the above XML database keys.
+ */
+EXTERN_C_DECL const char *yes_value;
+EXTERN_C_DECL const char *no_value;
+
 #endif /* PKGKEYS_H: $RCSfile$: end of file */

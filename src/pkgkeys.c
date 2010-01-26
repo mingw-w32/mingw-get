@@ -54,4 +54,10 @@ const char *sysroot_key		    =	"sysroot";
 const char *tarname_key		    =	"tarname";
 const char *uri_key		    =	"uri";
 
+/* Some standard values, which may be associated with certain
+ * of the above keys.
+ */
+const char *yes_value		    =	"yes";
+const char *no_value		    =	"no";
+
 /* $RCSfile$: end of file */
