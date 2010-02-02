@@ -66,6 +66,14 @@
 
 #endif
 
+const char *pkgArchivePath()
+{
+  /* Specify where downloaded packages are cached,
+   * within the local file system.
+   */
+  return "%R" "var/cache/mingw-get/packages" "%/M/%F";
+}
+
 int mkpath( char *buf, const char *fmt, const char *file, const char *modifier )
 {
   /* A helper function, for constructing package URL strings.

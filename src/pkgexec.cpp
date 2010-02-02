@@ -31,6 +31,7 @@
 #include "pkgkeys.h"
 #include "pkginfo.h"
 #include "pkgtask.h"
+#include "pkgproc.h"
 
 EXTERN_C const char *action_name( unsigned long index )
 {
@@ -386,7 +387,18 @@ void pkgActionItem::Execute()
 	 * FIXME: Once more, this is a stub, to be extended to provide the working
 	 * installer implementation.
 	 */
-	dmh_printf( " installing %s\n", current->Selection()->GetPropVal( tarname_key, "<unknown>" ));
+	//dmh_printf( " installing %s\n", current->Selection()->GetPropVal( tarname_key, "<unknown>" ));
+	if( current->Selection( to_remove ) == NULL )
+	{
+	  pkgTarArchiveInstaller package( current->Selection() );
+	  if( package.IsOk() )
+	    package.Process();
+	}
+	else
+	  dmh_notify( DMH_ERROR,
+	      "package %s is already installed\n",
+	      current->Selection()->GetPropVal( tarname_key, "<unknown>" )
+	    );
       }
 
       /* Proceed to next package with scheduled actions.

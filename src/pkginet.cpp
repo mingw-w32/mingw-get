@@ -95,14 +95,6 @@ class pkgInternetAgent
  */
 static pkgInternetAgent pkgDownloadAgent;
 
-const char *pkgActionItem::ArchivePath()
-{
-  /* Specify where downloaded packages are cached,
-   * within the local file system.
-   */
-  return "%R" "var/cache/mingw-get/packages" "%/M/%F";
-}
-
 class pkgInternetStreamingAgent
 {
   /* Another locally implemented class; each individual file download
@@ -289,7 +281,7 @@ void pkgActionItem::DownloadArchiveFiles( pkgActionItem *current )
        * the required archive from a suitable internet mirror host.
        */
       const char *package_name = current->Selection()->ArchiveName();
-      pkgInternetStreamingAgent download( package_name, current->ArchivePath() );
+      pkgInternetStreamingAgent download( package_name, pkgArchivePath() );
 
       /* Check if the required archive is already available locally...
        */

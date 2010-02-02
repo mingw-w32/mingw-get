@@ -41,4 +41,6 @@ EXTERN_C int mkdir_recursive( const char *, int );
 EXTERN_C int set_output_stream( const char *, int );
 EXTERN_C int mkpath( char *, const char *, const char *, const char * );
 
+EXTERN_C const char *pkgArchivePath();
+
 #endif /* MKPATH_H: $RCSfile$: end of file */

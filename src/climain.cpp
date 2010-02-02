@@ -96,9 +96,11 @@ EXTERN_C int climain( int argc, char **argv )
       while( --argc )
 	dbase.Schedule( (unsigned long)(action), *++argv );
 
-      /* ...and finally, execute all scheduled actions.
+      /* ...finally, execute all scheduled actions, and update the
+       * system map accordingly.
        */
       dbase.ExecuteActions();
+      dbase.UpdateSystemMap();
     }
 
     /* If we get this far, then all actions completed successfully;

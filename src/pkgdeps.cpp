@@ -298,7 +298,7 @@ void pkgXmlDocument::Schedule( unsigned long action, const char* name )
 	     * ...i.e. here we have identified a release
 	     * which is currently installed...
 	     */
-	    installed = release;
+	    latest.SelectPackage( installed = release, to_remove );
 
 	  if( latest.SelectIfMostRecentFit( release ) == release )
 	    /*

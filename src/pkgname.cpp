@@ -107,7 +107,7 @@ const char *pkgXmlNode::SourceArchiveName()
    * not represent a "release", or if it does not have a contained
    * "source" element specifying a "tarname" property.
    */
-  return pkgArchiveName( this, "source", 0 );
+  return pkgArchiveName( this, source_key, 0 );
 }
 
 const char *pkgXmlNode::ArchiveName()
@@ -124,7 +124,7 @@ const char *pkgXmlNode::ArchiveName()
    * alternative specification within a "download" element; if
    * unresolved to either of these, returns NULL.
    */
-  return pkgArchiveName( this, "download", 1 );
+  return pkgArchiveName( this, download_key, 1 );
 }
 
 /* $RCSfile$: end of file */

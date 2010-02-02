@@ -215,10 +215,6 @@ class pkgActionItem
       return selection[ mode ];
     }
 
-    /* Method specifying where downloaded packages are stored.
-     */
-    const char* ArchivePath();
-
     /* Method for processing all scheduled actions.
      */
     void Execute();
@@ -232,6 +228,7 @@ class pkgXmlDocument : public TiXmlDocument
   public:
     /* Constructors...
      */
+    inline pkgXmlDocument(){}
     inline pkgXmlDocument( const char* name )
     {
       /* tinyxml has a similar constructor, but unlike wxXmlDocument,
@@ -266,8 +263,7 @@ class pkgXmlDocument : public TiXmlDocument
       /* Not a standard method of either wxXmlDocumemnt or TiXmlDocument;
        * this is a convenience method for setting up a new XML database.
        */
-      TiXmlDeclaration decl( version, encoding, standalone );
-      LinkEndChild( &decl );
+      LinkEndChild( new TiXmlDeclaration( version, encoding, standalone ) );
     }
     inline void SetRoot( TiXmlNode* root )
     {
@@ -309,6 +305,11 @@ class pkgXmlDocument : public TiXmlDocument
      * packages associated with each specified sysroot.
      */
     void LoadSystemMap();
+
+    /* Complementary method, to update the saved sysroot data associated
+     * with the active system map.
+     */
+    void UpdateSystemMap();
 
     /* Method to locate the XML database entry for a named package.
      */
