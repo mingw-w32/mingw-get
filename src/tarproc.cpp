@@ -238,6 +238,17 @@ int pkgTarArchiveProcessor::Process()
 	 * of directories, to establish a location within the sysroot
 	 * hierarchy...
 	 *
+	 * Note: Microsoft's implementation of stat() appears to choke
+	 * on directory path names with trailing slashes; thus, before
+	 * we invoke the directory processing routine, (which may need
+	 * to call stat(), to check if the specified directory already
+	 * exists), we remove any such trailing slashes.
+	 */
+        char *p = pathname + sizeof( pathname ) - 1;
+	while( (p > pathname) && ((*--p == '/') || (*p == '\\')) )
+	  *p = '\0';
+
+	/* We are now ready to process the directory path name entry...
 	 */
 	status = ProcessDirectory( pathname );
 	break;
