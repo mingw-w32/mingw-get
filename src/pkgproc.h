@@ -53,6 +53,7 @@ class pkgArchiveProcessor
      */
     pkgXmlNode *sysroot;
     const char *sysroot_path;
+    pkgXmlNode *installed;
     const char *tarname;
     const char *pkgfile;
 };
@@ -160,6 +161,7 @@ class pkgTarArchiveInstaller : public pkgTarArchiveProcessor
      */
     virtual int ProcessDirectory( const char* );
     virtual int ProcessDataStream( const char* );
+    virtual void UpdateInstallationManifest( const char*, const char* );
 };
 
 class pkgTarArchiveUninstaller : public pkgTarArchiveProcessor
