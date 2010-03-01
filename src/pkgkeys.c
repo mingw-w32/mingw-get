@@ -28,6 +28,7 @@
 const char *alias_key		    =	"alias";
 const char *application_key	    =	"application";
 const char *catalogue_key	    =	"catalogue";
+const char *class_key		    =	"class";
 const char *component_key	    =	"component";
 const char *dirname_key 	    =	"dir";
 const char *download_key	    =	"download";
