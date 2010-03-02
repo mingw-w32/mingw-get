@@ -390,9 +390,13 @@ void pkgActionItem::Execute()
 	//dmh_printf( " installing %s\n", current->Selection()->GetPropVal( tarname_key, "<unknown>" ));
 	if( current->Selection( to_remove ) == NULL )
 	{
-	  pkgTarArchiveInstaller package( current->Selection() );
-	  if( package.IsOk() )
-	    package.Process();
+	  pkgXmlNode *pkg = current->Selection();
+	  if( ! match_if_explicit( pkg->ArchiveName(), value_none ) )
+	  {
+	    pkgTarArchiveInstaller package( pkg );
+	    if( package.IsOk() )
+	      package.Process();
+	  }
 	}
 	else
 	  dmh_notify( DMH_ERROR,

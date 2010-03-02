@@ -74,7 +74,12 @@ EXTERN_C_DECL const char *uri_key;
 /* Some standard values, which may be associated with certain
  * of the above XML database keys.
  */
-EXTERN_C_DECL const char *yes_value;
-EXTERN_C_DECL const char *no_value;
+#define yes_value	  value_yes
+#define no_value	  value_no
+
+EXTERN_C_DECL const char *value_no;
+EXTERN_C_DECL const char *value_none;
+EXTERN_C_DECL const char *value_virtual;
+EXTERN_C_DECL const char *value_yes;
 
 #endif /* PKGKEYS_H: $RCSfile$: end of file */

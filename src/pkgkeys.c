@@ -63,7 +63,9 @@ const char *uri_key		    =	"uri";
 /* Some standard values, which may be associated with certain
  * of the above keys.
  */
-const char *yes_value		    =	"yes";
-const char *no_value		    =	"no";
+const char *value_no		    =	"no";
+const char *value_none		    =	"none";
+const char *value_virtual	    =	"virtual";
+const char *value_yes		    =	"yes";
 
 /* $RCSfile$: end of file */
