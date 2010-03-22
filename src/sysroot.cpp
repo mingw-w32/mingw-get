@@ -380,7 +380,7 @@ pkgXmlNode* pkgXmlNode::GetSysRoot( const char *subsystem )
     {
       /* ...until we find one for the subsystem of interest...
        */
-      if( match_if_explicit( subsystem, sysroot->GetPropVal( subsystem_key, NULL )) )
+      if( subsystem_strcmp( subsystem, sysroot->GetPropVal( subsystem_key, NULL )) )
       {
 	/* ...from which we retrieve the sysroot path specification...
 	 */
