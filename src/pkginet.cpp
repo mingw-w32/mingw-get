@@ -52,12 +52,13 @@ class pkgInternetAgent
     inline pkgInternetAgent():SessionHandle( NULL )
     {
       /* Constructor...
+       *
+       * This is called during DLL initialisation; thus it seems to be
+       * the ideal place to perform one time internet connection setup.
+       * However, Microsoft caution against doing much here, (especially
+       * creation of threads, either directly or indirectly); thus we
+       * defer the connection setup until we ultimately need it.
        */
-      if( InternetAttemptConnect( 0 ) == ERROR_SUCCESS )
-	SessionHandle = InternetOpen
-	  ( "MinGW Installer", INTERNET_OPEN_TYPE_PRECONFIG,
-	     NULL, NULL, 0
-	  );
     }
     inline ~pkgInternetAgent()
     {
@@ -72,6 +73,19 @@ class pkgInternetAgent
      */
     inline HINTERNET OpenURL( const char *URL )
     {
+      /* Open an internet data stream.  This requires an internet
+       * connection to have been established...
+       */
+      if( (SessionHandle == NULL)
+      && (InternetAttemptConnect( 0 ) == ERROR_SUCCESS) )
+	/*
+	 * ...so, on first call, we perform the connection setup
+	 * which we deferred from the class constructor.
+	 */
+	SessionHandle = InternetOpen
+	  ( "MinGW Installer", INTERNET_OPEN_TYPE_PRECONFIG,
+	     NULL, NULL, 0
+	  );
       return InternetOpenUrl( SessionHandle, URL, NULL, 0, 0, 0 );
     }
     inline DWORD QueryStatus( HINTERNET id )
