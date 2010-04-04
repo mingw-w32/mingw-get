@@ -56,10 +56,10 @@ CORE_DLL_OBJECTS = climain.$(OBJEXT) \
    pkgbind.$(OBJEXT) pkginet.$(OBJEXT) pkgstrm.$(OBJEXT) pkgname.$(OBJEXT) \
    pkgexec.$(OBJEXT) pkgfind.$(OBJEXT) pkginfo.$(OBJEXT) pkgspec.$(OBJEXT) \
    sysroot.$(OBJEXT) pkghash.$(OBJEXT) pkgkeys.$(OBJEXT) pkgdeps.$(OBJEXT) \
-   mkpath.$(OBJEXT)  tarproc.$(OBJEXT) xmlfile.$(OBJEXT) keyword.$(OBJEXT) \
+   mkpath.$(OBJEXT)  pkginst.$(OBJEXT) tarinst.$(OBJEXT) tarproc.$(OBJEXT) \
+   xmlfile.$(OBJEXT) keyword.$(OBJEXT) vercmp.$(OBJEXT)  dmh.$(OBJEXT) \
    tinyxml.$(OBJEXT) tinyxmlparser.$(OBJEXT) \
-   tinystr.$(OBJEXT) tinyxmlerror.$(OBJEXT) \
-   vercmp.$(OBJEXT)  dmh.$(OBJEXT)
+   tinystr.$(OBJEXT) tinyxmlerror.$(OBJEXT)
 
 all: pkginfo$(EXEEXT) mingw-get$(EXEEXT) mingw-get-0.dll
 

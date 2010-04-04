@@ -380,30 +380,11 @@ void pkgActionItem::Execute()
       }
 
       if( (current->flags & ACTION_INSTALL) == ACTION_INSTALL )
-      {
-	/* The selected package has been marked for installation, either explicitly,
+	/*
+	 * The selected package has been marked for installation, either explicitly,
 	 * or implicitly to complete a package upgrade.
-	 *
-	 * FIXME: Once more, this is a stub, to be extended to provide the working
-	 * installer implementation.
 	 */
-	//dmh_printf( " installing %s\n", current->Selection()->GetPropVal( tarname_key, "<unknown>" ));
-	if( current->Selection( to_remove ) == NULL )
-	{
-	  pkgXmlNode *pkg = current->Selection();
-	  if( ! match_if_explicit( pkg->ArchiveName(), value_none ) )
-	  {
-	    pkgTarArchiveInstaller package( pkg );
-	    if( package.IsOk() )
-	      package.Process();
-	  }
-	}
-	else
-	  dmh_notify( DMH_ERROR,
-	      "package %s is already installed\n",
-	      current->Selection()->GetPropVal( tarname_key, "<unknown>" )
-	    );
-      }
+	pkgInstall( current );
 
       /* Proceed to next package with scheduled actions.
        */
