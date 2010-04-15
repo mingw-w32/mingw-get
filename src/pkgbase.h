@@ -326,12 +326,12 @@ class pkgXmlDocument : public TiXmlDocument
     unsigned long request;
     pkgActionItem* actions;
 
+  public:
     /* Method to synchronise the state of the local package manifest
      * with the master copy held on the distribution server.
      */
     void SyncRepository( const char*, pkgXmlNode* );
 
-  public:
     /* Method to merge content from repository-specific package lists
      * into the central XML package database.
      */
