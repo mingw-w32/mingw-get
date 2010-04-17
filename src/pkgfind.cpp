@@ -45,7 +45,7 @@ pkgXmlDocument::FindPackageByName( const char *name, const char *subsystem )
     /* Select only "package-collection" elements...
      */
     if( dir->IsElementOfType( package_collection_key )
-    &&  match_if_explicit( subsystem, dir->GetPropVal( subsystem_key, NULL )) )
+    &&  subsystem_strcmp( subsystem, dir->GetPropVal( subsystem_key, NULL )) )
     {
       /* ...inspect the content of each...
        */
