@@ -22,6 +22,16 @@
 # MinGW Project, accept liability for any damages, however caused,
 # arising from the use of this software.
 #
-  m4_include([m4/missing.m4])
+m4_include([m4/missing.m4])
+
+# MINGW_AC_OUTPUT
+# ---------------
+# A wrapper for AC_OUTPUT itself, to ensure that missing prerequisite
+# checks are completed, before the final output stage.
+#
+AC_DEFUN([MINGW_AC_OUTPUT],
+[AC_REQUIRE([_MINGW_AC_ABORT_IF_MISSING_PREREQ])dnl
+ AC_OUTPUT($@)dnl
+])# MINGW_AC_OUTPUT
 #
 # $RCSfile$: end of file
