@@ -75,6 +75,7 @@ class pkgVersionInfo
      * be appended to the first, in the full format as above.
      */
     pkgVersionInfo( const char* version = "", const char* build = NULL );
+    inline ~pkgVersionInfo(){ Free( version_string ); Free( build_string ); }
 
     /* Package version comparison operators.
      */
@@ -88,11 +89,13 @@ class pkgVersionInfo
   private:
     /* The decomposed version/serial number elements.
      */
+    char *version_string, *build_string;
     struct version_t version_elements[VERSION_ELEMENT_COUNT];
 
     /* An internal comparison helper function
      */
     long Compare( const pkgVersionInfo&, int );
+    inline void Free( void *mem ){ if( mem != NULL ) free( mem ); }
 };
 
 #endif /* __cplusplus */
