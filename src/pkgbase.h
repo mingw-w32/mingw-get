@@ -71,6 +71,8 @@
 # endif
 #endif
 
+class pkgSpecs;
+
 class pkgXmlNode : public TiXmlElement
 {
   /* A minimal emulation of the wxXmlNode class, founded on
@@ -236,8 +238,8 @@ class pkgActionItem
     /* Methods for defining the selection criteria for
      * packages to be processed.
      */
-    const char* SetRequirements( pkgXmlNode* );
     pkgXmlNode* SelectIfMostRecentFit( pkgXmlNode* );
+    const char* SetRequirements( pkgXmlNode*, pkgSpecs* );
     inline void SelectPackage( pkgXmlNode *pkg, int opt = to_install )
     {
       /* Mark a package as the selection for a specified action.
@@ -254,6 +256,10 @@ class pkgActionItem
     /* Method for processing all scheduled actions.
      */
     void Execute();
+
+    /* Destructor...
+     */
+    ~pkgActionItem();
 };
 
 class pkgXmlDocument : public TiXmlDocument
