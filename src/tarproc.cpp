@@ -93,7 +93,8 @@ pkgTarArchiveProcessor::pkgTarArchiveProcessor( pkgXmlNode *pkg )
 	 */
 	const char *template_format = "%F%%/M/%%F";
 	char template_text[mkpath( NULL, template_format, prefix, NULL )];
-	sysroot_len = mkpath( template_text, template_format, prefix, NULL ) - 6;
+	mkpath( template_text, template_format, prefix, NULL );
+	sysroot_len = mkpath( NULL, template_text, "", NULL ) - 1;
 	sysroot_path = strdup( template_text );
       }
     }
