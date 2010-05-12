@@ -41,6 +41,7 @@ EXTERN_C_DECL const char *application_key;
 EXTERN_C_DECL const char *catalogue_key;
 EXTERN_C_DECL const char *class_key;
 EXTERN_C_DECL const char *component_key;
+EXTERN_C_DECL const char *defaults_key;
 EXTERN_C_DECL const char *dirname_key;
 EXTERN_C_DECL const char *download_key;
 EXTERN_C_DECL const char *download_host_key;

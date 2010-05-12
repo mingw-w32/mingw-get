@@ -28,10 +28,12 @@
  */
 #include <stdio.h>
 #include <string.h>
+#include <fcntl.h>
 
 #include "dmh.h"
 
 #include "pkgbase.h"
+#include "pkgkeys.h"
 #include "pkgtask.h"
 
 EXTERN_C int climain( int argc, char **argv )
@@ -61,7 +63,21 @@ EXTERN_C int climain( int argc, char **argv )
    * local `profile' configuration, and invoke the operation.
    */
   const char *dfile;
-  pkgXmlDocument dbase( dfile = xmlfile( "profile" ) );
+  if( access( dfile = xmlfile( profile_key ), R_OK ) != 0 )
+  {
+    /* The user hasn't provided a custom configuration profile...
+     */
+    dmh_notify( DMH_WARNING, "%s: user configuration file missing\n", dfile );
+
+    /* ...release the memory allocated by xmlfile(), to store its path name,
+     * then try the mingw-get distribution default profile instead.
+     */
+    free( (void *)(dfile) );
+    dmh_notify( DMH_INFO, "%s: trying system default configuration\n",
+	dfile = xmlfile( defaults_key ) );
+  }
+
+  pkgXmlDocument dbase( dfile );
   if( dbase.IsOk() )
   {
     /* We successfully loaded the basic settings...
