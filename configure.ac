@@ -32,6 +32,20 @@
 #
   AC_PREFIX_DEFAULT([C:/MinGW])
 
+# We need the canonical representation of the intended host platform
+# identification triplet, from which to deduce the subsystem designator
+# in distributed tarball names.  (Note that we explicitly override any
+# user specified "build_alias", because autoconf gets upset if "host"
+# is specified without "build", and we need "host" if cross-compiling;
+# all we need in this case is "host" != "build", and we don't really
+# care what "build" is, but AC_CANONICAL_HOST gets very upset, when it
+# calls ${srcdir}/build-aux/config.sub, if the user specifies a short
+# form which it cannot resolve -- e.g. "--build=linux" will fail).
+#
+  AC_CONFIG_AUX_DIR([build-aux])
+  build_alias=`${srcdir}/build-aux/config.guess`
+  AC_CANONICAL_HOST
+
 # We need both C and C++ compilers; check how to invoke them
 #
   AC_PROG_CC
