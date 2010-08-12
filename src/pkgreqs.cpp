@@ -125,6 +125,13 @@ const char *pkgSpecs::SetProperty( int index, const char *repl )
   int oldlen = buflen( specs );
   int newlen = oldlen + fieldlen( repl ) - fieldlen( specs[index] );
 
+  if( (repl != NULL) && (specs[index] == NULL) )
+    /*
+     * When inserting a non-empty value into a previously empty field,
+     * we need to allow an additional byte for an extra field separator.
+     */
+    ++newlen;
+
   if( newlen > oldlen )
   {
     /* The buffer size must increase; thus, there is insufficient space
