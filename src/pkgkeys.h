@@ -82,6 +82,7 @@ EXTERN_C_DECL const char *uri_key;
 
 EXTERN_C_DECL const char *value_no;
 EXTERN_C_DECL const char *value_none;
+EXTERN_C_DECL const char *value_unknown;
 EXTERN_C_DECL const char *value_virtual;
 EXTERN_C_DECL const char *value_yes;
 

@@ -68,6 +68,7 @@ const char *uri_key		    =	"uri";
  */
 const char *value_no		    =	"no";
 const char *value_none		    =	"none";
+const char *value_unknown	    =	"<<<unknown>>>";
 const char *value_virtual	    =	"virtual";
 const char *value_yes		    =	"yes";
 
