@@ -1,6 +1,6 @@
 #ifndef PKGKEYS_H
 /*
- * pkgkeys.c
+ * pkgkeys.h
  *
  * $Id$
  *
