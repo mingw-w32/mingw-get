@@ -291,11 +291,13 @@ pkgActionItem* pkgXmlDocument::Schedule
 
   /* Don't reschedule, if we already have a prior matching item...
    */
-  if(  (ref->GetReference( item ) == NULL)
+  if(  (actions->GetReference( item ) == NULL)
   /*
-   * ...but, when we don't, we raise a new scheduling request...
+   * ...but, when we don't, and when this request produces a valid
+   * package reference, we raise a new scheduling request...
    */
-  &&  ((ref = ref->Schedule( action, item )) != NULL)  )
+  &&  ((ref = ref->Schedule( action, item )) != NULL)
+  &&  ((ref->Selection() != NULL) || (ref->Selection( to_remove ) != NULL)) )
   {
     /* ...and, when successfully raised, add it to the task list...
      */
