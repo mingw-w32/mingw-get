@@ -183,6 +183,13 @@ class pkgXmlNode : public TiXmlElement
      */
     const char* ArchiveName();
     const char* SourceArchiveName();
+
+    /* The following retrieves an attribute which may have been
+     * specified on an ancestor (container) node; typically used to
+     * retrieve the package name or alias attributes which are to
+     * be associated with a release.
+     */
+    const char *GetContainerAttribute( const char*, const char* = NULL );
 };
 
 enum { to_remove = 0, to_install, selection_types };
