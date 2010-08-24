@@ -90,8 +90,8 @@
       specified by user selection, the first encountered is accepted as
       default, irrespective of its actual "id" attribute value.
     -->
-    <sysroot subsystem="mingw32" path="c:/MinGW" />
-    <sysroot subsystem="MSYS" path="c:/MSYS/1.0" />
+    <sysroot subsystem="mingw32" path="%R" />
+    <sysroot subsystem="MSYS" path="%R/msys/1.0" />
   </system-map>
 
 </profile>
