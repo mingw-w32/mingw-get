@@ -27,10 +27,23 @@
  *
  */
 #define DEBUG_H  1
+
 # if DEBUGLEVEL
-#  ifndef DEBUG_TRACE_INIT
-#   define DEBUG_TRACE_INIT	0x0001
-#  endif
+  /* Here, we provide definitions and declarations which allow us
+   * to selectively enable compilation of (specific class of) debug
+   * specific code.
+   */
+#  define DEBUG_TRACE_INIT  			0x0001
+
+#  define DEBUG_INHIBIT_RITES_OF_PASSAGE  	0x7000
+#  define DEBUG_FAIL_FILE_RENAME_RITE		0x1000
+#  define DEBUG_FAIL_FILE_UNLINK_RITE		0x2000
+
 # else /* DEBUGLEVEL == 0 */
+  /* We use this space to provide any declarations which may be
+   * necessary to disable compilation of debug specific code...
+   * (currently, there are none).
+   */
 # endif /* DEBUGLEVEL */
+
 #endif /* DEBUG_H: $RCSfile$: end of file */
