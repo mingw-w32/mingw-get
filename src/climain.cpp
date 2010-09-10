@@ -38,6 +38,9 @@
 
 EXTERN_C int climain( int argc, char **argv )
 {
+  try
+  {
+
   /* Set up the diagnostic message handler, using the console's
    * `stderr' stream for notifications...
    */
@@ -134,6 +137,12 @@ EXTERN_C int climain( int argc, char **argv )
    * function without a return value assignment...
    */
   return dmh_notify( DMH_FATAL, "%s: cannot load configuration\n", dfile );
+
+  }
+  catch (dmh_exception &e)
+  {
+    return EXIT_FAILURE;
+  }
 }
 
 /* $RCSfile$: end of file */
