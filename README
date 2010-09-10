@@ -30,6 +30,7 @@ User Visible Changes for mingw-get-0.1-mingw32-alpha-4
      mv bin/mingw-get.exe~ bin/mingw-get.exe
      mv libexec/mingw-get/mingw-get-0.dll~ libexec/mingw-get/mingw-get-0.dll
 
+- Add --help|-h option
 
 ===============================================
 
