@@ -172,7 +172,7 @@ static const char *help_text =
 "See /mingw/var/lib/mingw-get/data/*.xml for possible package names\n"
 "and the components associated with each.\n\n";
 
-#define  IMPLEMENT_INITIATION_RITES
+#define  IMPLEMENT_INITIATION_RITES	PHASE_ONE_RITES
 #include "rites.c"
 
 int main( int argc, char **argv )
