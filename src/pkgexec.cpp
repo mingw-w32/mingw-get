@@ -54,6 +54,9 @@ EXTERN_C const char *action_name( unsigned long index )
     "install",		/* install a new package			    */
     "upgrade",		/* upgrade previously installed packages	    */
 
+    "list",		/* list packages and display related information    */
+    "show",		/* a synonym for "list"				    */
+
     "update"		/* update local copy of repository catalogues	    */
   };
 

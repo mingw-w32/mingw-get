@@ -54,7 +54,7 @@ EXEEXT = @EXEEXT@
 LDFLAGS = @LDFLAGS@
 LIBS = -Wl,-Bstatic -lz -lbz2 -llzma -Wl,-Bdynamic -lwininet
 
-CORE_DLL_OBJECTS  =  climain.$(OBJEXT) \
+CORE_DLL_OBJECTS  =  climain.$(OBJEXT) pkgshow.$(OBJEXT) \
    pkgbind.$(OBJEXT) pkginet.$(OBJEXT) pkgstrm.$(OBJEXT) pkgname.$(OBJEXT) \
    pkgexec.$(OBJEXT) pkgfind.$(OBJEXT) pkginfo.$(OBJEXT) pkgspec.$(OBJEXT) \
    sysroot.$(OBJEXT) pkghash.$(OBJEXT) pkgkeys.$(OBJEXT) pkgdeps.$(OBJEXT) \
