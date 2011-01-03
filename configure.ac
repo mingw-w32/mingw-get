@@ -22,10 +22,10 @@
 # MinGW Project, accept liability for any damages, however caused,
 # arising from the use of this software.
 #
-  AC_INIT([mingw-get],[0.1-alpha-5],[http://mingw.org/reporting_bugs])
+  AC_INIT([mingw-get],[0.1-alpha-6cvs],[http://mingw.org/reporting_bugs])
 
   AC_SUBST([COPYRIGHT_HOLDER],["MinGW Project"])
-  AC_SUBST([YEARS_OF_ISSUE],["2009, 2010"])
+  AC_SUBST([YEARS_OF_ISSUE],["2009, 2010, 2011"])
 
 # Override the normal UNIX-centric autoconf default prefix;
 # substitute the MinGW standard in its place.
