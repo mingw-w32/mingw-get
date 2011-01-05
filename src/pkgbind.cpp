@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, MinGW Project
+ * Copyright (C) 2009, 2010, 2011, MinGW Project
  *
  *
  * Implementation of repository binding for the pkgXmlDocument class.
@@ -26,6 +26,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <libgen.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -91,7 +92,8 @@ void pkgRepository::GetPackageList( const char *dname )
 	/* We successfully loaded the XML catalogue; refer to its
 	 * root element...
 	 */
-	dmh_printf( "Load catalogue: %s\n", merge.Value() );
+	char catname[ 1 + strlen( merge.Value() ) ];
+	dmh_printf( "Load catalogue: %s\n", basename( strcpy( catname, merge.Value() )));
 	pkgXmlNode *catalogue, *pkglist;
 	if( (catalogue = merge.GetRoot()) != NULL )
 	{
@@ -118,7 +120,14 @@ void pkgRepository::GetPackageList( const char *dname )
 	}
       }
       else
-	dmh_notify( DMH_WARNING, "Load catalogue: FAILED: %s\n", dfile );
+      { /* The specified catalogue could not be successfully loaded;
+	 * emit a warning diagnostic message, and otherwise ignore it.
+	 */
+	char catname[ 1 + strlen( dfile ) ];
+	dmh_notify( DMH_WARNING,
+	    "Load catalogue: FAILED: %s\n", basename( strcpy( catname, dfile ))
+	  );
+      }
 
       /* However we handled it, the XML file's path name in "dfile" was
        * allocated on the heap; we lose its reference on termination of

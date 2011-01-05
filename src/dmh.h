@@ -5,7 +5,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, MinGW Project
+ * Copyright (C) 2009, 2010, 2011, MinGW Project
  *
  *
  * This header file provides the public API declarations for the
@@ -75,13 +75,14 @@ class dmh_exception : public std::exception
    * using this class, we can ensure that last rites are
    * performed before exiting.
    */
-public:
-  dmh_exception() throw();
-  dmh_exception(const char * msg) throw();
-  virtual ~dmh_exception() throw();
-  virtual const char* what() const throw();
-protected:
-  const char * message;
+  public:
+    dmh_exception() throw();
+    dmh_exception( const char* ) throw();
+    virtual ~dmh_exception() throw();
+    virtual const char* what() const throw();
+
+  protected:
+    const char *message;
 };
 #endif /* __cplusplus */
 
