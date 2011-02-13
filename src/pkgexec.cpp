@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, MinGW Project
+ * Copyright (C) 2009, 2010, 2011, MinGW Project
  *
  *
  * Implementation of package management task scheduler and executive.
@@ -401,7 +401,9 @@ void pkgActionItem::Execute()
 	 * manifest structure has been specified and implemented.
 	 */
 	if( current->Selection( to_remove ) != NULL )
-	  dmh_printf( " removing %s\n", current->Selection( to_remove )->GetPropVal( tarname_key, value_unknown ));
+	  dmh_printf( " FIXME:pkgRemove<stub>:not removing %s\n",
+	      current->Selection( to_remove )->GetPropVal( tarname_key, value_unknown )
+	    );
       }
 
       if( (current->flags & ACTION_INSTALL) == ACTION_INSTALL )

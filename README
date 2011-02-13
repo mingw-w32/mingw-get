@@ -28,6 +28,12 @@ User Visible Changes for mingw-get-0.1-mingw32-alpha-5
   way), only when performing an explicit upgrade of the mingw-get-bin
   package itself.
 
+- The follow-up release, designated as mingw-get-0.1-mingw32-alpha-5.1,
+  is a bug-fix release to correct a critical defect in the resolution of
+  dependencies, when performing an upgrade operation.  It also provides
+  more meaningful diagnostics when mingw-get is invoked without arguments,
+  and corrects some omissions from the source tarball.
+
 
 ===============================================
 
@@ -64,7 +70,9 @@ User Visible Changes for mingw-get-0.1-mingw32-alpha-4
 
 - Add --help|-h option
 
+
 ===============================================
+
 
 Release Notes for mingw-get-0.1-mingw32-alpha-3
 
