@@ -5,7 +5,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, MinGW Project
+ * Copyright (C) 2009, 2010, 2011, MinGW Project
  *
  *
  * Public interface for the package directory management routines;
@@ -239,8 +239,10 @@ class pkgActionItem
 
     /* Methods for compiling the schedule of actions.
      */
+    int SetAuthorities( pkgActionItem* );
     pkgActionItem* GetReference( pkgActionItem& );
     pkgActionItem* Schedule( unsigned long, pkgActionItem& );
+    inline void SetPrimary( pkgActionItem* );
 
     /* Methods for defining the selection criteria for
      * packages to be processed.
