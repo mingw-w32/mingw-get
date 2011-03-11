@@ -155,21 +155,26 @@ wchar_t *AppPathNameW( const wchar_t *relpath )
 extern const char *version_identification;
 
 static const char *help_text =
-"mingw-get [OPTIONS] ACTION package-spec [package-spec ...]\n"
-"Manage MinGW and MSYS installations (Command-line user interface).\n\n"
+"Manage MinGW and MSYS installations (command line user interface).\n\n"
+"Usage:\n"
+"  mingw-get [OPTIONS] ACTION [package-spec ...]\n\n"
+"  mingw-get update\n"
+"  mingw-get [OPTIONS] {install | upgrade | remove} package-spec ...\n"
+"  mingw-get [OPTIONS] {show | list} [package-spec ...]\n\n"
 "Options:\n"
 "  --help, -h      Show this help text\n"
 "  --version, -V   Show version and licence information\n\n"
 "Actions:\n"
 "  update          Update local copy of repository catalogues\n"
+"  list, show      List and show details of available packages\n"
 "  install         Install new packages\n"
-"  remove          [not implemented] Remove previously installed packages\n"
-"  upgrade         [not implemented] Upgrade previously installed packages\n\n"
+"  upgrade         Upgrade previously installed packages\n"
+"  remove          Remove previously installed packages\n\n"
 "Package Specifications:\n"
-"  [subsystem]-name-[component]:\n"
+"  [subsystem-]name[-component]:\n"
 "  msys-bash-doc   The 'doc' component of the bash package for MSYS\n"
-"  mingw32-gdb     All components of the gdb package for MinGW\n"
-"See /mingw/var/lib/mingw-get/data/*.xml for possible package names\n"
+"  mingw32-gdb     All components of the gdb package for MinGW\n\n"
+"Use 'mingw-get list' to identify possible package names\n"
 "and the components associated with each.\n\n";
 
 #define  IMPLEMENT_INITIATION_RITES	PHASE_ONE_RITES
