@@ -22,7 +22,7 @@
 # MinGW Project, accept liability for any damages, however caused,
 # arising from the use of this software.
 #
-  AC_INIT([mingw-get],[0.1-alpha-6cvs],[http://mingw.org/reporting_bugs])
+  AC_INIT([mingw-get],[0.2-alpha-1],[http://mingw.org/Reporting_Bugs])
 
   AC_SUBST([COPYRIGHT_HOLDER],["MinGW Project"])
   AC_SUBST([YEARS_OF_ISSUE],["2009, 2010, 2011"])
