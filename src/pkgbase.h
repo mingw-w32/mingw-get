@@ -239,7 +239,11 @@ class pkgActionItem
 
     /* Methods for compiling the schedule of actions.
      */
-    int SetAuthorities( pkgActionItem* );
+    unsigned long SetAuthorities( pkgActionItem* );
+    inline unsigned long HasAttribute( unsigned long required )
+    {
+      return flags & required;
+    }
     pkgActionItem* GetReference( pkgActionItem& );
     pkgActionItem* Schedule( unsigned long, pkgActionItem& );
     inline void SetPrimary( pkgActionItem* );

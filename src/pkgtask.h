@@ -59,8 +59,18 @@ enum
 
 #define ACTION_PRIMARY  	(STRICTLY_LT << 1)
 
+/* Attributes used to identify when a removal action
+ * may break dependencies for other installed packages.
+ */
 #define ACTION_REMOVE_OK	(ACTION_PRIMARY << 1)
 #define ACTION_PREFLIGHT	(ACTION_PRIMARY << 2 | ACTION_REMOVE_OK)
+
+/* Attributes used to identify when a package installation
+ * or upgrade cannot be successfully installed or upgraded,
+ * due to a previously failing download.
+ */
+#define ACTION_DOWNLOAD 	(ACTION_PRIMARY << 3)
+#define ACTION_DOWNLOAD_OK	(ACTION_DOWNLOAD | ACTION_REMOVE_OK)
 
 #ifndef EXTERN_C
 # ifdef __cplusplus
