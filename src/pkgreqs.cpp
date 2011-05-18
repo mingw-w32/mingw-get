@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, MinGW Project
+ * Copyright (C) 2009, 2010, 2011, MinGW Project
  *
  *
  * Implements the SetRequirements() method for the pkgActionItem class,
@@ -276,7 +276,17 @@ const char *pkgSpecs::GetTarName( const char *buf )
 	   */
 	  *dest++ = (index < PACKAGE_FORMAT) ? '-' : '.';
 
-	/* ...then copy the field content to the result buffer.
+	/* ...then, noting that the release status may have an
+	 * initial '$' token which was inserted by get_pkginfo(),...
+	 */
+	if( (index == PACKAGE_RELEASE_STATUS) && (*src == '$') )
+	  /*
+	   * ...and which we don't therefore want to include within
+	   * this reverse transformation...
+	   */
+	  ++src;
+	/*
+	 * ...copy the field content to the result buffer.
 	 */
 	while( (*dest = *src++) != '\0' )
 	  ++dest;
