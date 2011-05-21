@@ -35,7 +35,35 @@
 
 #include "pkgbase.h"
 #include "pkgkeys.h"
+#include "pkgopts.h"
 #include "pkgtask.h"
+
+EXTERN_C void cli_setopts( struct pkgopts *opts )
+{
+  /* Start-up hook used to make the table of command line options,
+   * as parsed by the CLI start-up module, available within the DLL.
+   */
+  (void) pkgOptions( OPTION_TABLE_ASSIGN, opts );
+}
+
+EXTERN_C pkgOpts *pkgOptions( int action, struct pkgopts *ref )
+{
+  /* Global accessor for the program options data table.
+   */
+  static pkgOpts *table = NULL;
+  if( action == OPTION_TABLE_ASSIGN )
+    /*
+     * This is a request to initialise the data table reference;
+     * it is typically called at program start-up, to record the
+     * location of the data table into which the CLI start-up
+     * module stores the result of its CLI options parse.
+     */
+    table = (pkgOpts *)(ref);
+
+  /* In all cases, we return the assigned data table location.
+   */
+  return table;
+}
 
 EXTERN_C int climain( int argc, char **argv )
 {
@@ -48,10 +76,6 @@ EXTERN_C int climain( int argc, char **argv )
     char progname[ 1 + strlen( dmh_progname = strdup( basename( *argv++ ))) ];
     dmh_init( DMH_SUBSYSTEM_TTY, strcpy( progname, dmh_progname ) );
     free( dmh_progname );
-
-    /* TODO: insert code here, to interpret any OPTIONS specified
-     * on the command line.
-     */
 
     /* Interpret the `action keyword', specifying the action to be
      * performed on this invocation...

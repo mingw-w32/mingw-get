@@ -33,6 +33,7 @@
 #include "dmh.h"
 #include "pkgbase.h"
 #include "pkgkeys.h"
+#include "pkgopts.h"
 
 class pkgRepository
 {
@@ -93,7 +94,10 @@ void pkgRepository::GetPackageList( const char *dname )
 	 * root element...
 	 */
 	char catname[ 1 + strlen( merge.Value() ) ];
-	dmh_printf( "Load catalogue: %s\n", basename( strcpy( catname, merge.Value() )));
+	if( pkgOptions()->Test( OPTION_VERBOSE ) > 1 )
+	  dmh_printf(
+	      "Load catalogue: %s\n", basename( strcpy( catname, merge.Value() ))
+	    );
 	pkgXmlNode *catalogue, *pkglist;
 	if( (catalogue = merge.GetRoot()) != NULL )
 	{
