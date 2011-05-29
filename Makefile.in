@@ -72,7 +72,7 @@ all: $(BIN_PROGRAMS) $(LIBEXEC_PROGRAMS) $(LIBEXEC_DATA)
 pkginfo$(EXEEXT):  driver.$(OBJEXT) pkginfo.$(OBJEXT)
 	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) $+
 
-mingw-get$(EXEEXT): clistub.$(OBJEXT) version.$(OBJEXT)
+mingw-get$(EXEEXT): clistub.$(OBJEXT) version.$(OBJEXT) getopt.$(OBJEXT)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $+
 
 GUI_LDFLAGS = -mwindows $(LDFLAGS)
