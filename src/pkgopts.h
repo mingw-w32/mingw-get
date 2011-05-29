@@ -76,6 +76,7 @@ struct pkgopts
 /* Options controlled by bit-mapped flags within OPTION_FLAGS...
  */
 #define OPTION_VERBOSE		(0x00000003)
+#define OPTION_VERBOSE_MAX	(0x00000003)
 
 #if __cplusplus
 /*

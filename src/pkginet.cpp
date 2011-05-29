@@ -379,9 +379,9 @@ HINTERNET pkgInternetAgent::OpenURL( const char *URL )
 	    */
 	   dmh_notify( DMH_ERROR, "%s:cannot open URL\n", URL );
 
-	 else DEBUG_INVOKE_IF( DEBUGLEVEL & DEBUG_TRACE_INTERNET_REQUESTS,
+	 else DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_INTERNET_REQUESTS ),
 	   dmh_printf( "%s\nConnecting ... failed(status=%u); retrying...\n",
-	     URL, GetLastError() )
+	       URL, GetLastError() )
 	   );
        }
        else
@@ -444,11 +444,10 @@ HINTERNET pkgInternetAgent::OpenURL( const char *URL )
 		/* Other failure modes may not be so readily recoverable;
 		 * with little hope of success, retry anyway.
 		 */
-		DEBUG_INVOKE_IF( DEBUGLEVEL & DEBUG_TRACE_INTERNET_REQUESTS,
+		DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_INTERNET_REQUESTS ),
 		    dmh_printf( "%s: abnormal request status = %u; retrying...\n",
 			URL, ResourceStatus
-		      )
-		  );
+		  ));
 		if( HttpSendRequest( ResourceHandle, NULL, 0, 0, 0 ) )
 		  ResourceStatus = QueryStatus( ResourceHandle );
 	      }
@@ -516,7 +515,7 @@ int pkgInternetStreamingAgent::TransferData( int fd )
      } while( dl_status && (count > 0) );
 
   DEBUG_INVOKE_IF(
-      (DEBUGLEVEL & DEBUG_TRACE_INTERNET_REQUESTS) && (dl_status == 0),
+      DEBUG_REQUEST( DEBUG_TRACE_INTERNET_REQUESTS ) && (dl_status == 0),
       dmh_printf( "\nInternetReadFile:download error:%d\n", GetLastError() )
     );
   return dl_status;
@@ -605,7 +604,7 @@ int pkgInternetStreamingAgent::Get( const char *from_url )
 	dl_meter = &download_meter;
 	dl_status = TransferData( fd );
       }
-      else DEBUG_INVOKE_IF( DEBUGLEVEL & DEBUG_TRACE_INTERNET_REQUESTS,
+      else DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_INTERNET_REQUESTS ),
 	  dmh_printf( "OpenURL:error:%d\n", GetLastError() )
 	);
 
@@ -794,7 +793,7 @@ int pkgInternetLzmaStreamingAgent::TransferData( int fd )
      } while( dl_status && (count > 0) );
 
   DEBUG_INVOKE_IF(
-      (DEBUGLEVEL & DEBUG_TRACE_INTERNET_REQUESTS) && (dl_status == 0),
+      DEBUG_REQUEST( DEBUG_TRACE_INTERNET_REQUESTS ) && (dl_status == 0),
       dmh_printf( "\nInternetReadFile:download error:%d\n", GetLastError() )
     );
   return dl_status;
