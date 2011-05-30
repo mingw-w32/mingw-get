@@ -81,6 +81,12 @@
 #
   AC_CHECK_TOOL([STRIP],[strip],[strip])
 
+# Identify features to be traced to facilitate debugging; make
+# it precious, to avoid introducing accidental inconsistencies.
+#
+  AC_ARG_VAR([DEBUGLEVEL],[tracing flags to facilitate debugging])
+  AC_SUBST([DEBUGLEVEL],[${DEBUGLEVEL-0}])
+
 # Establish the product version banner, and create a makefile
 #
   AC_CONFIG_FILES([version.c Makefile])
