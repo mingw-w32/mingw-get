@@ -82,6 +82,13 @@
    */
 #  define DEBUG_INVOKE_IF( TEST, ACTION )	/* DO NOTHING */
 
+  /* The following pair of macros may be used to provide
+   * a conditional expression in `if' or `while' statements;
+   * ensure they evaluate to FALSE when DEBUGLEVEL == 0.
+   */
+#  define DEBUG_ENABLED( OPTION )		0
+#  define DEBUG_REQUEST( OPTION )		0
+
 # endif /* DEBUGLEVEL */
 
 #endif /* DEBUG_H: $RCSfile$: end of file */
