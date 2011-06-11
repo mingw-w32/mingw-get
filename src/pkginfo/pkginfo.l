@@ -153,7 +153,7 @@ CMS_KEYWORDS (bzr|cms|cvs|darcs|git|hg|mono|scm|svn|vcs)
      * revert to INITIAL state, to continue the <archive-name> scan.
      */
     BEGIN INITIAL; yyless( 0 );
-    if( index < PACKAGE_RELEASE_STATUS )
+    if( (PACKAGE_NAME < index) && (index < PACKAGE_RELEASE_STATUS) )
     {
       /* and, when the <status> descriptor is appropriately placed,
        * set up `signature' storage to capture it, adjusting phase to
