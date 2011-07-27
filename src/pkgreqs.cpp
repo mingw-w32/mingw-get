@@ -395,14 +395,27 @@ const char *requirement( const char *wanted, pkgSpecs *dep )
   enum inherit_mode clone;
   clone = inherited( id.GetPackageVersion(), id.GetPackageBuild() );
   if( (clone & INHERIT_VERSION) > INHERIT_NONE )
-    /*
-     * ...propagating its "major.minor.patch" element as required...
+  {
+    /* ...propagating its "major.minor.patch" element as required.
      */
     id.SetPackageVersion( dep->GetPackageVersion() );
 
+    /* We also consider any release status specification to represent
+     * an extension to the normal package version specification, so...
+     */
+    if( id.GetReleaseStatus() == NULL )
+    {
+      /* ...when this isn't explicitly overridden in the requirement
+       * specification, we propagate it, together with any associated
+       * release reference index, from the reference specification.
+       */
+      id.SetReleaseStatus( dep->GetReleaseStatus() );
+      id.SetReleaseIndex( dep->GetReleaseIndex() );
+    }
+  }
   if( (clone & INHERIT_BUILD) > INHERIT_NONE )
     /*
-     * ...and similarly, its "datestamp-index" element.
+     * Likewise, for any associated "datestamp-index" element.
      */
     id.SetPackageBuild( dep->GetPackageBuild() );
 
