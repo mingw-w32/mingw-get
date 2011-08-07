@@ -85,6 +85,9 @@ struct pkgopts
 #define OPTION_VERBOSE_MAX	(0x00000003)
 
 #define OPTION_REINSTALL	(0x00000010)
+#define OPTION_DNLOAD_ONLY	(0x00000020)
+#define OPTION_DOWNLOAD_ONLY	(0x00000020)
+#define OPTION_PRINT_URIS	(0x00000060)
 
 #if __cplusplus
 /*
