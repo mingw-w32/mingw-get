@@ -227,9 +227,10 @@ class pkgActionItem
      */
     void PrintURI( const char* );
 
-    /* Method for retrieving packages from a distribution server.
+    /* Methods for retrieving packages from a distribution server.
      */
     void DownloadArchiveFiles( pkgActionItem* );
+    void DownloadSingleArchive( const char*, const char* );
 
   public:
     /* Constructor...
