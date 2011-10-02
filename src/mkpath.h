@@ -5,7 +5,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, MinGW Project
+ * Copyright (C) 2009, 2011, MinGW Project
  *
  *
  * Prototype declarations for the path name constructor functions,
@@ -42,5 +42,6 @@ EXTERN_C int set_output_stream( const char *, int );
 EXTERN_C int mkpath( char *, const char *, const char *, const char * );
 
 EXTERN_C const char *pkgArchivePath();
+EXTERN_C const char *pkgSourceArchivePath();
 
 #endif /* MKPATH_H: $RCSfile$: end of file */
