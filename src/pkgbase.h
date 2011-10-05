@@ -182,7 +182,7 @@ class pkgXmlNode : public TiXmlElement
      * as they are named on the project download servers.
      */
     const char* ArchiveName();
-    const char* SourceArchiveName();
+    const char* SourceArchiveName( unsigned long );
 
     /* The following retrieves an attribute which may have been
      * specified on an ancestor (container) node; typically used to
