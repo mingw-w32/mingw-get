@@ -89,6 +89,8 @@ struct pkgopts
 #define OPTION_DOWNLOAD_ONLY	(0x00000030)
 #define OPTION_PRINT_URIS	(0x00000070)
 
+#define OPTION_ALL_DEPS 	(0x00000090)
+
 #if __cplusplus
 /*
  * We provide additional features for use in C++ modules.

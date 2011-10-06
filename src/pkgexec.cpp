@@ -50,7 +50,9 @@ EXTERN_C const char *action_name( unsigned long index )
     "list",		/* list packages and display related information    */
     "show",		/* a synonym for "list"				    */
 
-    "update"		/* update local copy of repository catalogues	    */
+    "update",		/* update local copy of repository catalogues	    */
+    "licence",		/* retrieve licence sources from repository	    */
+    "source"		/* retrieve package sources from repository	    */
   };
 
   /* For specified "index", return a pointer to the associated keyword,

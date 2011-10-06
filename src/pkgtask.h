@@ -40,6 +40,8 @@ enum
   action_show,
 
   action_update,
+  action_licence,
+  action_source,
 
   end_of_actions
 };
@@ -53,6 +55,8 @@ enum
 #define ACTION_LIST     	(unsigned long)(action_list)
 #define ACTION_SHOW     	(unsigned long)(action_show)
 #define ACTION_UPDATE   	(unsigned long)(action_update)
+#define ACTION_LICENCE  	(unsigned long)(action_licence)
+#define ACTION_SOURCE   	(unsigned long)(action_source)
 
 #define STRICTLY_GT		(ACTION_MASK + 1)
 #define STRICTLY_LT		(STRICTLY_GT << 1)

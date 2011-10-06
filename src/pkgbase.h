@@ -272,6 +272,11 @@ class pkgActionItem
     }
     void ConfirmInstallationStatus();
 
+    /* Methods to download and unpack one or more source archives.
+     */
+    void GetSourceArchive( pkgXmlNode*, unsigned long );
+    void GetScheduledSourceArchives( unsigned long );
+
     /* Method for processing all scheduled actions.
      */
     void Execute();
@@ -394,6 +399,15 @@ class pkgXmlDocument : public TiXmlDocument
     /* Method to execute a sequence of scheduled actions.
      */
     inline void ExecuteActions(){ actions->Execute(); }
+
+    /* Methods to retrieve and optionally extract source archives
+     * for a collection of dependent packages.
+     */
+    void GetSourceArchive( const char*, unsigned long );
+    inline void GetScheduledSourceArchives( unsigned long category )
+    {
+      actions->GetScheduledSourceArchives( category );
+    }
 };
 
 EXTERN_C const char *xmlfile( const char*, const char* = NULL );
