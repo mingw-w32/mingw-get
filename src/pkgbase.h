@@ -395,6 +395,7 @@ class pkgXmlDocument : public TiXmlDocument
      */
     void Schedule( unsigned long, const char* );
     pkgActionItem* Schedule( unsigned long, pkgActionItem&, pkgActionItem* = NULL );
+    void RescheduleInstalledPackages( unsigned long );
 
     /* Method to execute a sequence of scheduled actions.
      */
