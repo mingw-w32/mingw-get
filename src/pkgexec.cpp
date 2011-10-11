@@ -414,7 +414,7 @@ void pkgActionItem::Execute()
     /* If the --download-only option is in effect, then we have
      * nothing more to do...
      */
-    if( pkgOptions()->Test( OPTION_DOWNLOAD_ONLY ) == 0 )
+    if( pkgOptions()->Test( OPTION_DOWNLOAD_ONLY ) != OPTION_DOWNLOAD_ONLY )
     {
       /* ...otherwise...
        */
