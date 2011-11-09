@@ -673,11 +673,11 @@ void pkgActionItem::DownloadSingleArchive
 
   /* Check if the required archive is already available locally...
    */
-  if( (access( download.DestFile(), R_OK ) != 0) && (errno == ENOENT) )
+  if(  ((flags & ACTION_DOWNLOAD) == ACTION_DOWNLOAD)
+  &&   ((access( download.DestFile(), R_OK ) != 0) && (errno == ENOENT))  )
   {
     /* ...if not, ask the download agent to fetch it...
      */
-    flags |= ACTION_DOWNLOAD;
     const char *url_template = get_host_info( Selection(), uri_key );
     if( url_template != NULL )
     {
@@ -691,7 +691,7 @@ void pkgActionItem::DownloadSingleArchive
 	/*
 	 * Download was successful; clear the pending flag.
 	 */
-	flags &= ~ACTION_DOWNLOAD;
+	flags &= ~(ACTION_DOWNLOAD);
       else
 	/* Diagnose failure; leave pending flag set.
 	 */
@@ -707,6 +707,10 @@ void pkgActionItem::DownloadSingleArchive
 	  "Get package: %s: no URL specified for download\n", package_name
 	);
   }
+  else
+    /* There was no need to download any file to satisfy this request.
+     */
+    flags &= ~(ACTION_DOWNLOAD);
 }
 
 void pkgActionItem::DownloadArchiveFiles( pkgActionItem *current )

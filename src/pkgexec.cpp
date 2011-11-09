@@ -242,6 +242,14 @@ pkgActionItem::Schedule( unsigned long action, pkgActionItem& item )
    * and return it for inclusion in the task schedule.
    */
   pkgActionItem *rtn = new pkgActionItem(); *rtn = item;
+  if( pkgOptions()->Test( OPTION_REINSTALL ) == OPTION_REINSTALL )
+    /*
+     * When the user specified the "--reinstall" option, either
+     * explicitly, or implied by "--download-only", (or even as a
+     * side effect of "--print-uris"), we MUST enable a download
+     * action, in case it is required to complete the request.
+     */
+    action |= ACTION_DOWNLOAD;
   rtn->flags = action | (rtn->flags & ~ACTION_MASK);
   return rtn;
 }

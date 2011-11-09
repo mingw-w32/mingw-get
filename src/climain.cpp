@@ -342,7 +342,7 @@ void pkgActionItem::GetSourceArchive( pkgXmlNode *package, unsigned long categor
        * least check that the source package is available in the
        * source archive cache, and if not, download it...
        */
-      const char *path_template;
+      const char *path_template; flags |= ACTION_DOWNLOAD;
       DownloadSingleArchive( src, path_template = (category == ACTION_SOURCE)
 	  ? pkgSourceArchivePath() : pkgArchivePath()
 	);
