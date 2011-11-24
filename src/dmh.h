@@ -60,8 +60,8 @@ EXTERN_C void dmh_init( const dmh_class, const char* );
 EXTERN_C int dmh_notify( const dmh_severity, const char *fmt, ... );
 EXTERN_C int dmh_printf( const char *fmt, ... );
 
-#define DMH_BEGIN_DIGEST  0x0001U, ~0x0001U
-#define DMH_END_DIGEST    0x0100U,  0x0000U
+#define DMH_BEGIN_DIGEST  (uint16_t)(0x0001U), ~(uint16_t)(0x0001U)
+#define DMH_END_DIGEST    (uint16_t)(0x0100U),  (uint16_t)(0x0000U)
 
 EXTERN_C uint16_t dmh_control( const uint16_t, const uint16_t );
 
