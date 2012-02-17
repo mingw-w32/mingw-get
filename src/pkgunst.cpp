@@ -314,6 +314,11 @@ EXTERN_C void pkgRemove( pkgActionItem *current )
 
     dmh_printf( " removing %s %s\n", pkg->GetName(), tarname );
 
+    /* If the package we are about to remove has an associated
+     * pre-remove script, now is the time to invoke it.
+     */
+    pkg->InvokeScript( "pre-remove" );
+
     /* Removal of virtual (meta) packages is comparitively simple;
      * identified by having an associated archive name of "none", they
      * have no associated archive file, no installed footprint on disk,
@@ -517,6 +522,10 @@ EXTERN_C void pkgRemove( pkgActionItem *current )
 	sysroot->SetAttribute( modified_key, value_yes );
       }
     }
+    /* After package removal has been completed, we invoke any
+     * post-remove script which may be associated with the package.
+     */
+    pkg->InvokeScript( "post-remove" );
   }
   else if( (pkg != NULL) && current->HasAttribute( ACTION_DOWNLOAD ) )
   {

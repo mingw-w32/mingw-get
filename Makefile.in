@@ -52,7 +52,7 @@ OBJEXT = @OBJEXT@
 EXEEXT = @EXEEXT@
 
 LDFLAGS = @LDFLAGS@
-LIBS = -Wl,-Bstatic -lz -lbz2 -llzma -Wl,-Bdynamic -lwininet
+LIBS = -Wl,-Bstatic -llua -lz -lbz2 -llzma -Wl,-Bdynamic -lwininet
 
 CORE_DLL_OBJECTS  =  climain.$(OBJEXT) pkgshow.$(OBJEXT) dmh.$(OBJEXT) \
    pkgbind.$(OBJEXT) pkginet.$(OBJEXT) pkgstrm.$(OBJEXT) pkgname.$(OBJEXT) \

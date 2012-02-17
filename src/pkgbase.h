@@ -190,6 +190,23 @@ class pkgXmlNode : public TiXmlElement
      * be associated with a release.
      */
     const char *GetContainerAttribute( const char*, const char* = NULL );
+
+    /* Any package may have associated scripts; the following
+     * method invokes them on demand.
+     */
+    inline int InvokeScript( const char *context )
+    {
+      /* The actual implementation is delegated to the following
+       * (private) overloaded method.
+       */
+      return InvokeScript( 0, context );
+    }
+
+  private:
+    /* Helpers used to implement the preceding InvokeScript() method.
+     */
+    int InvokeScript( int, const char* );
+    int DispatchScript( int, const char*, const char*, pkgXmlNode* );
 };
 
 enum { to_remove = 0, to_install, selection_types };

@@ -519,4 +519,106 @@ pkgActionItem::~pkgActionItem()
     free( (void *)(min_wanted) );
 }
 
+/*
+ ****************
+ *
+ * Implementation of processing hooks, for handling pre/post-install
+ * and pre/post-remove scripts.
+ *
+ */
+#include "lua.hpp"
+
+static const char *action_key = "action";
+static const char *normal_key = "normal";
+
+int pkgXmlNode::DispatchScript
+( int status, const char *context, const char *priority, pkgXmlNode *action )
+{
+  /* Private method, called by InvokeScript(), to hand-off each script
+   * fragment from the requesting XML node, with class attribute matching
+   * the requested context and precedence matching the requested priority,
+   * for execution by the embedded lua interpreter.
+   */
+  lua_State *interpreter = NULL;
+  static const char *priority_key = "precedence";
+
+  while( action != NULL )
+  {
+    /* We have at least one remaining script fragment, attached to the
+     * current XML node, which is a potential candidate for execution...
+     */
+    if( (strcmp( context, action->GetPropVal( class_key, value_none )) == 0)
+    &&  (strcmp( priority, action->GetPropVal( priority_key, normal_key )) == 0)  )
+    {
+      /* ...and it does fit the current context and precedence; if we
+       * have not yet attached an interpreter to this node, then...
+       */
+      if( (interpreter == NULL) && ((interpreter = luaL_newstate()) != NULL) )
+	/*
+	 * ...start one now, and initialise it by loading the standard
+	 * lua libraries...
+	 */
+	luaL_openlibs( interpreter );
+
+      /* ...then hand off the current script fragment to this active
+       * lua interpreter...
+       */
+      if( (status = luaL_dostring( interpreter, action->GetText() )) != 0 )
+	/*
+	 * ...reporting any errors through mingw-get's standard
+	 * diagnostic message handler.
+	 */
+	dmh_printf( "lua error in %s script:\n%s\n", context,
+	    lua_tostring( interpreter, -1 )
+	  );
+    }
+
+    /* Check for any further script fragments attached to the current node.
+     */
+    action = action->FindNextAssociate( action_key );
+  }
+
+  /* Before leaving this node...
+   */
+  if( interpreter != NULL )
+    /*
+     * ...close any active lua interpreter which we may have attached.
+     */
+    lua_close( interpreter );
+
+  /* Finally, return the execution status reported by lua, from the last
+   * script fragment executed within the scope of the current node.
+   */
+  return status;
+}
+
+int pkgXmlNode::InvokeScript( int status, const char *context )
+{
+  /* Private component of the implementation for the public
+   * InvokeScript() method; it checks for the existence of at
+   * least one script attached to the invoking XML node, then
+   * hands off processing of the entire script collection...
+   */
+  pkgXmlNode *action = FindFirstAssociate( action_key );
+
+  /* ...first processing any, in the requested context, which are
+   * designated as having "immediate" precedence...
+   */
+  status = DispatchScript( status, context, "immediate", action );
+  /*
+   * ...then, traversing the XML hierarchy towards the root...
+   */
+  if( this != GetDocumentRoot() )
+    /*
+     * ...processing any script fragments, in the requested context,
+     * which are attached to any container nodes...
+     */
+    status = GetParent()->InvokeScript( status, context );
+
+  /* ...and finally, process any others attached to the current node,
+   * in the requested context, having "normal" precedence.
+   */
+  return DispatchScript( status, context, normal_key, action );
+}
+
 /* $RCSfile$: end of file */
