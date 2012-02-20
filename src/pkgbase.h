@@ -71,6 +71,19 @@
 # endif
 #endif
 
+/* Define an API for registering environment variables.
+ */
+EXTERN_C int pkgPutEnv( int, char* );
+
+#define PKG_PUTENV_DIRSEP_MSW 	 	(0x01)
+#define PKG_PUTENV_DIRSEP_POSIX 	(0x02)
+#define PKG_PUTENV_SCAN_VARNAME 	(0x04)
+#define PKG_PUTENV_NAME_TOUPPER  	(0x08)
+
+#define PKG_PUTENV_FLAGS_MASK		(0x0F)
+
+/* Begin class declarations.
+ */
 class pkgSpecs;
 
 class pkgXmlNode : public TiXmlElement
