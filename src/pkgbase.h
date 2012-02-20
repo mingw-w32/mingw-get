@@ -5,7 +5,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, MinGW Project
+ * Copyright (C) 2009, 2010, 2011, 2012, MinGW Project
  *
  *
  * Public interface for the package directory management routines;

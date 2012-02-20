@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2010, 2011, MinGW Project
+ * Copyright (C) 2010, 2011, 2012, MinGW Project
  *
  *
  * Implementation of the system map loader, sysroot management and
