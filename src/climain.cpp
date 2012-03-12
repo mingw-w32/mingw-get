@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, MinGW Project
+ * Copyright (C) 2009, 2010, 2011, 2012, MinGW Project
  *
  *
  * Implementation of the main program function, which is invoked by
@@ -230,10 +230,16 @@ EXTERN_C int climain( int argc, char **argv )
 	     * for tracking packages as processed.
 	     */
 	    pkgProcessedArchives = NULL;
-	    if( pkgOptions()->Test( OPTION_ALL_DEPS ) == OPTION_ALL_DEPS )
+	    if( pkgOptions()->Test( OPTION_ALL_RELATED ) )
 	    {
-	      /* The "--all-related" option is in effect; for each
-	       * package identified on the command line...
+	      /* The "--all-related" option is in effect; ensure
+	       * that all dependencies will be evaluated, as if to
+	       * perform a recursive reinstall...
+	       */
+	      pkgOptions()->SetFlags( OPTION_ALL_DEPS );
+	      /*
+	       * ...then, for each package which is identified on
+	       * the command line...
 	       */
 	      while( --argc )
 		/*
