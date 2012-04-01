@@ -286,6 +286,7 @@ class pkgActionItem
     /* Methods for defining the selection criteria for
      * packages to be processed.
      */
+    void ApplyBounds( pkgXmlNode *, const char * );
     pkgXmlNode* SelectIfMostRecentFit( pkgXmlNode* );
     const char* SetRequirements( pkgXmlNode*, pkgSpecs* );
     inline void SelectPackage( pkgXmlNode *pkg, int opt = to_install )
