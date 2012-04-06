@@ -583,6 +583,16 @@ pkgActionItem::~pkgActionItem()
 static const char *action_key = "action";
 static const char *normal_key = "normal";
 
+static inline __attribute__((__always_inline__)) bool init_lua_path()
+{
+  /* A one time initialisation hook, to ensure that the built-in Lua script
+   * interpreter will load scripts from the libexec directory associated with
+   * the running mingw-get.exe instance.
+   */
+  putenv( "LUA_PATH=!\\libexec\\mingw-get\\?.lua;!\\..\\libexec\\mingw-get\\?.lua" );
+  return true;
+}
+
 int pkgXmlNode::DispatchScript
 ( int status, const char *context, const char *priority, pkgXmlNode *action )
 {
@@ -593,6 +603,13 @@ int pkgXmlNode::DispatchScript
    */
   lua_State *interpreter = NULL;
   static const char *priority_key = "precedence";
+  static bool lua_path_setup = false;
+
+  if( ! lua_path_setup )
+    /*
+     * The Lua script path hasn't been initialised yet; do it now!
+     */
+    lua_path_setup = init_lua_path();
 
   while( action != NULL )
   {
