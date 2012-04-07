@@ -217,7 +217,8 @@ srcdist: srcdist-doc
 	    || $(LN_S) ../$$file .; \
 	  done
 	for dir in $(SRCDIST_SUBDIRS); do \
-	  mkdir ${PACKAGE_DISTROOT}/$$dir && cd ${PACKAGE_DISTROOT}/$$dir; \
+	  $(mkinstalldirs) ${PACKAGE_DISTROOT}/$$dir \
+	  && cd ${PACKAGE_DISTROOT}/$$dir; \
 	  for file in `cd ${abs_top_srcdir}/$$dir && echo *`; do \
 	    if test -f ${abs_top_srcdir}/$$dir/$$file; then \
 	      $(LN_S) ${abs_top_srcdir}/$$dir/$$file .; \
