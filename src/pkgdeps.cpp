@@ -36,6 +36,7 @@
 #include "pkgbase.h"
 #include "pkgkeys.h"
 #include "pkgtask.h"
+#include "pkgopts.h"
 
 /* Define supplementary action codes, which may be used exclusively
  * by pkgXmlDocument::ResolveDependencies(), to ensure that recursive
