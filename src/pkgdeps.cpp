@@ -1028,9 +1028,19 @@ void pkgXmlDocument::Schedule( unsigned long action, const char* name )
 	    ResolveDependencies( upgrade,
 		Schedule( with_download( action ), latest )
 	      );
-	  else
+
+	  else if( (action & ACTION_MASK) == ACTION_REMOVE )
 	  {
-	    /* ...but, we decline to proceed with ACTION_INSTALL
+	    /* ...while for ACTION_REMOVE, we have little to do,
+	     * beyond scheduling the removal; (we don't extend the
+	     * scope of a remove request to prerequisite packages,
+	     * so there is no need to resolve dependencies)...
+	     */
+	    latest.SelectPackage( installed );
+	    Schedule( action, latest );
+	  }
+	  else
+	  { /* ...but, we decline to proceed with ACTION_INSTALL
 	     * unless the --reinstall option is enabled...
 	     */
 	    if( pkgOptions()->Test( OPTION_REINSTALL ) )
