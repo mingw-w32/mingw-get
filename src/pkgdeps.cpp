@@ -788,12 +788,22 @@ void pkgActionItem::ApplyBounds( pkgXmlNode *release, const char *bounds )
     pkgSpecs usrspec( spec_string );
 
     /* ...then extract the version fields of interest, and insert them
-     * into the actual working reference specification.
+     * into the actual working reference specification...
      */
     refspec.SetPackageVersion( usrspec.GetPackageVersion() );
     refspec.SetPackageBuild( usrspec.GetPackageBuild() );
-    refspec.SetSubSystemVersion( usrspec.GetSubSystemVersion() );
-    refspec.SetSubSystemBuild( usrspec.GetSubSystemBuild() );
+    if( (refname = usrspec.GetSubSystemVersion()) != NULL )
+    {
+      /* ...including the subsystem version, if any, which the user may
+       * have specified...
+       */
+      refspec.SetSubSystemVersion( refname );
+      refspec.SetSubSystemBuild( usrspec.GetSubSystemBuild() );
+    }
+    else
+      /* ...or allowing a wild-card match otherwise.
+       */
+      refspec.SetSubSystemVersion( "*" );
 
     /* Convert the reference specification to "tarname" format...
      */
