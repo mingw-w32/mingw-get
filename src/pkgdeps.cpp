@@ -463,12 +463,20 @@ pkgXmlDocument::ResolveDependencies( pkgXmlNode* package, pkgActionItem* rank )
 	  rank = Schedule( fallback, wanted, rank );
 	}
 
+#	if 0
+	/* FIXME: this change in logic may introduce a regression; I (KDM)
+	 * may need to re-evaluate the conceptual effect of PRIMARY actions
+	 * vs. SECONDARY actions in this context, but this pre-v0.5 logic
+	 * breaks the handling of meta-packages in v0.5
+	 */
 	else if( ((request & ACTION_MASK) == ACTION_INSTALL)
 	  /*
 	   * The required package is not installed, so when
 	   * we are performing an installation, ...
 	   */
 	|| ((request & (ACTION_PRIMARY | ACTION_INSTALL)) == ACTION_INSTALL) )
+#	endif
+	else if( (request & ACTION_INSTALL) == ACTION_INSTALL )
 	{
 	  /* ...or when this is a new requirement of a package
 	   * which is being upgraded, then we must schedule it
