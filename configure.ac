@@ -51,8 +51,10 @@
   AC_PROG_CC
   AC_PROG_CXX
 
-# We also need a lexical analyser generator
+# We also need a Windows resource compiler,
+# and a lexical analyser generator
 #
+  AC_CHECK_TOOL([WINDRES],[windres],[windres])
   AC_PROG_LEX
 
 # Ensure that (at least the headers for) prerequisite libraries,
