@@ -51,11 +51,11 @@ The following new features have been implemented:--
   most recently released), for installation.  In the case of any package
   which has not been previously installed, the format is any of:
 
-     mingw-get install "package-name=version-spec"
-     mingw-get install "package-name<version-spec"
-     mingw-get install "package-name<=version-spec"
-     mingw-get install "package-name>=version-spec"
-     mingw-get install "package-name>version-spec"
+!    mingw-get install "package-name=version-spec"
+!    mingw-get install "package-name<version-spec"
+!    mingw-get install "package-name<=version-spec"
+!    mingw-get install "package-name>=version-spec"
+!    mingw-get install "package-name>version-spec"
 
   while for any package which has been previously installed, and is to
   be "rolled back" to an earlier release, the same forms are supported,
