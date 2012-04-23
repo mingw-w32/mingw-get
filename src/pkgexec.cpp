@@ -68,23 +68,39 @@ EXTERN_C int action_code( const char* request )
   /* Match an action keyword specified on the command line
    * to an entry from the above list...
    */
-  int lencode = strlen( request );
-
-  int index;
-  for( index = 0; index < end_of_actions; index++ )
+  if( request != NULL )
   {
-    /* Try all defined keywords in turn, until we find a match
-     * or we run out of definitions...
-     */
-    if( strncmp( request, action_name( index ), lencode ) == 0 )
-      /*
-       * for a successful match...
-       * immediately return the associated action code index.
-       */
-      return index;
-  }
+    int lencode = strlen( request );
 
-  /* If we get to here, the specified keyword was not matched;
+    int index, retval, matched;
+    for( index = matched = 0; index < end_of_actions; index++ )
+    {
+      /* Try all defined keywords in turn, until we run out
+       * of definitions.
+       */
+      if( (strncmp( request, action_name( index ), lencode ) == 0)
+	/*
+	 * When we find a match, and it is the first...
+	 */
+      &&  (++matched == 1)  )
+	/*
+	 * ...then we record as the probable index to return.
+	 */
+	retval = index;
+    }
+    if( matched > 1 )
+      /*
+       * We matched more than one valid keyword; reject them all.
+       */
+      dmh_notify( DMH_ERROR, "%s: action keyword is ambiguous\n", request );
+    
+    else if( matched == 1 )
+      /*
+       * We matched exactly one keyword; return its index value.
+       */
+      return retval;
+  }
+  /* If we get to here, the specified keyword was not uniquely matched;
    * signal this, by returning -1.
    */
   return -1;
