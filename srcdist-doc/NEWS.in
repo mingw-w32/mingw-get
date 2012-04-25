@@ -9,6 +9,19 @@ historical record is restricted to recent releases; the full history is
 recorded in the NEWS file, which is included in the source code package.
 
 
+mingw-get-0.5-mingw32-beta-20120426-1
+-------------------------------------
+
+Release date: 2012-04-26
+
+This is an emergency bug-fix release; it provides an immediate interim
+work-around for bug #3520864, circumventing a critical regression which
+was introduced in mingw-get-0.5-mingw32-beta-20120416-1, and is thus a
+mandatory upgrade for users who had previously upgraded to that version.
+
+It also incorporates the correction for bug #3520488.
+
+
 mingw-get-0.5-mingw32-beta-20120416-1
 -------------------------------------
 
