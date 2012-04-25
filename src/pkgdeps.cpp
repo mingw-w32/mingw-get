@@ -484,8 +484,9 @@ pkgXmlDocument::ResolveDependencies( pkgXmlNode* package, pkgActionItem* rank )
 	   * we are performing a removal).
 	   */
 	  DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_DEPENDENCIES ),
-	      dmh_printf( "%*s%s: schedule installation\n", indent + 2, "",
-		  selected->GetPropVal( tarname_key, value_unknown )
+	      dmh_printf( "%*s%s: schedule installation (flags=0x%08x)\n",
+		  indent + 2, "", selected->GetPropVal( tarname_key, value_unknown ),
+		  promote( request, ACTION_INSTALL )
 		)
 	    );
 	  rank = Schedule( promote( request, ACTION_INSTALL ), wanted, rank );
