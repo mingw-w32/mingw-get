@@ -312,12 +312,14 @@ EXTERN_C void pkgRemove( pkgActionItem *current )
     const char *tarname = pkg->GetPropVal( tarname_key, value_unknown );
     pkgXmlNode *sysroot = sysroot_lookup( pkg, tarname );
 
-    dmh_printf( " removing %s %s\n", pkg->GetName(), tarname );
-
     /* If the package we are about to remove has an associated
-     * pre-remove script, now is the time to invoke it.
+     * pre-remove script, now is the time to invoke it...
      */
     pkg->InvokeScript( "pre-remove" );
+
+    /* ...before we proceed to removal of actual package content.
+     */
+    dmh_printf( " removing %s %s\n", pkg->GetName(), tarname );
 
     /* Removal of virtual (meta) packages is comparitively simple;
      * identified by having an associated archive name of "none", they
