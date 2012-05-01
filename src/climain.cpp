@@ -220,6 +220,11 @@ EXTERN_C int climain( int argc, char **argv )
 	 */
 	dbase.LoadSystemMap();
 
+	/* ...initialise any preferences which the user may
+	 * have specified within profile.xml...
+	 */
+	dbase.EstablishPreferences();
+
 	/* ...and invoke the appropriate action handler.
 	 */
 	switch( action )

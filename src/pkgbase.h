@@ -388,6 +388,12 @@ class pkgXmlDocument : public TiXmlDocument
     pkgActionItem* actions;
 
   public:
+    /* Method to interpret user preferences for mingw-get processing
+     * options, which are specified within profile.xml rather than on
+     * the command line.
+     */
+    void EstablishPreferences();
+
     /* Method to synchronise the state of the local package manifest
      * with the master copy held on the distribution server.
      */
