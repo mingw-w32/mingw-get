@@ -31,6 +31,7 @@ const char *catalogue_key	    =	"catalogue";
 const char *class_key		    =	"class";
 const char *component_key	    =	"component";
 const char *defaults_key	    =	"defaults";
+const char *description_key	    =	"description";
 const char *dirname_key 	    =	"dir";
 const char *download_key	    =	"download";
 const char *download_host_key	    =	"download-host";
@@ -61,6 +62,7 @@ const char *subsystem_key	    =	"subsystem";
 const char *sysmap_key		    =	"system-map";
 const char *sysroot_key 	    =	"sysroot";
 const char *tarname_key 	    =	"tarname";
+const char *title_key		    =	"title";
 const char *uri_key		    =	"uri";
 
 /* Some standard values, which may be associated with certain

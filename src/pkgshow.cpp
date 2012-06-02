@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, MinGW Project
+ * Copyright (C) 2009, 2010, 2012, MinGW Project
  *
  *
  * Implementation of the classes and methods required to support the
@@ -31,6 +31,7 @@
 
 #include "pkgbase.h"
 #include "pkgkeys.h"
+#include "pkglist.h"
 
 #include "dmh.h"
 
@@ -453,46 +454,6 @@ pkgNroffLayoutEngine::WriteLn( int style, int offset, int maxlen )
   return curr;
 }
 
-class pkgDirectoryViewerEngine
-{
-  /* A minimal abstract base class, through which directory
-   * traversal methods of the following "pkgDirectory" class
-   * gain access to an appropriate handler in a specialised
-   * directory viewer class, (or any other class which may
-   * provide directory traversal hooks).  All such helper
-   * classes should derive from this base class, providing
-   * a "Dispatch" method as the directory traversal hook.
-   */
-  public:
-    virtual void Dispatch( pkgXmlNode* ) = 0;
-#if 0
-    pkgDirectoryViewerEngine()
-    {
-      for( int i = 1; i < 9; i++ ) printf( "%10d", i ); putchar( '\n' );
-      for( int i = 1; i < 9; i++ ) printf( "1234567890" ); putchar( '\n' );
-    }
-#endif
-};
-
-class pkgDirectory
-{
-  /* A locally defined class, used to manage a list of package
-   * or component package references in the form of an unbalanced
-   * binary tree, such that an in-order traversal will produce
-   * an alpha-numerically sorted package list.
-   */
-  public:
-    pkgDirectory( pkgXmlNode* );
-    pkgDirectory *Insert( const char*, pkgDirectory* );
-    void InOrder( pkgDirectoryViewerEngine* );
-    ~pkgDirectory();
-
-  protected:
-    pkgXmlNode *entry;
-    pkgDirectory *prev;
-    pkgDirectory *next;
-};
-
 /* Constructor...
  */
 pkgDirectory::pkgDirectory( pkgXmlNode *item ):
@@ -772,12 +733,10 @@ void pkgDirectoryViewer::EmitDescription( pkgXmlNode *pkg, const char *title )
    */
   int offset = 0;
 
-  /* These XML element and attribute identification keys should
+  /* This XML element and attribute identification key should
    * perhaps be defined in the pkgkeys.h header; once more, for
-   * the time being we simply define them locally.
+   * the time being we simply define it locally.
    */
-  const char *title_key = "title";
-  const char *description_key = "description";
   const char *paragraph_key = "paragraph";
 
   /* The procedure is recursive, selecting description elements
@@ -867,15 +826,7 @@ void pkgDirectoryViewer::Dispatch( pkgXmlNode *entry )
     /* The selected entity is a full package;
      * create an auxiliary directory...
      */
-    pkgDirectory *dir = NULL;
-    pkgXmlNode *cpt = entry->FindFirstAssociate( component_key );
-    while( cpt != NULL )
-    {
-      /* ...in which we enumerate its components.
-       */
-      dir = dir->Insert( class_key, new pkgDirectory( cpt ) );
-      cpt = cpt->FindNextAssociate( component_key );
-    }
+    pkgDirectory *dir = EnumerateComponents( entry );
 
     /* Signalling that a component list is to be included...
      */
@@ -1024,34 +975,11 @@ void pkgXmlDocument::DisplayPackageInfo( int argc, char **argv )
   }
 
   else
-  {
     /* No arguments were specified; interpret this as a request
      * to display information pertaining to all known packages in
      * the current mingw-get repository's universe, thus...
      */
-    pkgXmlNode *grp = GetRoot()->FindFirstAssociate( package_collection_key );
-    while( grp != NULL )
-    {
-      /* ...for each known package collection...
-       */
-      pkgXmlNode *pkg = grp->FindFirstAssociate( package_key );
-      while( pkg != NULL )
-      {
-	/* ...add an entry for each included package
-	 * into the print-out directory...
-	 */
-	dir = dir->Insert( name_key, new pkgDirectory( pkg ) );
-	/*
-	 * ...enumerating each and every package...
-	 */
-	pkg = pkg->FindNextAssociate( package_key );
-      }
-      /* ...then repeat for the next package collection,
-       * if any.
-       */
-      grp = grp->FindNextAssociate( package_collection_key );
-    }
-  }
+    dir = CatalogueAllPackages();
 
   /* Regardless of how the print-out directory was compiled,
    * we hand it off to the common viewer, for output.
@@ -1062,6 +990,58 @@ void pkgXmlDocument::DisplayPackageInfo( int argc, char **argv )
    * so we may delete it.
    */
   delete dir;
+}
+
+pkgDirectory *pkgXmlDocument::CatalogueAllPackages()
+{
+  /* A helper method for compiling a catalogue of all available packages,
+   * into a linked list of collated pkgDirectory class instances.
+   *
+   * FIXME: This will eventually need to support filtering of the result,
+   * based on a package group category specification.
+   */
+  pkgDirectory *dir = NULL;
+  pkgXmlNode *grp = GetRoot()->FindFirstAssociate( package_collection_key );
+  while( grp != NULL )
+  {
+    /* ...for each known package collection...
+     */
+    pkgXmlNode *pkg = grp->FindFirstAssociate( package_key );
+    while( pkg != NULL )
+    {
+      /* ...add an entry for each included package
+       * into the print-out directory...
+       */
+      dir = dir->Insert( name_key, new pkgDirectory( pkg ) );
+      /*
+       * ...enumerating each and every package...
+       */
+      pkg = pkg->FindNextAssociate( package_key );
+    }
+    /* ...then repeat for the next package collection,
+     * if any.
+     */
+    grp = grp->FindNextAssociate( package_collection_key );
+  }
+  return dir;
+}
+
+pkgDirectory *pkgDirectoryViewerEngine::EnumerateComponents( pkgXmlNode *pkg )
+{
+  /* A convenience method for enumerating the component packages of
+   * a specified package set, returning the enumerated collection as
+   * a collated list, in a chain of pkgDirectory structures.
+   */
+  pkgDirectory *dir = NULL;
+  pkg = pkg->FindFirstAssociate( component_key );
+  while( pkg != NULL )
+  {
+    /* ...in which we enumerate its components.
+     */
+    dir = dir->Insert( class_key, new pkgDirectory( pkg ) );
+    pkg = pkg->FindNextAssociate( component_key );
+  }
+  return dir;
 }
 
 /* $RCSfile$: end of file */

@@ -5,7 +5,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2010, MinGW Project
+ * Copyright (C) 2010, 2012, MinGW Project
  *
  *
  * Public declarations of the global definitions for the string
@@ -42,6 +42,7 @@ EXTERN_C_DECL const char *catalogue_key;
 EXTERN_C_DECL const char *class_key;
 EXTERN_C_DECL const char *component_key;
 EXTERN_C_DECL const char *defaults_key;
+EXTERN_C_DECL const char *description_key;
 EXTERN_C_DECL const char *dirname_key;
 EXTERN_C_DECL const char *download_key;
 EXTERN_C_DECL const char *download_host_key;
@@ -72,6 +73,7 @@ EXTERN_C_DECL const char *subsystem_key;
 EXTERN_C_DECL const char *sysmap_key;
 EXTERN_C_DECL const char *sysroot_key;
 EXTERN_C_DECL const char *tarname_key;
+EXTERN_C_DECL const char *title_key;
 EXTERN_C_DECL const char *uri_key;
 
 /* Some standard values, which may be associated with certain

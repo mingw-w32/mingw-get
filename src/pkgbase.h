@@ -85,6 +85,7 @@ EXTERN_C int pkgPutEnv( int, char* );
 /* Begin class declarations.
  */
 class pkgSpecs;
+class pkgDirectory;
 
 class pkgXmlNode : public TiXmlElement
 {
@@ -418,8 +419,9 @@ class pkgXmlDocument : public TiXmlDocument
      */
     pkgXmlNode* FindPackageByName( const char*, const char* = NULL );
 
-    /* Method to display information about packages.
+    /* Methods to retrieve and display information about packages.
      */
+    pkgDirectory *CatalogueAllPackages();
     void DisplayPackageInfo( int, char** );
 
     /* Method to resolve the dependencies of a specified package,

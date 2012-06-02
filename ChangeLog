@@ -1,3 +1,22 @@
+2012-06-02  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Refactor API to facilitate implementation of GUI ListView hooks.
+
+	* src/pkgkeys.h (title_key, description_key): Declare them.
+	* src/pkgkeys.c (title_key, description_key): Define them; relocate...
+	* src/pkgshow.cpp (pkgDirectoryViewer::EmitDescription): ...from here.
+	(pkgXmlDocument::CalalogueAllPackages): New public method; factor...
+	(pkgXmlDocument::DisplayPackageInfo): ...from here, whence use it.
+	(pkgDirectoryViewerEngine::EnumerateComponents): New private method;
+	implement as a concrete method of this abstract base class; factor...
+	(pkgDirectoryViewer::Dispatch): ...from original inline implementation
+	within this method of the concrete derived class, whence use it.
+	(pkgDirectoryViewerEngine, pkgDirectory): Factor class declarations...
+	* src/pkglist.h: ...into this new header file; include it.
+
+	* src/pkgbase.h (pkgDirectory): Add forward class declaration.
+	(pkgXmlDocument::CatalogueAllPackages): Declare it.
+
 2012-05-02  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Update help text to document package version selection capability.
