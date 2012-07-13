@@ -409,6 +409,12 @@ static int xatoi( const char *input )
 
 #define atmost( lim, val )		((lim) < (val)) ? (lim) : (val)
 
+/* Disable command line globbing; we don't need it, and case-insensitive
+ * glob matches on files such as INSTALL may interfere with case-sensitive
+ * specification of the mingw-get action keywords.
+ */
+int _CRT_glob = 0;
+
 int main( int argc, char **argv )
 {
   /* Provide storage for interpretation of any parsed command line options.

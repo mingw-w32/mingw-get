@@ -1,3 +1,12 @@
+2012-07-13  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Disable globbing of command line arguments.
+
+	* src/clistub.c (_CRT_glob): Define and initialise to zero; we don't
+	need globbing, and it may cause case transliteration of case-sensitive
+	action keywords, when a file system entity with a case-insensitively
+	matching name exists.
+
 2012-06-02  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Refactor API to facilitate implementation of GUI ListView hooks.
