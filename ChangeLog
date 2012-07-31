@@ -1,3 +1,10 @@
+2012-07-31  Earnie Boyd  <earnie@users.sourceforge.net>
+
+	Move .cvsignore to .gitignore.
+
+	* .cvsignore: Remove.
+	* .gitignore: New file.
+
 2012-07-13  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Disable globbing of command line arguments.
