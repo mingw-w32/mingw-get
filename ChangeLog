@@ -1,7 +1,10 @@
 2012-07-31  Earnie Boyd  <earnie@users.sourceforge.net>
 
+	Add build-aux as a submodule.
 	Move .cvsignore to .gitignore.
 
+	* .gitmodules: New file.
+	* build-aux: New submodule directory.
 	* .cvsignore: Remove.
 	* .gitignore: New file.
 
