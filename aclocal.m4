@@ -22,7 +22,7 @@
 # MinGW Project, accept liability for any damages, however caused,
 # arising from the use of this software.
 #
-m4_include([m4/missing.m4])
+m4_include([build-aux/m4/missing.m4])
 
 # MINGW_AC_OUTPUT
 # ---------------
