@@ -1,3 +1,25 @@
+2012-08-03  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	More code refactoring, to facilitate GUI implementation.
+
+	* src/clistub.c (AppPathNameW): Factor out; relocate to...
+	* src/approot.c: ...this new file; it reproduces the original
+	implementation, modified to also consider any "libexec" directory in
+	the executable path as the first child of the APPROOT prefix.  Note
+	also, that no longer terminates APPROOT with a trailing backslash.
+
+	* src/approot.h: New file; it trivially declares the prototype for...
+	(AppPathNameW): ...this relocated extern "C" function.
+
+	* src/clistub.c (main): Adapt usage of AppPathNameW(), to reinstate
+	trailing backslash on assignment to APPROOT environment variable.
+
+	* Makefile.in (CLI_EXE_OBJECTS): New macro; define it as the original
+	set of prerequisites, with the addition of approot.OBJEXT, for...
+	(mingw-get.EXEEXT): ...this; use it.
+
+	* src/rites.c: Add comment regarding APPROOT usage.
+
 2012-08-02  Earnie Boyd  <earnie@users.sourceforge.net>
 
 	Find missing.m4 in build-aux/m4 directory.

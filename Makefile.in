@@ -66,6 +66,9 @@ CORE_DLL_OBJECTS  =  climain.$(OBJEXT) pkgshow.$(OBJEXT) dmh.$(OBJEXT) \
    tinyxml.$(OBJEXT) tinystr.$(OBJEXT) tinyxmlparser.$(OBJEXT) \
    mkpath.$(OBJEXT)  tinyxmlerror.$(OBJEXT)
 
+CLI_EXE_OBJECTS  =   \
+   clistub.$(OBJEXT) version.$(OBJEXT) approot.$(OBJEXT) getopt.$(OBJEXT)
+
 script_srcdir = ${srcdir}/scripts/libexec
 
 BIN_PROGRAMS = pkginfo$(EXEEXT) mingw-get$(EXEEXT)
@@ -79,7 +82,7 @@ all: $(BIN_PROGRAMS) $(LIBEXEC_PROGRAMS) $(LIBEXEC_DATA)
 pkginfo$(EXEEXT):  driver.$(OBJEXT) pkginfo.$(OBJEXT)
 	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) $+
 
-mingw-get$(EXEEXT): clistub.$(OBJEXT) version.$(OBJEXT) getopt.$(OBJEXT)
+mingw-get$(EXEEXT): $(CLI_EXE_OBJECTS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $+
 
 GUI_LDFLAGS = -mwindows $(LDFLAGS)

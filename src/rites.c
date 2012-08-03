@@ -39,6 +39,10 @@
 #include <stdlib.h>
 #include <errno.h>
 
+/* Path names for supplementary files.  Note that these are relative
+ * to the root of the mingw-get directory tree, as identified by the
+ * $APPROOT environment variable.
+ */
 #define MINGW_GET_EXE	L"bin/mingw-get.exe"
 #define MINGW_GET_LCK	L"var/lib/mingw-get/lock"
 #define MINGW_GET_DLL	L"libexec/mingw-get/mingw-get-0.dll"
