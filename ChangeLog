@@ -1,3 +1,9 @@
+2012-08-31  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add Mercurial subrepository reference for build-aux.
+
+	* .hgsub: New file.
+
 2012-08-03  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	More code refactoring, to facilitate GUI implementation.
