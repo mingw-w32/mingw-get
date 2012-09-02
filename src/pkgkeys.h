@@ -62,6 +62,7 @@ EXTERN_C_DECL const char *name_key;
 EXTERN_C_DECL const char *package_key;
 EXTERN_C_DECL const char *package_collection_key;
 EXTERN_C_DECL const char *package_list_key;
+EXTERN_C_DECL const char *paragraph_key;
 EXTERN_C_DECL const char *pathname_key;
 EXTERN_C_DECL const char *profile_key;
 EXTERN_C_DECL const char *reference_key;

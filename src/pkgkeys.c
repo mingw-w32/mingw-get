@@ -51,6 +51,7 @@ const char *name_key		    =	"name";
 const char *package_key 	    =	"package";
 const char *package_collection_key  =	"package-collection";
 const char *package_list_key	    =	"package-list";
+const char *paragraph_key	    =	"paragraph";
 const char *pathname_key	    =	"path";
 const char *profile_key 	    =	"profile";
 const char *reference_key	    =	"references";

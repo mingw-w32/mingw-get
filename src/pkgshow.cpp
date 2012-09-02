@@ -733,12 +733,6 @@ void pkgDirectoryViewer::EmitDescription( pkgXmlNode *pkg, const char *title )
    */
   int offset = 0;
 
-  /* This XML element and attribute identification key should
-   * perhaps be defined in the pkgkeys.h header; once more, for
-   * the time being we simply define it locally.
-   */
-  const char *paragraph_key = "paragraph";
-
   /* The procedure is recursive, selecting description elements
    * from inner levels of the XML document, progressing outward to
    * the document root, then printing them in outer to inner order;
