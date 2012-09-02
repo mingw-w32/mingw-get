@@ -1,3 +1,11 @@
+2012-09-02  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Remap Mercurial subrepository reference via local hg-git clone.
+
+	* .hgsub (build-aux): Point to ../build-aux; this must be a locally
+	hosted hg clone of the git origin repository, and it must pre-exist as
+	a sibling of any created hg clone of the mingw-get repository.
+
 2012-08-31  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Add Mercurial subrepository reference for build-aux.
