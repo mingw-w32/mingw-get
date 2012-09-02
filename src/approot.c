@@ -145,8 +145,9 @@ wchar_t *AppPathNameW( const wchar_t *relpath )
 	 * The final sub-directory is either "bin" or "sbin"; prune it...
 	 */
 	*tail = L'\0';
-	/*
-	 * ...but when it doesn't match either of these, just adjust the
+
+      else
+	/* ...but when it doesn't match either of these, just adjust the
 	 * "tail" pointer, so we leave the final sub-directory name as
 	 * part of the "prefix".
 	 */

@@ -1,5 +1,12 @@
 2012-09-02  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Correct defect introduced by 2012-08-03 commit.
+
+	* src/approot.c (AppPathNameW): Add omitted 'else', so that tail
+	pointer isn't moved after the APPROOT prefix is truncated.
+
+2012-09-02  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Remap Mercurial subrepository reference via local hg-git clone.
 
 	* .hgsub (build-aux): Point to ../build-aux; this must be a locally
