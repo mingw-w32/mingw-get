@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2010, MinGW Project
+ * Copyright (C) 2010, 2012, MinGW Project
  *
  *
  * Implementation of the global definitions for the string constants
