@@ -1,3 +1,11 @@
+2012-09-09  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Fix typo, and update licensing terms for embedded getopt.c
+
+	* src/getopt.c: Incorporate MIT/X style licence; update copyright
+	notice, to reflect chronology of publication; correct degenerate RCS
+	keyword usage in EOF marker comment.
+
 2012-09-03  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Correct omission from copyright notice.
