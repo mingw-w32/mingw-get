@@ -1,3 +1,12 @@
+2012-09-10  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Move guimain.cpp out of the way.
+
+	* src/guimain.cpp: Rename file as...
+	* src/guistub.cpp: ...this; we want to keep current features for now,
+	but to use the guimain.cpp name for main GUI application development.
+	* Makefile.in: Adjust references accordingly.
+
 2012-09-09  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Fix typo, and update licensing terms for embedded getopt.c

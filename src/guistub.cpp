@@ -1,5 +1,5 @@
 /*
- * guimain.cpp
+ * guistub.cpp
  *
  * $Id$
  *

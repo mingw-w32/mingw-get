@@ -97,7 +97,7 @@ GUI_LDFLAGS = -mwindows $(LDFLAGS)
 %.$(OBJEXT): %.ico
 	echo $* ICON $*.ico | $(WINDRES) -I ${srcdir}/icons -o $@
 #
-gui$(EXEEXT): guimain.$(OBJEXT) pkgicon.$(OBJEXT)
+gui$(EXEEXT): guistub.$(OBJEXT) pkgicon.$(OBJEXT)
 	$(CXX) -o $@ $(CXXFLAGS) $(GUI_LDFLAGS) $+
 
 lastrites$(EXEEXT): rites.$(OBJEXT)
