@@ -1,3 +1,9 @@
+2012-09-12  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Note relocation of m4 when packaging source distribution.
+
+	* Makefile.in (SRCDIST_SUBDIRS): Refer to build-aux/m4, not m4.
+
 2012-09-09  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Fix typo, and update licensing terms for embedded getopt.c

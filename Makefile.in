@@ -175,8 +175,8 @@ LICENCE_FILES = README COPYING
 SRCDIST_FILES = $(LICENCE_FILES) ChangeLog NEWS INSTALL \
   aclocal.m4 configure.ac configure Makefile.in version.c.in
 
-SRCDIST_SUBDIRS = build-aux icons m4 src src/pkginfo srcdist-doc \
-  scripts/libexec tinyxml xml
+SRCDIST_SUBDIRS = build-aux build-aux/m4 icons src src/pkginfo \
+  srcdist-doc scripts/libexec tinyxml xml
 
 # The names of distributed pacakge archive files incorporate version
 # information, derived from PACKAGE_VERSION; this is decomposed, so that
