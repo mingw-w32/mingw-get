@@ -1,5 +1,20 @@
 2012-09-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Implement GUI hooks in "rites of passage" internal API.
+
+	* src/pkglock.h: New file; it adds the pkgLock() and pkgRelease()
+	inline wrapper functions, through which the GUI application acquires
+	and manages an exclusive access lock for the XML catalogue.
+
+	* src/rites.c (lockfile_name): Explicitly cast memory allocated for
+	the returned name to (char *), so this may be embedded in C++ code.
+	(pkgInitRites): Factor out lock acquisition failure diagnostics...
+	(pkgLockFail): ...to this inline helper function; conditionally...
+	[ifdef GUIMAIN_H]: ...provide one implementation for GUI use...
+	[ifndef GUIMAIN_H]: ...and an alternative for CLI use.
+
+2012-09-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Be case agnostic when matching shortcut targets.
 
 	* scripts/libexec/unlink.js [ref.TargetPath == chklink]: Apply

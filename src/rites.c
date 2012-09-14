@@ -266,7 +266,7 @@ RITES_INLINE const char *lockfile_name( void )
     const char *lockpath = approot_path();
     const wchar_t *lockname = MINGW_GET_LCK;
     size_t wanted = 1 + snprintf( NULL, 0, "%s%S", lockpath, lockname );
-    if( (lockfile = malloc( wanted )) != NULL )
+    if( (lockfile = (char *)(malloc( wanted ))) != NULL )
       snprintf( lockfile, wanted, "%s%S", lockpath, lockname );
   }
   /* In any case, we return the pointer as resolved on first call.
@@ -286,6 +286,47 @@ RITES_INLINE const char *lockfile_name( void )
  */
 #define unlink_if_stale  mingw_get_unlink
 
+#ifdef GUIMAIN_H
+ /*
+  * When guimain.h has been included, we infer that we are compiling
+  * inline components for the mingw-get GUI application; we implement
+  * custom variants of some sub-components which are GUI specific.
+  */
+  RITES_INLINE void pkgLockFail( const char *progname, const char *lockfile )
+  {
+    /* Helper function to diagnose failure to acquire the package lock.
+     * This implementation is for use in the GUI application, where there
+     * may be no stderr stream attached; construct a suitable message to
+     * be displayed in a windows message box.
+     */
+    const char *fmt = "*** ERROR *** cannot acquire catalogue lock\n%s: %s";
+    char msg[1 + snprintf( NULL, 0, fmt, lockfile, strerror( errno ) )];
+    snprintf( msg, sizeof( msg ), fmt, lockfile, strerror( errno ) );
+    MessageBox( NULL, msg, progname, MB_ICONERROR );
+  }
+
+#else
+ /* When guimain.h has NOT been included, and we are compiling inline,
+  * we fall back to implementing CLI specific sub-component variants.
+  */
+  RITES_INLINE void pkgLockFail( const char *progname, const char *lockfile )
+  {
+    /* Helper function to diagnose failure to acquire the package lock.
+     * This implementation is for use in the CLI application, which should
+     * always have a stderr stream attached; emit a suitable sequence of
+     * messages by simply writing to this stream.
+     */
+    fprintf( stderr,
+	"%s: cannot acquire lock for exclusive execution\n", progname
+      );
+    fprintf( stderr, "%s: ", progname ); perror( lockfile );
+    if( errno == EEXIST )
+      fprintf( stderr, "%s: another mingw-get process appears to be running\n",
+	  progname
+	);
+  }
+#endif
+
 RITES_INLINE int pkgInitRites( const char *progname )
 {
   /* Helper to acquire an exclusive execution lock, and if sucessful,
@@ -304,14 +345,7 @@ RITES_INLINE int pkgInitRites( const char *progname )
   {
     /* We failed to acquire the lock; diagnose failure...
      */
-    fprintf( stderr, "%s: cannot acquire lock for exclusive execution\n",
-	progname
-      );
-    fprintf( stderr, "%s: ", progname ); perror( lockfile );
-    if( errno == EEXIST )
-      fprintf( stderr, "%s: another mingw-get process appears to be running\n",
-	  progname
-	);
+    pkgLockFail( progname, lockfile );
   }
 
   /* Return the lock, indicating success or failure as appropriate.
