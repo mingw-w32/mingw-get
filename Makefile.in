@@ -97,7 +97,7 @@ GUI_LDFLAGS = -mwindows $(LDFLAGS)
 %.$(OBJEXT): %.ico
 	echo $* ICON $*.ico | $(WINDRES) -I ${srcdir}/icons -o $@
 #
-gui$(EXEEXT): guistub.$(OBJEXT) pkgicon.$(OBJEXT)
+gui$(EXEEXT): guimain.$(OBJEXT) pkgicon.$(OBJEXT)
 	$(CXX) -o $@ $(CXXFLAGS) $(GUI_LDFLAGS) $+
 
 lastrites$(EXEEXT): rites.$(OBJEXT)
@@ -175,10 +175,10 @@ LICENCE_FILES = README COPYING
 SRCDIST_FILES = $(LICENCE_FILES) ChangeLog NEWS INSTALL \
   aclocal.m4 configure.ac configure Makefile.in version.c.in
 
-SRCDIST_SUBDIRS = build-aux icons m4 src src/pkginfo srcdist-doc \
-  scripts/libexec tinyxml xml
+SRCDIST_SUBDIRS = build-aux build-aux/m4 icons src src/pkginfo \
+  srcdist-doc scripts/libexec tinyxml xml
 
-# The names of distributed pacakge archive files incorporate version
+# The names of distributed package archive files incorporate version
 # information, derived from PACKAGE_VERSION; this is decomposed, so that
 # the PACKAGE_SUBSYSTEM may be interposed between the principal version
 # number and any qualifying suffix, which specifies development status.
