@@ -226,7 +226,7 @@ for( i = 0; i < argv.length; i++ )
 	 * that the link target is matched, before...
 	 */
 	var ref = WinShell.CreateShortcut( filename );
-	if( ref.TargetPath == chklink )
+	if( ref.TargetPath.toLowerCase() == chklink.toLowerCase() )
 	  /*
 	   * ...we may proceed with deletion.
 	   */
