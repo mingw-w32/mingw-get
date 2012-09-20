@@ -1,3 +1,9 @@
+2012-09-20  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Adjust incorrectly resolved 2012-09-14 merge from master.
+
+	* src/Makefile.in: Restore lost reference to guistub.cpp
+
 2012-09-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Implement GUI hooks in "rites of passage" internal API.
