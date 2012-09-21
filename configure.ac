@@ -3,7 +3,7 @@
 # $Id$
 #
 # Written by Keith Marshall <keithmarshall@users.sourceforge.net>
-# Copyright (C) 2009, 2010, 2011, 2012, MinGW Project
+# Copyright (C) 2009, 2010, 2011, 2012, MinGW.org Project
 #
 #
 # Configuration script for mingw-get
@@ -19,13 +19,25 @@
 # hope that it may prove useful, but WITHOUT WARRANTY OF ANY KIND; not
 # even an implied WARRANTY OF MERCHANTABILITY, nor of FITNESS FOR ANY
 # PARTICULAR PURPOSE.  Under no circumstances will the author, or the
-# MinGW Project, accept liability for any damages, however caused,
+# MinGW.org Project, accept liability for any damages, however caused,
 # arising from the use of this software.
 #
-  AC_INIT([mingw-get],[0.5-beta-20120426-1],[http://mingw.org/Reporting_Bugs])
+  AC_INIT([mingw-get],[0.6],[http://mingw.org/Reporting_Bugs])
 
-  AC_SUBST([COPYRIGHT_HOLDER],["MinGW Project"])
+  AC_SUBST([COPYRIGHT_HOLDER],["MinGW.org Project"])
   AC_SUBST([YEARS_OF_ISSUE],["2009, 2010, 2011, 2012"])
+
+# Identify the formal release classes for each of the CLI and the GUI
+# application sub-packages; these may be overriden at configure time,
+# by specifying a common SNAPSHOT_CLASS definition, (e.g. by running
+#
+#   SNAPSHOT_CLASS=pre ./config.status --recheck && ./config.status
+#
+# to update the configuration for the "preview" class), when we wish
+# to build snapshots for distribution between formal releases.
+#
+  AC_SUBST([CLI_RELEASE_CLASS],[${SNAPSHOT_CLASS-"beta"}])
+  AC_SUBST([GUI_RELEASE_CLASS],[${SNAPSHOT_CLASS-"alpha"}])
 
 # Override the normal UNIX-centric autoconf default prefix;
 # substitute the MinGW standard in its place.
@@ -54,11 +66,11 @@
 # We also need a Windows resource compiler,
 # and a lexical analyser generator
 #
-  AC_CHECK_TOOL([WINDRES],[windres],[windres])
+  AC_CHECK_TOOL([RC],[windres],[windres])
   AC_PROG_LEX
 
 # Ensure that (at least the headers for) prerequisite libraries,
-# zlib, libbz2 and liblzma are available
+# zlib, libbz2, liblzma, liblua, and libwtklite are available
 #
   AC_CHECK_HEADER([zlib.h],,MINGW_AC_ASSERT_MISSING([zlib-dev],
     [libz-1.2.3-1-mingw32-dev.tar.gz]))
@@ -66,6 +78,10 @@
     [bzip2-1.0.5-2-mingw32-dev.tar.gz]))
   AC_CHECK_HEADER([lzma.h],,MINGW_AC_ASSERT_MISSING([liblzma-dev],
     [liblzma-4.999.9beta_20091209-3-mingw32-dev.tar.bz2]))
+  AC_CHECK_HEADER([lua.h],,MINGW_AC_ASSERT_MISSING([lua-dev],
+    [lua-5.2.0-1-mingw32-dev.tar.xz]))
+  AC_CHECK_HEADER([wtklite.h],,MINGW_AC_ASSERT_MISSING([wtklite-dev],
+    [wtklite-0.1.0-1-mingw32-dev.tar.xz]))
 
 # Set up the archive librarian, to match our compiler settings
 #

@@ -1,3 +1,29 @@
+2012-09-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement framework for GUI sash window layout controller.
+
+	* configure.ac (AC_INIT): Bump version number to 0.6
+	(CLI_RELEASE_CLASS): New AC_SUBST variable; default to "beta".
+	(GUI_RELEASE_CLASS): New AC_SUBST variable; default to "alpha".
+	(SNAPSHOT_CLASS): Recognise as user specified environent variable
+	override for both CLI_RELEASE_CLASS and GUI_RELEASE_CLASS.
+	(RC): New AC_CHECK_TOOL substitution variable name; it replaces...
+	(WINDRES): ...this, as reference name for the resource compiler.
+	(MINGW_AC_ASSERT_MISSING): Add AC_CHECK_HEADER traps for missing
+	"lua-dev" and "wtklite-dev" support.
+
+	* Makefile.in (CLI_RELEASE_CLASS, GUI_RELEASE_CLASS): Use them.
+	(BUILD_TAG, RC_SCRIPT, RC_INCLUDES): New macros; define and use...
+	(RC): ...with this, to implement new target rule for compiling...
+	(%.rc): ...resource definition files to %.OBJEXT objects.
+	(GUIMAIN_OBJECTS, GUIMAIN_LIBS): New macros; define and use...
+	(guimain.EXEEXT): ...to implement build rule for this.
+	(LIBEXEC_PROGRAMS): Add guimain.EXEEXT
+	(lastrites.EXEEXT): Use GUI_LDFLAGS.
+	
+	* src/guimain.h src/guimain.cpp src/guidata.rc: New files.
+	* src/pkgview.cpp: New file.
+
 2012-09-20  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Adjust incorrectly resolved 2012-09-14 merge from master.

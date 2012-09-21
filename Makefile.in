@@ -6,7 +6,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 
 # Written by Keith Marshall <keithmarshall@users.sourceforge.net>
-# Copyright (C) 2009, 2010, 2011, 2012, MinGW Project
+# Copyright (C) 2009, 2010, 2011, 2012, MinGW.org Project
 #
 #
 # Makefile template for mingw-get
@@ -22,15 +22,19 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 # hope that it may prove useful, but WITHOUT WARRANTY OF ANY KIND; not
 # even an implied WARRANTY OF MERCHANTABILITY, nor of FITNESS FOR ANY
 # PARTICULAR PURPOSE.  Under no circumstances will the author, or the
-# MinGW Project, accept liability for any damages, however caused,
+# MinGW.org Project, accept liability for any damages, however caused,
 # arising from the use of this software.
 #
 PACKAGE_SUBSYSTEM = @host_os@
 
+CLI_RELEASE_CLASS = @CLI_RELEASE_CLASS@
+GUI_RELEASE_CLASS = @GUI_RELEASE_CLASS@
+
+BUILD_TAG = `>> build.tag; cat build.tag`
+DEBUGLEVEL = @DEBUGLEVEL@
+
 srcdir = @srcdir@
 abs_top_srcdir = @abs_top_srcdir@
-
-DEBUGLEVEL = @DEBUGLEVEL@
 
 vpath %.ico @srcdir@/icons
 VPATH = @top_srcdir@/src:@top_srcdir@/src/pkginfo:@top_srcdir@/tinyxml
@@ -49,12 +53,21 @@ LEX = @LEX@
 AR = @AR@
 ARFLAGS = @ARFLAGS@
 
-WINDRES = @WINDRES@
+RC = @RC@
+RC_SCRIPT = tag=$(BUILD_TAG); \
+  test "x$$tag" != x && tag="-$(GUI_RELEASE_CLASS)-$$tag"; sed \
+    -e "s!%PACKAGE_NAME%!$(PACKAGE_TARNAME)!g" \
+    -e "s!%PACKAGE_VERSION%!$(PACKAGE_VERSION)$$tag!g" \
+    -e "s!%COPYRIGHT_HOLDER%!@COPYRIGHT_HOLDER@!g" \
+    -e "s!%YEARS_OF_ISSUE%!@YEARS_OF_ISSUE@!g"
+
+RC_INCLUDES = -I ${srcdir}/src -I ${srcdir}/icons
 
 OBJEXT = @OBJEXT@
 EXEEXT = @EXEEXT@
 
 LDFLAGS = @LDFLAGS@
+GUI_LDFLAGS = -mwindows $(LDFLAGS)
 LIBS = -Wl,-Bstatic -llua -lz -lbz2 -llzma -Wl,-Bdynamic -lwininet
 
 CORE_DLL_OBJECTS  =  climain.$(OBJEXT) pkgshow.$(OBJEXT) dmh.$(OBJEXT) \
@@ -69,14 +82,21 @@ CORE_DLL_OBJECTS  =  climain.$(OBJEXT) pkgshow.$(OBJEXT) dmh.$(OBJEXT) \
 CLI_EXE_OBJECTS  =   \
    clistub.$(OBJEXT) version.$(OBJEXT) approot.$(OBJEXT) getopt.$(OBJEXT)
 
+GUIMAIN_OBJECTS  =   \
+   guimain.$(OBJEXT) guidata.$(OBJEXT) approot.$(OBJEXT) pkgview.$(OBJEXT)
+
+GUIMAIN_LIBS = -lwtklite -lcomctl32
+
 script_srcdir = ${srcdir}/scripts/libexec
 
 BIN_PROGRAMS = pkginfo$(EXEEXT) mingw-get$(EXEEXT)
-LIBEXEC_PROGRAMS = gui$(EXEEXT) lastrites$(EXEEXT)
+LIBEXEC_PROGRAMS = gui$(EXEEXT) guimain$(EXEEXT) lastrites$(EXEEXT)
 LIBEXEC_SCRIPTS = ${script_srcdir}/setup.lua ${script_srcdir}/wsh.lua \
    ${script_srcdir}/shlink.js ${script_srcdir}/unlink.js
 LIBEXEC_DATA = mingw-get-0.dll
 
+# Primary build goals...
+#
 all: $(BIN_PROGRAMS) $(LIBEXEC_PROGRAMS) $(LIBEXEC_DATA)
 
 pkginfo$(EXEEXT):  driver.$(OBJEXT) pkginfo.$(OBJEXT)
@@ -85,23 +105,14 @@ pkginfo$(EXEEXT):  driver.$(OBJEXT) pkginfo.$(OBJEXT)
 mingw-get$(EXEEXT): $(CLI_EXE_OBJECTS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $+
 
-GUI_LDFLAGS = -mwindows $(LDFLAGS)
-
-# FIXME: the following is a Q&D kludge, to assign my choice of icon
-# to the GUI mode executable stub.  Eventually, this will need to be
-# assigned within a resource definition file, but for the time being,
-# besides providing a notification that the GUI is not yet available,
-# the stub serves only to illustrate mingw-get's shortcut creation
-# capability; thus, this simple hack will suffice.
-#
-%.$(OBJEXT): %.ico
-	echo $* ICON $*.ico | $(WINDRES) -I ${srcdir}/icons -o $@
-#
 gui$(EXEEXT): guistub.$(OBJEXT) pkgicon.$(OBJEXT)
 	$(CXX) -o $@ $(CXXFLAGS) $(GUI_LDFLAGS) $+
 
+guimain$(EXEEXT): $(GUIMAIN_OBJECTS) $(LIBEXEC_DATA)
+	$(CXX) -o $@ $(CXXFLAGS) $(GUI_LDFLAGS) $+ $(GUIMAIN_LIBS)
+
 lastrites$(EXEEXT): rites.$(OBJEXT)
-	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) $+
+	$(CC) -o $@ $(CFLAGS) $(GUI_LDFLAGS) $+
 
 mingw-get-0.dll: $(CORE_DLL_OBJECTS)
 	$(CXX) -shared -o $@ $(CXXFLAGS) $(LDFLAGS) $+ $(LIBS)
@@ -118,6 +129,13 @@ sinclude *.d
 %.$(OBJEXT): %.cpp
 	$(CXX) $(DEPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $<
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
+
+%.$(OBJEXT): %.rc
+	$(CC) $(DEPFLAGS) $(RC_INCLUDES) -DRC_INVOKED -xc-header $<
+	$(RC_SCRIPT) $< | $(RC) $(RC_INCLUDES) -o $@
+
+%.$(OBJEXT): %.ico
+	echo $* ICON $*.ico | $(RC) -I ${srcdir}/icons -o $@
 
 # Installation tools and directory paths...
 #

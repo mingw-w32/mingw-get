@@ -1,0 +1,109 @@
+/*
+ * guimain.rc
+ *
+ * $Id$
+ *
+ * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
+ * Copyright (C) 2012, MinGW Project
+ *
+ *
+ * Resource definitions for the mingw-get GUI implementation.
+ *
+ *
+ * This is free software.  Permission is granted to copy, modify and
+ * redistribute this software, under the provisions of the GNU General
+ * Public License, Version 3, (or, at your option, any later version),
+ * as published by the Free Software Foundation; see the file COPYING
+ * for licensing details.
+ *
+ * Note, in particular, that this software is provided "as is", in the
+ * hope that it may prove useful, but WITHOUT WARRANTY OF ANY KIND; not
+ * even an implied WARRANTY OF MERCHANTABILITY, nor of FITNESS FOR ANY
+ * PARTICULAR PURPOSE.  Under no circumstances will the author, or the
+ * MinGW Project, accept liability for any damages, however caused,
+ * arising from the use of this software.
+ *
+ */
+#include "guimain.h"
+#include <windows.h>
+
+/* The icon representing the mingw-get application; it is a clone
+ * of the icon representing the synaptic package for Debian APT.
+ */
+ID_MAIN_WINDOW	ICON	DISCARDABLE	"pkgicon.ico"
+
+/* Specification for the layout and content of the dialogue panel
+ * which is called out by the "Help --> About mingw-get" menu pick.
+ */
+IDD_HELP_ABOUT	DIALOG	DISCARDABLE	80, 50, 250, 185
+CAPTION					"about mingw-get"
+STYLE					DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_DLGFRAME
+FONT					9, "Verdana"
+BEGIN
+  DEFPUSHBUTTON 			"OK", IDOK, 100, 155, 50, 14, WS_GROUP
+  ICON					ID_MAIN_WINDOW, ID_MAIN_WINDOW, 115, 30, 0, 0
+  CTEXT					"%PACKAGE_NAME% version %PACKAGE_VERSION%", -1, 0, 10, 250, 20
+  CTEXT					"Written by Keith Marshall", -1, 0, 60, 250, 12
+  CTEXT					"Copyright \xa9 %YEARS_OF_ISSUE%, %COPYRIGHT_HOLDER%", \
+					-1, 0, 72, 250, 12
+  CTEXT					"http://mingw.org", -1, 0, 84, 250, 12
+  CTEXT					"\
+This is free software; see the product documentation or source code, for copying and redistribution \
+conditions.  There is NO WARRANTY; not even an implied WARRANTY OF MERCHANTABILITY, nor of FITNESS FOR \
+ANY PARTICULAR PURPOSE.", -1, 10, 108, 230, 40
+END
+
+/* Miscellaneous string constants.
+ */
+STRINGTABLE		DISCARDABLE
+BEGIN
+  ID_MAIN_WINDOW_CLASS  		"mingw-get-gui"
+  ID_MAIN_WINDOW_CAPTION 		"MinGW Installation Manager"
+  ID_FONT_PREF				"Verdana"
+END
+
+/* Top menu bar...
+ */
+ID_MAIN_WINDOW	MENU	DISCARDABLE
+BEGIN
+  /* The "Repository" drop-down menu; this also includes options
+   * which are commonly found on the "File" menu of applications
+   * with conventional menu bar content.
+   */
+  POPUP 	"&Repository"
+  BEGIN
+    MENUITEM	  "&Update Catalogue",			IDM_REPO_UPDATE, GRAYED
+    MENUITEM	  SEPARATOR
+    MENUITEM	  "&Quit\tAlt+F4", 			IDM_REPO_QUIT
+  END
+
+  /* The "Package" drop-down menu; this provides for selection of
+   * the actions to be performed on a collection of packages.
+   */
+  POPUP		"&Package"
+  BEGIN
+    MENUITEM	  "U&nmark",				IDM_PACKAGE_UNMARK, GRAYED
+    MENUITEM	  "Mark for &Installation",		IDM_PACKAGE_INSTALL, GRAYED
+    MENUITEM	  "Mark for R&einstallation",		IDM_PACKAGE_REINSTALL, GRAYED
+    MENUITEM	  "Mark for &Upgrade",			IDM_PACKAGE_UPGRADE, GRAYED
+    MENUITEM	  "Mark for &Removal",			IDM_PACKAGE_REMOVE, GRAYED
+  END
+
+  /* The "Settings" drop-down menu is currently unimplemented.
+   */
+  POPUP		"&Settings"
+  BEGIN
+  END
+
+  /* The "Help" drop-down menu.
+   */
+  POPUP 	"&Help",				HELP
+  BEGIN
+    MENUITEM	"&Contents",				IDM_HELP_CONTENTS, GRAYED
+    MENUITEM	"Quick &Introduction",			IDM_HELP_INTRO, GRAYED
+    MENUITEM	"Icon &Legend",				IDM_HELP_LEGEND, GRAYED
+    MENUITEM  	"&About mingw-get",			IDM_HELP_ABOUT
+  END
+END
+
+/* $RCSfile$: end of file */
