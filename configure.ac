@@ -107,7 +107,7 @@
 
 # Establish the product version banner, and create a makefile
 #
-  AC_CONFIG_FILES([version.c Makefile])
+  AC_CONFIG_FILES([Makefile])
   MINGW_AC_OUTPUT
 #
 # $RCSfile$: end of file

@@ -55,11 +55,18 @@ ARFLAGS = @ARFLAGS@
 
 RC = @RC@
 RC_SCRIPT = tag=$(BUILD_TAG); \
-  test "x$$tag" != x && tag="-$(GUI_RELEASE_CLASS)-$$tag"; sed \
-    -e "s!%PACKAGE_NAME%!$(PACKAGE_TARNAME)!g" \
-    -e "s!%PACKAGE_VERSION%!$(PACKAGE_VERSION)$$tag!g" \
-    -e "s!%COPYRIGHT_HOLDER%!@COPYRIGHT_HOLDER@!g" \
-    -e "s!%YEARS_OF_ISSUE%!@YEARS_OF_ISSUE@!g"
+  test "x$$tag" != x && tag="-$(GUI_RELEASE_CLASS)-$$tag"; \
+    $(TAG_SCRIPT)
+
+VERSION_SCRIPT = tag=$(BUILD_TAG); \
+  test "x$$tag" != x && tag="-$(CLI_RELEASE_CLASS)-$$tag"; \
+    $(TAG_SCRIPT)
+
+TAG_SCRIPT = sed \
+  -e "s!%PACKAGE_NAME%!$(PACKAGE_TARNAME)!g" \
+  -e "s!%PACKAGE_VERSION%!$(PACKAGE_VERSION)$$tag!g" \
+  -e "s!%COPYRIGHT_HOLDER%!@COPYRIGHT_HOLDER@!g" \
+  -e "s!%YEARS_OF_ISSUE%!@YEARS_OF_ISSUE@!g"
 
 RC_INCLUDES = -I ${srcdir}/src -I ${srcdir}/icons
 
@@ -136,6 +143,28 @@ sinclude *.d
 
 %.$(OBJEXT): %.ico
 	echo $* ICON $*.ico | $(RC) -I ${srcdir}/icons -o $@
+
+# Release tagging...
+#
+time-stamp:
+%.tagged.time: time-stamp
+	> $*.time
+
+%.time:
+	> $*.time
+
+%.tag: %.tagged.time
+	>> $@; tag=`date +%Y%m%d`; \
+	  tag=`awk -F- -v today=$$tag ' \
+	    BEGIN { tag = 1 } $$1 == today { tag += $$2 } \
+	    END { print today "-" tag }' $@`; \
+	  echo $$tag > $@
+
+%.c: %.c.in
+	$(VERSION_SCRIPT) $< > $@
+
+version.c: build.time
+guidata.$(OBJEXT): build.time
 
 # Installation tools and directory paths...
 #

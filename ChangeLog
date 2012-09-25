@@ -1,3 +1,23 @@
+2012-09-25  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Defer generation of version.c until "make" time.
+
+	* version.c.in: Move it...
+	* src/version.c.in: ...to here.
+	(PACKAGE_NAME, PACKAGE_VERSION, COPYRIGHT_HOLDER, YEARS_OF_ISSUE):
+	Change substitution field marker character from "@" to "%".
+
+	* configure.ac (AC_CONFIG_FILES): Remove version.c
+
+	* Makefile.in (TAG_SCRIPT): New macro, factored out from...
+	(RC_SCRIPT): ...here, whence use it; also use it to implement...
+	(VERSION_SCRIPT): ...this further new macro; use it in...
+	(%.c): ...this generic template rule for version.c
+	(time-stamp, %.time, %.tagged.time, %.tag): New generic build
+	goals; use them to track package release progression via...
+	(build.tag): ...this new intermediate; make it a pre-requisite...
+	(guidata.OBJEXT, version.c): ...of these.
+
 2012-09-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Implement framework for GUI sash window layout controller.
