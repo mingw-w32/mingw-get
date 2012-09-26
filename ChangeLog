@@ -1,3 +1,9 @@
+2012-09-26  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add .hgignore as tracked file.
+
+	* .hgignore: New file.
+
 2012-09-25  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Defer generation of version.c until "make" time.
