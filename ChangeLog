@@ -1,3 +1,9 @@
+2012-09-26  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add .hgignore as tracked file.
+
+	* .hgignore: New file.
+
 2012-09-12  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Note relocation of m4 when packaging source distribution.
