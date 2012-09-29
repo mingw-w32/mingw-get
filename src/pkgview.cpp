@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, MinGW Project
+ * Copyright (C) 2012, MinGW.org Project
  *
  *
  * Implementation of the layout controller for the main mingw-get
@@ -26,6 +26,7 @@
  *
  */
 #include "guimain.h"
+#include "dmh.h"
 
 using WTK::GenericDialogue;
 using WTK::HorizontalSashWindowMaker;
@@ -53,6 +54,18 @@ static const double HSASH_MAX_POS = 0.40;
 static const double VSASH_MIN_POS = 0.25;
 static const double VSASH_INIT_POS = 0.30;
 static const double VSASH_MAX_POS = 0.60;
+
+HWND AppWindowMaker::Create( const char *class_name, const char *caption )
+{
+  /* A thin wrapper around the generic main window Create() function;
+   * it initialises the diagnostic message handler, and registers the
+   * requisite window class, before delegating creation of the main
+   * application window to the generic function.
+   */
+  dmh_init( DMH_SUBSYSTEM_GUI, class_name );
+  WTK::WindowClassMaker( AppInstance, ID_MAIN_WINDOW ).Register( class_name );
+  return WTK::MainWindowMaker::Create( class_name, caption );
+}
 
 long AppWindowMaker::OnCreate()
 {

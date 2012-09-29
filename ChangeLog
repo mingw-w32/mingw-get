@@ -1,3 +1,46 @@
+2012-09-29  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add initial working GUI mode DMH class implementation.
+
+	* src/dmh.h (DMH_SEVERITY_MASK): New manifest constant; define it.
+	(DMH_DIGEST_MASK, DMH_COMPILE_DIGEST, DMH_DISPATCH_DIGEST): Likewise.
+	(DMH_BEGIN_DIGEST, DMH_END_DIGEST): Redefine in terms of above.
+
+	* src/dmhcore.h: New header file; it declares...
+	(dmhTypeGeneric): ...this abstract base class, factored from...
+
+	* src/dmh.cpp (dmhTypeGeneric): ...here, whence remove it; it is
+	still required, thus include dmhcore.h so that it remains visible.
+	(dmh_exception): Remove errant namespace qualifier from constructor.
+	(dmhTypeGUI): Delete class declaration and original constructor.
+	(dmh_init): Delete reference to dmhTypeGUI; replace by call to...
+	(dmh_init_gui): ...this new static function; it is a stub which
+	invokes a DLL import of the same name, to instantiate a dmhTypeGUI.
+	(dmhTypeGUI::control, dmhTypeGUI::notify, dmhTypeGUI::printf): Delete
+	original method stubs.
+
+	* src/guidmh.cpp: New file; it reimplements...
+	(dmhTypeGUI): ...this class; declare it and implement its constructor.
+	(dmh_init_gui): Provide its DLL exported implementation.
+	(dmhTypeGUI::dispatch_message): New private method; add it to the
+	class declaration and implement it; it is a helper method for...
+	(dmhTypeGUI::control, dmhTypeGUI::notify): ...these; implement them.
+	(dmhTypeGUI::printf): Provide a replacement stub.
+
+	* Makefile.in (GUIMAIN_OBJECTS): Add guidmh.OBJEXT
+
+	* src/guimain.h (AppWindowMaker::Create): New method; add it to the
+	class declaration; it overrides the default Create() method inherited
+	from WTK::MainWindowMaker
+
+	* src/pkgview.cpp (AppWindowMaker::Create): Implement it; it handles
+	window class registration and dmhTypeGUI initialisation, in addition
+	to the inherited CreateWindow() behaviour.
+
+	* src/guimain.cpp: Include dmh.h
+	(WinMain): Add catch block for dmh_exception.  Remove window class
+	registration request; it is now delegated to AppWindowMaker::Create()
+
 2012-09-26  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Add .hgignore as tracked file.

@@ -90,6 +90,7 @@ class AppWindowMaker: public WTK::MainWindowMaker
     pkgData( NULL ), DefaultFont( (HFONT)(GetStockObject( DEFAULT_GUI_FONT )) ){}
     ~AppWindowMaker(){ /* delete ChildWindows; */ DeleteObject( DefaultFont ); }
 
+    HWND Create( const char *, const char * );
     inline long AdjustLayout(){ return OnSize( 0, 0, 0 ); }
 
 

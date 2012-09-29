@@ -4,10 +4,11 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, MinGW Project
+ * Copyright (C) 2009, 2010, 2011, 2012, MinGW.org Project
  *
  *
- * Implementation of the diagnostic message handling subsystem.
+ * Implementation of the core components of, and the CLI specific
+ * API for, the diagnostic message handling subsystem.
  *
  *
  * This is free software.  Permission is granted to copy, modify and
@@ -28,23 +29,33 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#include "dmh.h"
+#include "dmhcore.h"
 
-class dmhTypeGeneric
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+/* Implementation of the dmh_exception class.
+ */
+static const char *unspecified_error = "Unspecified error";
+
+dmh_exception::dmh_exception() throw():
+  message( unspecified_error ){}
+
+dmh_exception::dmh_exception( const char *msg ) throw():
+  message( unspecified_error )
+  {
+    if( msg && *msg )
+      message = msg;
+  }
+
+dmh_exception::~dmh_exception() throw(){}
+
+const char* dmh_exception::what() const throw()
 {
-  /* Abstract base class, from which message handlers are derived.
-   */
-  public:
-    dmhTypeGeneric( const char* );
-    virtual uint16_t control( const uint16_t, const uint16_t ) = 0;
-    virtual int notify( const dmh_severity, const char*, va_list ) = 0;
-    virtual int printf( const char*, va_list ) = 0;
+  return message;
+}
 
-  protected:
-    const char *progname;
-};
-
-class dmhTypeTTY : public dmhTypeGeneric
+class dmhTypeTTY: public dmhTypeGeneric
 {
   /* Diagnostic message handler for use in console applications.
    */
@@ -58,48 +69,28 @@ class dmhTypeTTY : public dmhTypeGeneric
     inline int emit_and_flush( int );
 };
 
-class dmhTypeGUI : public dmhTypeGeneric
-{
-  /* Diagnostic message handler for use in window applications.
-   */
-  public:
-    dmhTypeGUI( const char* );
-    virtual uint16_t control( const uint16_t, const uint16_t );
-    virtual int notify( const dmh_severity, const char*, va_list );
-    virtual int printf( const char*, va_list );
-};
-
-dmh_exception::dmh_exception() throw()
-: message( "Unspecified error" )
-{}
-
-dmh_exception::dmh_exception::dmh_exception(const char * msg) throw()
-: message( "Unspecified error" )
-{
-  if( msg && *msg )
-    message = msg;
-}
-
-dmh_exception::~dmh_exception() throw()
-{}
-
-const char* dmh_exception::what() const throw()
-{
-  return message;
-}
-
 /* Constructors serve to initialise the message handler,
  * simply creating the class instance, and storing the specified
  * program name within it.
  */
 dmhTypeGeneric::dmhTypeGeneric( const char* name ):progname( name ){}
 dmhTypeTTY::dmhTypeTTY( const char* name ):dmhTypeGeneric( name ){}
-dmhTypeGUI::dmhTypeGUI( const char* name ):dmhTypeGeneric( name ){}
 
 /* This pointer stores the address of the message handler
  * class instance, after initialisation.
  */
 static dmhTypeGeneric *dmh = NULL;
+
+#define client GetModuleHandle( NULL )
+static inline dmhTypeGeneric *dmh_init_gui( const char *progname )
+{
+  /* Stub function to support run-time binding of a client-provided
+   * implementation for the DMH_SUBSYSTEM_GUI class methods.
+   */
+  typedef dmhTypeGeneric *(*init_hook)( const char * );
+  init_hook do_init = (init_hook)(GetProcAddress( client, "dmh_init_gui" ));
+  return do_init ? do_init( progname ) : NULL;
+}
 
 EXTERN_C void dmh_init( const dmh_class subsystem, const char *progname )
 {
@@ -113,11 +104,15 @@ EXTERN_C void dmh_init( const dmh_class subsystem, const char *progname )
     /* No message handler has yet been initialised;
      * passing the specified program name, select...
      */
-    if( subsystem == DMH_SUBSYSTEM_GUI )
+    if( (subsystem == DMH_SUBSYSTEM_GUI)
       /*
        * ...a GUI class handler on demand...
        */
-      dmh = new dmhTypeGUI( progname );
+    && ((dmh = dmh_init_gui( progname )) == NULL) )
+      /*
+       * ...but bail out, if this cannot be initialised...
+       */
+      throw dmh_exception( "DMH subsystem initialisation failed" );
 
     else
       /* ...otherwise, a console class handler by default.
@@ -139,34 +134,6 @@ int abort_if_fatal( const dmh_severity code, int status )
    * return the specified status code.
    */
   return status;
-}
-
-uint16_t dmhTypeGUI::control( const uint16_t request, const uint16_t mask )
-{
-  /* Select optional features of the GUI class message handler.
-   *
-   * FIXME: this is a stub; implementation to be provided.
-   */
-  return 0;
-}
-
-int dmhTypeGUI::notify( const dmh_severity code, const char *fmt, va_list argv )
-{
-  /* Message dispatcher for GUI applications.
-   *
-   * FIXME: this is a stub; implementation to be provided.
-   */
-  return
-  fprintf( stderr, "%s: *** ERROR *** DMH_SUBSYSTEM_GUI not yet implemented\n", progname );
-}
-
-int dmhTypeGUI::printf( const char *fmt, va_list argv )
-{
-  /* Display arbitrary text messages via the diagnostic message handler.
-   *
-   * FIXME: this is a stub; implementation to be provided.
-   */
-  return notify( DMH_ERROR, fmt, argv );
 }
 
 uint16_t dmhTypeTTY::control( const uint16_t request, const uint16_t mask )

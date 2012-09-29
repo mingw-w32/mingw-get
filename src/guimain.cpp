@@ -27,6 +27,7 @@
  */
 #include "guimain.h"
 #include "pkglock.h"
+#include "dmh.h"
 
 using WTK::StringResource;
 using WTK::WindowClassMaker;
@@ -75,19 +76,10 @@ int APIENTRY WinMain
     {
       /* We've acquired the lock; we may now proceed to create an
        * instance of the mingw-get GUI application window.
-       *
-       * First, register the window class name...
-       */
-      WindowClassMaker( Instance, ID_MAIN_WINDOW ).Register(
-	  StringResource( Instance, ID_MAIN_WINDOW_CLASS )
-	);
-
-      /* ...and then proceed to create the window itself.
        */
       AppWindowMaker MainWindow( Instance );
       AppWindow = MainWindow.Create(
-	  StringResource( Instance, ID_MAIN_WINDOW_CLASS ),
-	  MainWindowCaption
+	  StringResource( Instance, ID_MAIN_WINDOW_CLASS ), MainWindowCaption
 	);
 
       /* Show the window and paint its initial contents...
@@ -102,17 +94,25 @@ int APIENTRY WinMain
       return pkgRelease( lock, MainWindowCaption, MainWindow.Invoked() );
     }
   }
+  catch( dmh_exception &e )
+  {
+    /* Here, we handle any fatal exception which has been raised
+     * and identified by the diagnostic message handler...
+     */
+    MessageBox( NULL, e.what(), "WinMain", MB_ICONERROR );
+    return EXIT_FAILURE;
+  }
   catch( runtime_error &e )
   {
-    /* Here, we diagnose any error which was captured during the
-     * creation of the application's window hierarchy, or processing
-     * of its message loop...
+    /* ...while here, we diagnose any other error which was captured
+     * during the creation of the application's window hierarchy, or
+     * processing of its message loop...
      */
     MessageBox( NULL, e.what(), "WinMain", MB_ICONERROR );
     return EXIT_FAILURE;
   }
   catch(...)
-  { /* ...while here, we diagnose any other error which we weren't
+  { /* ...and here, we diagnose any other error which we weren't
      * able to explicitly identify.
      */
     MessageBox( NULL, "Unknown exception", "WinMain", MB_ICONERROR );
