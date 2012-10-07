@@ -1,3 +1,18 @@
+2012-10-07  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add GUI initialiser hook for XML catalogue interface.
+
+	* src/guimain.h (AppWindowMaker::Invoke): New public method; declare
+	it; it overrides the generic WTK::MainWindowMaker::Invoke() method, so
+	providing the initialiser hook which will invoke this...
+	(AppWindowMaker::LoadPackageData): ...new private method; declare it.
+
+	* src/guixmld.cpp: New file.
+	(AppWindowMaker::Invoke): Implement it.
+	(AppWindowMaker::LoadPackageData): Likewise.
+
+	* Makefile.in (GUIMAIN_OBJECTS): Add guixmld.OBJEXT
+
 2012-09-29  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Add initial working GUI mode DMH class implementation.

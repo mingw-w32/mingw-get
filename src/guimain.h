@@ -91,8 +91,8 @@ class AppWindowMaker: public WTK::MainWindowMaker
     ~AppWindowMaker(){ /* delete ChildWindows; */ DeleteObject( DefaultFont ); }
 
     HWND Create( const char *, const char * );
-    inline long AdjustLayout(){ return OnSize( 0, 0, 0 ); }
-
+    inline long AdjustLayout( void ){ return OnSize( 0, 0, 0 ); }
+    int Invoked( void );
 
   private:
     virtual long OnCreate();
@@ -100,12 +100,12 @@ class AppWindowMaker: public WTK::MainWindowMaker
     virtual long OnNotify( WPARAM, LPARAM );
     virtual long OnSize( WPARAM, int, int );
 
-    static int CALLBACK LayoutController( HWND, LPARAM );
-
     int LayoutEngine( HWND, LPARAM );
+    static int CALLBACK LayoutController( HWND, LPARAM );
     WTK::SashWindowMaker *HorizontalSash, *VerticalSash;
 
     pkgXmlDocument *pkgData;
+    void LoadPackageData( bool = false );
     HFONT DefaultFont;
 };
 
