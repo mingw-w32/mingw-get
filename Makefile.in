@@ -91,7 +91,7 @@ CLI_EXE_OBJECTS  =   \
 
 GUIMAIN_OBJECTS  =   \
    guimain.$(OBJEXT) guidata.$(OBJEXT) guixmld.$(OBJEXT) guidmh.$(OBJEXT) \
-   approot.$(OBJEXT) pkgview.$(OBJEXT)
+   approot.$(OBJEXT) pkgview.$(OBJEXT) pkglist.$(OBJEXT)
 
 GUIMAIN_LIBS = -lwtklite -lcomctl32
 

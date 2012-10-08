@@ -104,6 +104,29 @@ BEGIN
     MENUITEM	"Icon &Legend",				IDM_HELP_LEGEND, GRAYED
     MENUITEM  	"&About mingw-get",			IDM_HELP_ABOUT
   END
+
 END
+
+/* The set of icons used in check-boxes representing package status;
+ * as in the case of the application icon, these are clones of their
+ * corresponding synaptic icons, with their file names representing
+ * the serial position of each within mingw-get's package list icon
+ * bundle, while their symbolic names are derived from the orignal
+ * synaptic icon names, which are representative of the associated
+ * package status.
+ */
+ID_PKGSTATE_AVAILABLE		ICON	DISCARDABLE	"state01.ico"
+ID_PKGSTATE_AVAILABLE_NEW	ICON	DISCARDABLE	"state02.ico"
+ID_PKGSTATE_AVAILABLE_LOCKED	ICON	DISCARDABLE	"state03.ico"
+ID_PKGSTATE_AVAILABLE_INSTALL	ICON	DISCARDABLE	"state04.ico"
+ID_PKGSTATE_INSTALLED_CURRENT	ICON	DISCARDABLE	"state05.ico"
+ID_PKGSTATE_INSTALLED_LOCKED	ICON	DISCARDABLE	"state06.ico"
+ID_PKGSTATE_INSTALLED_OLD	ICON	DISCARDABLE	"state07.ico"
+ID_PKGSTATE_UPGRADE		ICON	DISCARDABLE	"state08.ico"
+ID_PKGSTATE_REINSTALL		ICON	DISCARDABLE	"state09.ico"
+ID_PKGSTATE_DOWNGRADE		ICON	DISCARDABLE	"state10.ico"
+ID_PKGSTATE_BROKEN		ICON	DISCARDABLE	"state11.ico"
+ID_PKGSTATE_REMOVE		ICON	DISCARDABLE	"state12.ico"
+ID_PKGSTATE_PURGE		ICON	DISCARDABLE	"state13.ico"
 
 /* $RCSfile$: end of file */

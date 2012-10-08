@@ -203,6 +203,19 @@ int AppWindowMaker::LayoutEngine( HWND pane, LPARAM region )
     /* Each of the panes and sashes is computed individually, in the
      * following order:
      */
+    case ID_PACKAGE_LISTVIEW:
+      /* Upper right hand pane; occupies the full width of the parent
+       * window which remains to the right of the tree view, (after an
+       * allowance for a small gap to accommodate the sash bar has been
+       * deducted); its upper edge is co-incident with the top of the
+       * parent, and its height is set to the fraction of the parent's
+       * height specified as...
+       */
+      pane_height = VerticalSash->Displacement( pane_height );
+      pane_left = HorizontalSash->Displacement( pane_width ) + SASH_BAR_THICKNESS;
+      pane_width -= pane_left;
+      break;
+
     case ID_HORIZONTAL_SASH:
       /* A slim window, placed to the right of the tree view pane, and
        * occupying the full height of the parent window, representing the

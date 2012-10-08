@@ -1,3 +1,53 @@
+2012-10-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement GUI list view compiler for XML catalogue.
+
+	* src/pkgview.cpp (AppWindowMaker::LayoutEngine): Add case handler...
+	[pane_id == ID_PACKAGE_LISTVIEW]: ...for this window pane class.
+
+	* src/guimain.h (ID_PKGLIST_TABLE_HEADINGS):
+	(ID_PKGNAME_COLUMN_HEADING, ID_PKGTYPE_COLUMN_HEADING):
+	(ID_INSTVER_COLUMN_HEADING, ID_REPOVER_COLUMN_HEADING):
+	(ID_PKGDESC_COLUMN_HEADING): New resource identifiers; define them.
+	(ID_PKGSTATE_AVAILABLE, ID_PKGSTATE_AVAILABLE_NEW):
+	(ID_PKGSTATE_AVAILABLE_LOCKED, ID_PKGSTATE_AVAILABLE_INSTALL):
+	(ID_PKGSTATE_INSTALLED_CURRENT, ID_PKGSTATE_INSTALLED_LOCKED):
+	(ID_PKGSTATE_INSTALLED_OLD, ID_PKGSTATE_UPGRADE, ID_PKGSTATE_REMOVE):
+	(ID_PKGSTATE_REINSTALL, ID_PKGSTATE_DOWNGRADE, ID_PKGSTATE_BROKEN):
+	(ID_PKGSTATE_PURGE): New icon resource identifiers; define them.
+	(AppWindowMaker::InitPackageListView): New private method; declare it.
+	(AppWindowMaker::UpdatePackageList): New private method; declare it.
+	(AppWindowMaker::ClearPackageList): New private method; declare and
+	implement it inline.
+
+	* src/guidata.rc (ID_PKGSTATE_AVAILABLE, ID_PKGSTATE_AVAILABLE_NEW):
+	(ID_PKGSTATE_AVAILABLE_LOCKED, ID_PKGSTATE_AVAILABLE_INSTALL):
+	(ID_PKGSTATE_INSTALLED_CURRENT, ID_PKGSTATE_INSTALLED_LOCKED):
+	(ID_PKGSTATE_INSTALLED_OLD, ID_PKGSTATE_UPGRADE, ID_PKGSTATE_REMOVE):
+	(ID_PKGSTATE_REINSTALL, ID_PKGSTATE_DOWNGRADE, ID_PKGSTATE_BROKEN):
+	(ID_PKGSTATE_PURGE): New icon resources; implement them.
+
+	* icons/state01.ico icons/state02.ico icons/state03.ico:
+	* icons/state04.ico icons/state05.ico icons/state06.ico:
+	* icons/state07.ico icons/state08.ico icons/state09.ico:
+	* icons/state10.ico icons/state11.ico icons/state12.ico:
+	* icons/state13.ico: New files.  All are cloned from synaptic icons;
+	see src/guimain.rc for symbolic/functional reference names.
+
+	* src/pkglist.h [GUIMAIN_H defined] (pkgListViewMaker): New class;
+	declare it for use in modules which #include guimain.h
+
+	* src/pkglist.cpp: New file; it implements...
+	(pkgListViewMaker): ...this new class, and its clients...
+	(AppWindowMaker::InitPackageListView): New method.
+	(AppWindowMaker::UpdatePackageList): Likewise.
+
+	* Makefile.in (GUIMAIN_OBJECTS): Add pkglist.OBJEXT
+
+	* src/guixmld.cpp (AppWindowMaker::Invoke): Call InitCommonControls(),
+	as prerequisite to AppWindowMaker::InitPackageListView(); follow up by
+	calling AppWindowMaker::AdjustLayout().
+
 2012-10-07  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Add GUI initialiser hook for XML catalogue interface.

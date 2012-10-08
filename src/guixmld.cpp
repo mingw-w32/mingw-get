@@ -38,8 +38,26 @@ int AppWindowMaker::Invoked( void )
    * and creation of the display controls through which its content
    * will be presented to the user, prior to invocation of the main
    * window's message loop.
+   *
+   * The data displays depend on the MS-Windows Common Controls API;
+   * initialise all components of this up front.
+   */
+  InitCommonControls();
+
+  /* Load the data from the XML catalogue files, and construct the
+   * initial view of the available package list.
    */
   LoadPackageData();
+  InitPackageListView();
+
+  /* Force a layout adjustment, to ensure that the displayed
+   * data controls are correctly populated.
+   */
+  AdjustLayout();
+
+  /* Finally, we may delegate all further processing to the main
+   * window's message loop.
+   */
   return WTK::MainWindowMaker::Invoked();
 }
 

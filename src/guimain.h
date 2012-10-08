@@ -54,11 +54,35 @@
 #define IDM_PACKAGE_UPGRADE		 403
 #define IDM_PACKAGE_REMOVE		 404
 
+#define PKGSTATE(_STATE)	(ID_PKGSTATE_##_STATE - ID_PKGSTATE_AVAILABLE)
+#define ID_PKGSTATE(INDEX)	(INDEX + ID_PKGSTATE_AVAILABLE)
+
+#define ID_PKGSTATE_AVAILABLE		 501
+#define ID_PKGSTATE_AVAILABLE_NEW	 502
+#define ID_PKGSTATE_AVAILABLE_LOCKED	 503
+#define ID_PKGSTATE_AVAILABLE_INSTALL	 504
+#define ID_PKGSTATE_INSTALLED_CURRENT	 505
+#define ID_PKGSTATE_INSTALLED_LOCKED	 506
+#define ID_PKGSTATE_INSTALLED_OLD	 507
+#define ID_PKGSTATE_UPGRADE		 508
+#define ID_PKGSTATE_REINSTALL		 509
+#define ID_PKGSTATE_DOWNGRADE		 510
+#define ID_PKGSTATE_BROKEN		 511
+#define ID_PKGSTATE_REMOVE		 512
+#define ID_PKGSTATE_PURGE		 513
+
 #define IDM_HELP_CONTENTS		 600
 #define IDM_HELP_INTRO			 601
-#define IDM_HELP_LEGEND			 602
-#define IDM_HELP_ABOUT 			 603
+#define IDM_HELP_LEGEND 		 602
+#define IDM_HELP_ABOUT  		 603
 #define IDD_HELP_ABOUT			 603
+
+#define ID_PKGLIST_TABLE_HEADINGS	1024
+#define ID_PKGNAME_COLUMN_HEADING	1025
+#define ID_PKGTYPE_COLUMN_HEADING	1026
+#define ID_INSTVER_COLUMN_HEADING	1027
+#define ID_REPOVER_COLUMN_HEADING	1028
+#define ID_PKGDESC_COLUMN_HEADING	1029
 
 #ifndef RC_INVOKED
 #define WIN32_LEAN_AND_MEAN
@@ -69,6 +93,7 @@
  *
  */
 #include <wtklite.h>
+#include <commctrl.h>
 
 class pkgXmlDocument;
 
@@ -107,6 +132,11 @@ class AppWindowMaker: public WTK::MainWindowMaker
     pkgXmlDocument *pkgData;
     void LoadPackageData( bool = false );
     HFONT DefaultFont;
+
+    HWND PackageListView;
+    void InitPackageListView( void );
+    void ClearPackageList( void ){ ListView_DeleteAllItems( PackageListView ); }
+    void UpdatePackageList( void );
 };
 
 #endif /* ! RC_INVOKED */

@@ -46,6 +46,41 @@ class pkgDirectoryViewerEngine
     pkgDirectory *EnumerateComponents( pkgXmlNode * );
 };
 
+#ifdef GUIMAIN_H
+/*
+ * The following class is required only when implementing the
+ * graphical user interface; it is heavily dependent on graphical
+ * elements of the MS-Windows API.  Thus, we expose its declaration
+ * only when the including module expresses an intent to deploy
+ * such graphical elements, (as implied by prior inclusion of
+ * the guimain.h header, which this augments).
+ *
+ */
+class pkgListViewMaker: public pkgDirectoryViewerEngine
+{
+  /* A concrete specialization of the pkgDirectoryViewerEngine
+   * class, used to assemble the content of the records displayed
+   * in the list view pane of the graphical user interface.
+   */
+  public:
+    pkgListViewMaker( HWND );
+    virtual void Dispatch( pkgXmlNode * );
+
+  private:
+    HWND ListView;
+    LVITEM content;
+    char *GetTitle( pkgXmlNode *pkg )
+    {
+      return GetTitle( pkg, pkg->GetDocumentRoot() );
+    }
+    char *GetTitle( pkgXmlNode *, const pkgXmlNode * );
+    char *GetVersionString( char *, pkgSpecs * );
+    void InsertItem( pkgXmlNode *, char * );
+    char *package_name;
+};
+
+#endif /* GUIMAIN_H */
+
 class pkgDirectory
 {
   /* A locally defined class, used to manage a list of package
