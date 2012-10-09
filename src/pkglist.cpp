@@ -260,41 +260,12 @@ char *pkgListViewMaker::GetTitle( pkgXmlNode *pkg, const pkgXmlNode *xml_root )
      */
     const char *title;
     if( (title = desc->GetPropVal( title_key, NULL )) != NULL )
-    {
-      /* As soon as we find a description element with an
-       * assigned title attribute...
-       */
-#if 0
-      /* ...and noting that some package descriptions may
-       * redundantly respecify the package name as a colon
-       * delimited prefix to this title attribute...
-       *
-       * FIXME: ultimately, I'd like to remove this hack;
-       * package descriptions have no need to redundantly
-       * specify the package name as a prefix to the title,
-       * (since mingw-get can retrieve it from the package
-       * element containing the description anyway), and
-       * package maintainers should not rely on this
-       * hack to clean up the redundancy.
-       */
-      for( const char *prefix = title; *prefix != '\0'; prefix++ )
-	if( *prefix == ':' )
-	{
-	  /* ...we strip that redundant prefix away...
-	   */
-	  title = ++prefix;
-	  prefix = "";
-	}
-      /* ...then trim away any leading white space...
-       */
-      while( isspace( *title ) )
-	++title;
-#endif
-      /* ...before immediately returning the title, (with the
-       * required cast to non-const).
+      /*
+       * As soon as we find a description element with an
+       * assigned title attribute, immediately return it,
+       * (with the required cast to non-const).
        */
       return (char *)(title);
-    }
 
     /* If we haven't yet found any title attribute, check for any
      * further description elements at the current XML nesting level.
