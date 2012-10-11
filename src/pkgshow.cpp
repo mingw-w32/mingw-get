@@ -30,6 +30,7 @@
 #include <stdarg.h>
 
 #include "pkgbase.h"
+#include "pkgdata.h"
 #include "pkgkeys.h"
 #include "pkglist.h"
 
@@ -44,37 +45,10 @@
 
 EXTERN_C const char *pkgMsgUnknownPackage( void );
 
-/* Utility classes and definitions for interpreting and formatting
- * package descriptions, encoded as UTF-8.
- */
-typedef unsigned long utf32_t;
-
-#define UTF32_MAX			(utf32_t)(0x10FFFFUL)
-#define UTF32_OVERFLOW			(utf32_t)(UTF32_MAX + 1UL)
-
-#define UTF32_INVALID			(utf32_t)(0x0FFFDUL)
-
-class pkgUTF8Parser
-{
-  /* A class for parsing a UTF-8 string, decomposing it into
-   * non-whitespace substrings, separated by whitespace, which
-   * is interpreted as potential word-wrap points.
-   */
-  public:
-    pkgUTF8Parser( const char* );
-    ~pkgUTF8Parser(){ delete next; }
-
-  protected:
-    class pkgUTF8Parser *next;
-    union { char utf8; wchar_t utf16; utf32_t utf32; } codepoint;
-    const char *text;
-    int length;
-
-    const char *ScanBuffer( const char* );
-    wchar_t GetCodePoint( ... );
-};
-
-/* Constructor...
+/* pkgUTF8Parser Class Implementation
+ * ==================================
+ *
+ * Constructor...
  */
 pkgUTF8Parser::pkgUTF8Parser( const char *input ):
 text( NULL ), length( 0 ), next( NULL )
@@ -308,6 +282,9 @@ wchar_t pkgUTF8Parser::GetCodePoint( ... )
   return codepoint.utf16;
 }
 
+/* pkgNroffLayoutEngine Class Implementation (local)
+ * =================================================
+ */
 class pkgNroffLayoutEngine : public pkgUTF8Parser
 {
   /* A class for laying out a UTF-8 encoded string as a rudimentary
@@ -454,7 +431,10 @@ pkgNroffLayoutEngine::WriteLn( int style, int offset, int maxlen )
   return curr;
 }
 
-/* Constructor...
+/* pkgDirectory Class Implementation
+ * =================================
+ *
+ * Constructor...
  */
 pkgDirectory::pkgDirectory( pkgXmlNode *item ):
 entry( item ), prev( NULL ), next( NULL ){}
@@ -583,6 +563,9 @@ pkgDirectory::~pkgDirectory()
   delete next;
 }
 
+/* pkgDirectoryViewer Class Implementation
+ * =======================================
+ */
 class pkgDirectoryViewer : public pkgDirectoryViewerEngine
 {
   /* A concrete class, providing the directory traversal hooks

@@ -1,3 +1,37 @@
+2012-10-11  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement preliminary GUI mode data sheet compiler.
+
+	* src/guimain.h (DataSheetMaker): New class; forward declare it.
+	(AppWindowMaker::InitPackageTabControl): New private method; declare it.
+	(AppWindowMaker::DataSheet, AppWindowMaker::PackageTabControl):
+	(AppWindowMaker::TabDataPane, AppWindowMaker::PackageTabPane): New
+	private data members; declare them.
+	(ID_SASH_WINDOW_PANE_CLASS): New string resource identifier; define it.
+	(ID_PACKAGE_DATASHEET, ID_PACKAGE_TABPANE): New window identifiers;
+	define them.
+
+	* src/guidata.rc (ID_SASH_WINDOW_PANE_CLASS): Specify string resource.
+
+	* src/pkgview.cpp (AppWindowMaker::OnSize): Add handler for...
+	(ID_PACKAGE_TABPANE, ID_PACKAGE_TABCONTROL, ID_PACKAGE_DATASHHET):
+	...this group of sash pane child window entities.
+	(AppWindowMaker::OnNotify): Comment out disused stub implementation.
+
+	* src/pkgshow.cpp (pkgUTF8Parser): Factor out class declaration...
+	(UTF32_MAX, UTF32_OVERFLOW, UTF32_INVALID): ...these definitions...
+	(utf32_t): ...and this typedef; relocate to, and #include...
+	* src/pkgdata.h: ...this new header file.
+
+	* src/pkgdata.cpp (DataSheetMaker): New class; declare and implement it.
+	(AppWindowMaker::InitPackageTabControl): Implement it.
+	(AppWindowMaker::OnNotify): Reimplement it.
+
+	* Makefile.in (GUIMAIN_OBJECTS): Add pkgdata.OBJEXT
+
+	* src/guixmld.cpp (AppWindowMaker::Invoked): Add call to invoke
+	AppWindowMaker::InitPackageTabControl()
+
 2012-10-09  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Remove a grossly heuristic list view hack.

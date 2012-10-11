@@ -35,6 +35,7 @@
 #define ID_MAIN_WINDOW_CAPTION  	 102
 #define ID_FONT_PREF			 103
 
+#define ID_SASH_WINDOW_PANE_CLASS	 104
 #define ID_HORIZONTAL_SASH	 	 105
 #define ID_VERTICAL_SASH	 	 106
 
@@ -43,6 +44,8 @@
 #define ID_PACKAGE_TREEVIEW		 201
 #define ID_PACKAGE_LISTVIEW		 202
 #define ID_PACKAGE_TABCONTROL		 203
+#define ID_PACKAGE_DATASHEET		 204
+#define ID_PACKAGE_TABPANE		 205
 
 #define IDM_MAIN_MENU			 300
 #define IDM_REPO_UPDATE 		 301
@@ -96,6 +99,7 @@
 #include <commctrl.h>
 
 class pkgXmlDocument;
+class DataSheetMaker;
 
 class AppWindowMaker;
 inline AppWindowMaker *GetAppWindow( HWND lookup )
@@ -137,6 +141,11 @@ class AppWindowMaker: public WTK::MainWindowMaker
     void InitPackageListView( void );
     void ClearPackageList( void ){ ListView_DeleteAllItems( PackageListView ); }
     void UpdatePackageList( void );
+
+    DataSheetMaker *DataSheet;
+    WTK::ChildWindowMaker *TabDataPane;
+    HWND PackageTabControl, PackageTabPane;
+    void InitPackageTabControl();
 };
 
 #endif /* ! RC_INVOKED */

@@ -132,6 +132,12 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
   return EXIT_SUCCESS;
 }
 
+#if 0
+/* FIXME: this stub implementation has been superseded by an
+ * alternative implementation in pkgdata.cpp; eventually, this
+ * may itself be superseded, and may migrate elsewhere, perhaps
+ * even back to here.
+ */
 long AppWindowMaker::OnNotify( WPARAM client_id, LPARAM data )
 {
   /* Handler for notifications received from user controls; for now
@@ -139,6 +145,7 @@ long AppWindowMaker::OnNotify( WPARAM client_id, LPARAM data )
    */
   return EXIT_SUCCESS;
 }
+#endif
 
 long AppWindowMaker::OnSize( WPARAM mode, int width, int height )
 {
@@ -214,6 +221,44 @@ int AppWindowMaker::LayoutEngine( HWND pane, LPARAM region )
       pane_height = VerticalSash->Displacement( pane_height );
       pane_left = HorizontalSash->Displacement( pane_width ) + SASH_BAR_THICKNESS;
       pane_width -= pane_left;
+      break;
+
+    case ID_PACKAGE_TABPANE:
+    case ID_PACKAGE_TABCONTROL:
+    case ID_PACKAGE_DATASHEET:
+      /* Lower right hand pane; occupies the remaining area of the parent,
+       * to the right of the tree view pane, and below the list view, again
+       * with allowance for small gaps to the left and above, to accommodate
+       * the sash bars separating it from the adjacent panes.
+       */
+      pane_top = VerticalSash->Displacement( pane_height ) + SASH_BAR_THICKNESS;
+      pane_left = HorizontalSash->Displacement( pane_width ) + SASH_BAR_THICKNESS;
+      if( pane_id == ID_PACKAGE_TABCONTROL )
+      {
+	/* Shift the tab control window, and shrink it, so that it doesn't
+	 * occlude the border surrounding the underlying tab pane window.
+	 */
+	++pane_left; ++pane_top; --pane_width; --pane_height;
+      }
+      else if( pane_id == ID_PACKAGE_DATASHEET )
+      {
+	/* Leave the data sheet window at the full width of the tab pane,
+	 * but adjust its height and top edge position so that it appears
+	 * below to tabs; (its own border will appear in place of the tab
+	 * pane border, where they overlap.
+	 */
+	RECT frame;
+	frame.top = pane_top;
+	frame.left = pane_left;
+	frame.right = pane_left + pane_width;
+	frame.bottom = pane_top + pane_height;
+	TabCtrl_AdjustRect( PackageTabControl, FALSE, &frame );
+	pane_top = frame.top;
+      }
+      /* Adjust height and width to fill the space below and to the right
+       * of the two sash bars.
+       */
+      pane_height -= pane_top; pane_width -= pane_left;
       break;
 
     case ID_HORIZONTAL_SASH:

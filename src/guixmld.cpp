@@ -50,6 +50,11 @@ int AppWindowMaker::Invoked( void )
   LoadPackageData();
   InitPackageListView();
 
+  /* Initialise the data-sheet tab control, displaying the default
+   * "no package selected" message.
+   */
+  InitPackageTabControl();
+
   /* Force a layout adjustment, to ensure that the displayed
    * data controls are correctly populated.
    */

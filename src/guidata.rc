@@ -59,6 +59,7 @@ STRINGTABLE		DISCARDABLE
 BEGIN
   ID_MAIN_WINDOW_CLASS  		"mingw-get-gui"
   ID_MAIN_WINDOW_CAPTION 		"MinGW Installation Manager"
+  ID_SASH_WINDOW_PANE_CLASS		"mingw-get-sash-pane"
   ID_FONT_PREF				"Verdana"
 END
 
