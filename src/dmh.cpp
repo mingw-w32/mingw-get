@@ -104,16 +104,17 @@ EXTERN_C void dmh_init( const dmh_class subsystem, const char *progname )
     /* No message handler has yet been initialised;
      * passing the specified program name, select...
      */
-    if( (subsystem == DMH_SUBSYSTEM_GUI)
+    if( subsystem == DMH_SUBSYSTEM_GUI )
+    {
       /*
        * ...a GUI class handler on demand...
        */
-    && ((dmh = dmh_init_gui( progname )) == NULL) )
-      /*
-       * ...but bail out, if this cannot be initialised...
-       */
-      throw dmh_exception( "DMH subsystem initialisation failed" );
-
+      if( (dmh = dmh_init_gui( strdup( progname ))) == NULL )
+	/*
+	 * ...but bail out, if this cannot be initialised...
+	 */
+	throw dmh_exception( "DMH subsystem initialisation failed" );
+    }
     else
       /* ...otherwise, a console class handler by default.
        */

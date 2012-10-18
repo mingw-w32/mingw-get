@@ -1,3 +1,14 @@
+2012-10-18  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Fix Diagnostic Message Handler initialisation logic.
+
+	* src/dmh.cpp (dmh_init) [DMH_SUBSYSTEM_GUI]: Correct a logic error;
+	it previously fell through after any successful initialisation of the
+	DMH_SUBSYSTEM_GUI handler, replacing it with a DMH_SUBSYSTEM_TTY type
+	handler.  Also, assign a heap copy of the passed "progname" string
+	resource, which is volatile, to ensure that the handler retains a
+	valid reference.
+
 2012-10-11  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Implement preliminary GUI mode data sheet compiler.
