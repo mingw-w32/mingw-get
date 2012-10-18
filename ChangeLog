@@ -1,5 +1,12 @@
 2012-10-18  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Associate DMH message boxes with active dialogues.
+
+	* src/guidmh.cpp (last_active_popup): New static inline function.
+	(dmhTypeGUI::dispatch_message): Use it.
+
+2012-10-18  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Fix Diagnostic Message Handler initialisation logic.
 
 	* src/dmh.cpp (dmh_init) [DMH_SUBSYSTEM_GUI]: Correct a logic error;

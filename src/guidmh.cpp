@@ -127,6 +127,18 @@ int dmhTypeGUI::notify( const dmh_severity code, const char *fmt, va_list argv )
   }
 }
 
+static inline HWND last_active_popup( HWND owner )
+{
+  /* Local helper function to ensure that diagnostic MessageBox
+   * dialogues are assigned to the most recently active pop-up,
+   * if any, invoked by the primary owner application window.
+   */
+  HWND popup = GetLastActivePopup( owner );
+  if( IsWindow( popup ) )
+    return popup;
+  return owner;
+}
+
 int dmhTypeGUI::dispatch_message( int len )
 {
   /* Helper used by both the control() and notify() methods,
@@ -172,7 +184,7 @@ int dmhTypeGUI::dispatch_message( int len )
 
     /* Dispatch the message...
      */
-    MessageBox( owner, msgbuf, progname, status );
+    MessageBox( last_active_popup( owner ), msgbuf, progname, status );
 
     /* ...then release the heap memory used to format it.
      */
