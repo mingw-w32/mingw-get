@@ -87,6 +87,26 @@ EXTERN_C int pkgPutEnv( int, char* );
 class pkgSpecs;
 class pkgDirectory;
 
+#ifndef GUIMAIN_H
+class AppWindowMaker;
+#endif
+
+class pkgProgressMeter
+{
+  /* An abstract base class, from which the controller class
+   * for a progress meter dialogue window may be derived.
+   */
+  public:
+    virtual void SetValue( int ) = 0;
+    virtual void SetRange( int, int ) = 0;
+    virtual int Annotate( const char *, ... ) = 0;
+
+  protected:
+    AppWindowMaker *referrer;
+    pkgProgressMeter( AppWindowMaker *ref = NULL ): referrer( ref ){}
+    ~pkgProgressMeter();
+};
+
 class pkgXmlNode : public TiXmlElement
 {
   /* A minimal emulation of the wxXmlNode class, founded on
@@ -326,8 +346,8 @@ class pkgXmlDocument : public TiXmlDocument
   public:
     /* Constructors...
      */
-    inline pkgXmlDocument(){}
-    inline pkgXmlDocument( const char* name )
+    inline pkgXmlDocument(): progress_meter( NULL ){}
+    inline pkgXmlDocument( const char* name ): progress_meter( NULL )
     {
       /* tinyxml has a similar constructor, but unlike wxXmlDocument,
        * it DOES NOT automatically load the document; force it.
@@ -447,6 +467,28 @@ class pkgXmlDocument : public TiXmlDocument
     inline void GetScheduledSourceArchives( unsigned long category )
     {
       actions->GetScheduledSourceArchives( category );
+    }
+
+  /* Facility for monitoring of XML document processing operations.
+   */
+  private:
+    pkgProgressMeter* progress_meter;
+
+  public:
+    inline pkgProgressMeter *ProgressMeter( void )
+    {
+      return progress_meter;
+    }
+    inline pkgProgressMeter *AttachProgressMeter( pkgProgressMeter *attachment )
+    {
+      if( progress_meter == NULL )
+	progress_meter = attachment;
+      return progress_meter;
+    }
+    inline void DetachProgressMeter( pkgProgressMeter *attachment )
+    {
+      if( attachment == progress_meter )
+	progress_meter = NULL;
     }
 };
 

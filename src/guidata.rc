@@ -73,7 +73,7 @@ BEGIN
    */
   POPUP 	"&Repository"
   BEGIN
-    MENUITEM	  "&Update Catalogue",			IDM_REPO_UPDATE, GRAYED
+    MENUITEM	  "&Update Catalogue",			IDM_REPO_UPDATE
     MENUITEM	  SEPARATOR
     MENUITEM	  "&Quit\tAlt+F4", 			IDM_REPO_QUIT
   END
@@ -129,5 +129,21 @@ ID_PKGSTATE_DOWNGRADE		ICON	DISCARDABLE	"state10.ico"
 ID_PKGSTATE_BROKEN		ICON	DISCARDABLE	"state11.ico"
 ID_PKGSTATE_REMOVE		ICON	DISCARDABLE	"state12.ico"
 ID_PKGSTATE_PURGE		ICON	DISCARDABLE	"state13.ico"
+
+/* Template for progress meter dialogue box.
+ */
+IDD_REPO_UPDATE DIALOG	DISCARDABLE	10, 20, 270, 60
+CAPTION 				"Update Package Catalogue"
+STYLE					DS_MODALFRAME | DS_SETFONT | WS_POPUP | WS_CAPTION | WS_DLGFRAME
+FONT					10, "Verdana"
+BEGIN
+  GROUPBOX				"Actions", IDD_CLOSE_OPTIONS, 5, 31, 260, 25
+  DEFPUSHBUTTON 			"Close", IDOK, 219, 39, 40, 12, WS_GROUP | WS_DISABLED
+  AUTOCHECKBOX				"Close dialogue automatically, when update is complete.", \
+					IDD_AUTO_CLOSE_OPTION, 10, 41, 200, 11
+  CONTROL				"", IDD_PROGRESS_BAR, PROGRESS_CLASS, WS_CHILD \
+					| PBS_SMOOTH, 6, 20, 258, 10
+  LTEXT 				"", IDD_PROGRESS_MSG, 7, 6, 256, 12
+END
 
 /* $RCSfile$: end of file */

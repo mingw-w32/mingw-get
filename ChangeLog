@@ -1,3 +1,53 @@
+2012-10-27  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Initiate progress metering for catalogue load and update operations.
+
+	* src/guidata.rc (IDD_REPO_UPDATE): New dialogue template; define it.
+	(IDM_REPO_UPDATE): Enable selection from "Repository" drop-down menu.
+
+	* src/guimain.h (IDD_REPO_UPDATE, IDD_CLOSE_OPTIONS):
+	(IDD_AUTO_CLOSE_OPTION, IDD_PROGRESS_BAR, IDD_PROGRESS_MSG): New
+	resource identification manifest constants; define them.
+	(pkgXmlNode, pkgProgressMeter): Add forward class declarations.
+	(AppWindowMaker::AttachedProgressMeter): New private data; define...
+	(AppWindowMaker::AppWindowMaker): ...and initialise it.
+	(AppWindowMaker::AttachProgressMeter): New public method; declare it.
+	(AppWindowMaker::DetachProgressMeter): Likewise.
+	(AppWindowMaker::LoadPackageData, AppWindowMaker::ClearPackageList):
+	(AppWindowMaker::UpdatePackageList): Make them public.
+
+	* src/pkgbase.h (pkgProgressMeter): New abstract class; declare it.
+	(AppWindowMaker) [GUIMAIN_H undefined]: Add forward class declaration.
+	(pkgXmlDocument::progress_meter): New private data member; declare...
+	(pkgXmlDocument::pkgXmlDocument): ...and initialise it.
+	(pkgXmlDocument::ProgressMeter, pkgXmlDocument::AttachProgressMeter):
+	(pkgXmlDocument::DetachProgressMeter): New public inline methods;
+	implement them.
+
+	* src/pkgview.cpp (WTK::GenericDialogue): Delete disused reference.
+	(AppWindowMaker::OnCommand): Factor out implementation; relocate it...
+	* src/guixmld.cpp: ...to here; thus it may utilise dependants of...
+	(ProgressMeterMaker): ...this new locally implemented class.
+	(AppWindowMaker::AttachProgressMeter): Implement it.
+	(AppWindowMaker::AttachProgressMeter): Likewise.
+	(pkgProgressMeter::~pkgProgressMeter): Likewise.
+	(pkgUpdate, pkgInvokeUpdate): New static functions; implement them.
+	(AppWindowMaker::Invoked): Replace direct call to LoadPackageData by
+	an indirect invocation, via a progress metering dialogue box using...
+	(pkgInitDataLoad): ...this new static callback function, invoking...
+	(pkgInvokeInitDataLoad): ...this new static thread function, whence...
+	(AppWindowMaker::LoadPackageData): ...this; add hook-up call to...
+	(pkgXmlDocument::AttachProgressMeter): ...incorporate this.
+
+	* src/pkgbind.cpp (pkgRepository::total, pkgRepository::count): New
+	private static properties; declare and instantiate them; provide...
+	(pkgRepository::Reset, pkgRepository::IncrementTotal): ...new public
+	static methods to manipulate them; declare and implement them inline.
+	(pkgRepository::GetPackageList): Use them to manage updates to the
+	pkgProgressMeter class instance, if any, which has been bound to
+	the controlling pkgXmlDocument class instance, when invoking...
+	(pkgXmlXmlDocument::BindRepositories): ...this.
+
 2012-10-18  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Associate DMH message boxes with active dialogues.

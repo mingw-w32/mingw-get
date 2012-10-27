@@ -80,6 +80,12 @@
 #define IDM_HELP_ABOUT  		 603
 #define IDD_HELP_ABOUT			 603
 
+#define IDD_REPO_UPDATE 		 610
+#define IDD_CLOSE_OPTIONS		 611
+#define IDD_AUTO_CLOSE_OPTION		 612
+#define IDD_PROGRESS_BAR		 613
+#define IDD_PROGRESS_MSG		 614
+
 #define ID_PKGLIST_TABLE_HEADINGS	1024
 #define ID_PKGNAME_COLUMN_HEADING	1025
 #define ID_PKGTYPE_COLUMN_HEADING	1026
@@ -98,7 +104,9 @@
 #include <wtklite.h>
 #include <commctrl.h>
 
+class pkgXmlNode;
 class pkgXmlDocument;
+class pkgProgressMeter;
 class DataSheetMaker;
 
 class AppWindowMaker;
@@ -116,12 +124,20 @@ class AppWindowMaker: public WTK::MainWindowMaker
 {
   public:
     AppWindowMaker( HINSTANCE inst ): WTK::MainWindowMaker( inst ),
-    pkgData( NULL ), DefaultFont( (HFONT)(GetStockObject( DEFAULT_GUI_FONT )) ){}
+    pkgData( NULL ), DefaultFont( (HFONT)(GetStockObject( DEFAULT_GUI_FONT )) ),
+    AttachedProgressMeter( NULL ){}
     ~AppWindowMaker(){ /* delete ChildWindows; */ DeleteObject( DefaultFont ); }
 
     HWND Create( const char *, const char * );
     inline long AdjustLayout( void ){ return OnSize( 0, 0, 0 ); }
     int Invoked( void );
+
+    void LoadPackageData( bool = false );
+    void ClearPackageList( void ){ ListView_DeleteAllItems( PackageListView ); }
+    void UpdatePackageList( void );
+
+    inline pkgProgressMeter *AttachProgressMeter( pkgProgressMeter * );
+    inline void DetachProgressMeter( pkgProgressMeter * );
 
   private:
     virtual long OnCreate();
@@ -134,13 +150,11 @@ class AppWindowMaker: public WTK::MainWindowMaker
     WTK::SashWindowMaker *HorizontalSash, *VerticalSash;
 
     pkgXmlDocument *pkgData;
-    void LoadPackageData( bool = false );
+    pkgProgressMeter *AttachedProgressMeter;
     HFONT DefaultFont;
 
     HWND PackageListView;
     void InitPackageListView( void );
-    void ClearPackageList( void ){ ListView_DeleteAllItems( PackageListView ); }
-    void UpdatePackageList( void );
 
     DataSheetMaker *DataSheet;
     WTK::ChildWindowMaker *TabDataPane;

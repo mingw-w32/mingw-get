@@ -26,12 +26,12 @@
  *
  */
 #include "guimain.h"
+#include "pkgbase.h"
 #include "dmh.h"
 
-using WTK::GenericDialogue;
+using WTK::StringResource;
 using WTK::HorizontalSashWindowMaker;
 using WTK::VerticalSashWindowMaker;
-using WTK::StringResource;
 
 /* The main application window is divided into two
  * horizontally adjustable sash panes; the following
@@ -101,34 +101,6 @@ long AppWindowMaker::OnCreate()
 
   /* Report that we've successfully handled the window set-up.
    */
-  return EXIT_SUCCESS;
-}
-
-long AppWindowMaker::OnCommand( WPARAM cmd )
-{
-  /* Handler for WM_COMMAND messages which are directed to the
-   * top level application window.
-   */
-  switch( cmd )
-  {
-    case IDM_HELP_ABOUT:
-      /*
-       * This request is initiated by selecting "About mingw-get"
-       * from the "Help" menu; we respond by displaying the "about"
-       * dialogue box.
-       */
-      GenericDialogue( AppInstance, AppWindow, IDD_HELP_ABOUT );
-      break;
-
-    case IDM_REPO_QUIT:
-      /*
-       * This request is initiated by selecting the "Quit" option
-       * from the "Repository" menu; we respond by sending a WM_QUIT
-       * message, to terminate the current application instance.
-       */
-      SendMessage( AppWindow, WM_CLOSE, 0, 0L );
-      break;
-  }
   return EXIT_SUCCESS;
 }
 
