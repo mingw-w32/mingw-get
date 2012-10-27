@@ -67,6 +67,8 @@ EXTERN_C int dmh_printf( const char *fmt, ... );
 #define DMH_BEGIN_DIGEST	(DMH_COMPILE_DIGEST),  ~(DMH_DIGEST_MASK)
 #define DMH_END_DIGEST		(DMH_DISPATCH_DIGEST), ~(DMH_DIGEST_MASK)
 
+#define DMH_GET_CONTROL_STATE	(uint16_t)(0x0000U), (uint16_t)(0xFFFFU)
+
 #define DMH_SEVERITY_MASK	(DMH_INFO | DMH_WARNING | DMH_ERROR | DMH_FATAL)
 
 EXTERN_C uint16_t dmh_control( const uint16_t, const uint16_t );

@@ -1,5 +1,13 @@
 2012-10-27  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Avoid DMH message digest fragmentation when downloading.
+
+	* src/dmh.h (DMH_GET_CONTROL_STATE): New macro; define it.
+	* src/pkginet.cpp (pkgInternetAgent::OpenURL): Use it; do not close
+	locally opened message digest, when called with one already open.
+
+2012-10-27  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Initiate progress metering for catalogue load and update operations.
 
 	* src/guidata.rc (IDD_REPO_UPDATE): New dialogue template; define it.

@@ -477,9 +477,14 @@ HINTERNET pkgInternetAgent::OpenURL( const char *URL )
 	     ResourceHandle = NULL;
 
 	     /* Issue a diagnostic advising the user to refer the problem
-	      * to the mingw-get maintainer for possible follow-up.
+	      * to the mingw-get maintainer for possible follow-up; (note
+	      * that we want to group the following messages into a single
+	      * message "digest", but if the caller is already doing so,
+	      * then we simply incorporate these, and delegate flushing
+	      * of the completed "digest" to the caller).
 	      */
-	     dmh_control( DMH_BEGIN_DIGEST );
+	     uint16_t dmh_cached = dmh_control( DMH_GET_CONTROL_STATE );
+	     dmh_cached &= dmh_control( DMH_BEGIN_DIGEST );
 	     dmh_notify( DMH_WARNING,
 		 "%s: opened with unexpected status: code = %u\n",
 		 URL, ResourceStatus
@@ -487,7 +492,7 @@ HINTERNET pkgInternetAgent::OpenURL( const char *URL )
 	     dmh_notify( DMH_WARNING,
 		 "please report this to the mingw-get maintainer\n"
 	       );
-	     dmh_control( DMH_END_DIGEST );
+	     if( dmh_cached == 0 ) dmh_control( DMH_END_DIGEST );
 	   }
 	 }
        }
