@@ -84,6 +84,11 @@ void pkgRepository::GetPackageList( const char *dname )
     const char *dfile;
     if( (dfile = xmlfile( dname )) != NULL )
     {
+      /* We've identified a further "package-list" file; update the
+       * count of such files processed, to include this one.
+       */
+      ++count;
+
       /* Check for a locally cached copy of the "package-list" file...
        */
       const char *mode = "Loading";
@@ -99,13 +104,13 @@ void pkgRepository::GetPackageList( const char *dname )
 	   * Progress of the "update" is being metered; annotate the
 	   * metering display accordingly...
 	   */
-	  owner->ProgressMeter()->Annotate( fmt, mode, dname, ++count, total );
+	  owner->ProgressMeter()->Annotate( fmt, mode, dname, count, total );
 
 	else
 	  /* Progress is not being explicitly metered, but the user
 	   * may still appreciate a minimal progress report...
 	   */
-	  dmh_printf( fmt, mode, dname, ++count, total );
+	  dmh_printf( fmt, mode, dname, count, total );
 
 	/* During the actual fetch, collect any generated diagnostics
 	 * for the current catalogue file into a message digest, so
@@ -120,7 +125,7 @@ void pkgRepository::GetPackageList( const char *dname )
 	 * catalogue file; progress metering is in effect, so we
 	 * annotate the metering display accordingly...
 	 */
-	owner->ProgressMeter()->Annotate( fmt, mode, dname, ++count, total );
+	owner->ProgressMeter()->Annotate( fmt, mode, dname, count, total );
 
       else if( pkgOptions()->Test( OPTION_VERBOSE ) > 1 )
 	/*
@@ -129,7 +134,7 @@ void pkgRepository::GetPackageList( const char *dname )
 	 * the user has requested verbose diagnostics, so issue
 	 * a diagnostic progress report.
 	 */
-	dmh_printf( fmt, mode, dname, ++count, total );
+	dmh_printf( fmt, mode, dname, count, total );
 
       /* We SHOULD now have a locally cached copy of the package-list;
        * attempt to merge it into the active profile database...

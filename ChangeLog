@@ -1,3 +1,12 @@
+2012-10-30  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Fix error in counting of catalogue files during loading.
+
+	* src/pkgbind.cpp (pkgRepository::GetPackageList): Increment count
+	variable once only, at start of each cycle of the catalogue loading
+	loop; previous strategy of counting in discrete logic paths could
+	miss several required increments, particularly in CLI mode.
+
 2012-10-27  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Avoid DMH message digest fragmentation when downloading.
