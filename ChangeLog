@@ -1,5 +1,13 @@
 2012-11-01  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Avoid excessive inter-word spaces in adjusted text.
+
+	* src/pkgdata.cpp (pkgTroffLayoutEngine::WriteLn): Check extent of
+	padding to be added at each inter-word space, when adjusting text; do
+	not adjust, if it exceeds 5% of available display pane width.
+
+2012-11-01  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Elide unbreakable text which will not fit within display width.
 
 	* src/pkgdata.cpp (pkgTroffLayoutEngine::WriteLn): Add logic to detect

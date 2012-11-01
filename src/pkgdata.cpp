@@ -221,10 +221,22 @@ bool pkgTroffLayoutEngine::WriteLn( HDC canvas, RECT *bounds )
 	  else
 	    SetTextCharacterExtra( canvas, 0 );
 	}
-	/* Now, distribute the padding pixels among the remaining
-	 * inter-word (fold) spaces within the output line...
+	/* Now, provided the padding pixels will not increase the
+	 * inter-word (fold) spacing to more than 5% of the total
+	 * line length at each potential fold point...
 	 */
-	SetTextJustification( canvas, padding, fold );
+	if( ((padding * 100) / (max_width * fold)) < 5 )
+	  /* 
+	   * ...distribute the padding pixels among the remaining
+	   * inter-word spaces within the output line...
+	   */
+	  SetTextJustification( canvas, padding, fold );
+
+	else
+	  /* ...otherwise, we decline to adjust the output line,
+	   * and we prefer to also preserve natural tracking.
+	   */
+	  SetTextCharacterExtra( canvas, 0 );
       }
       else
       { /* If we get to here, then the first item in the output
