@@ -1,5 +1,13 @@
 2012-11-01  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Elide unbreakable text which will not fit within display width.
+
+	* src/pkgdata.cpp (pkgTroffLayoutEngine::WriteLn): Add logic to detect
+	over-width unbreakable text; elide characters from the right, to make
+	it fit within the display width, with trailing ellipsis.
+
+2012-11-01  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Add content compiler for package data sheet "general" tab.
 
 	* src/pkgbase.h (pkgActionItem::PrintURI): Make it public.  Add a

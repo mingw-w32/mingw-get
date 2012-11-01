@@ -226,6 +226,51 @@ bool pkgTroffLayoutEngine::WriteLn( HDC canvas, RECT *bounds )
 	 */
 	SetTextJustification( canvas, padding, fold );
       }
+      else
+      { /* If we get to here, then the first item in the output
+	 * queue requires more space than the available width of
+	 * the display pane, and has no natural fold points; we
+	 * MUST handle this, to avoid an infinite loop!
+	 *
+	 * FIXME: The method adopted here simply elides the
+	 * portion of the input text, which will not fit into
+	 * the available display width, at the right hand end of
+	 * the line; we may wish to consider adding horizontal
+	 * scrolling, so that such elided text may be viewed.
+	 *
+	 * We begin by loading the content of the first queued
+	 * entity into the line transfer buffer.
+	 */
+	extent = 0;
+	const char *mark = curr->text;
+	for( int i = 0; i < curr->length; ++i )
+	  linebuf[extent++] = GetCodePoint( mark = ScanBuffer( mark ) );
+
+	/* Reduce the maximum allowable output width sufficiently
+	 * to accommodate an ellipsis at the right hand end of the
+	 * output line...
+	 */
+	int fit = GetTextExtentPoint32W( canvas, L"...", 3, &span )
+	  ? max_width - span.cx : max_width;
+
+	/* ...then compute the maximum number of characters from
+	 * the queued item, which will fit in the remaining space...
+	 */
+	if( GetTextExtentExPointW
+	    ( canvas, linebuf, extent, fit, &filled, NULL, &span )
+	  )
+	  /* ...and then append the ellipsis, in place of any
+	   * characters which will not fit, leaving the resultant
+	   * line, with elided tail, ready for display.
+	   */
+	  for( int i = 0; i < 3; ++i )
+	    linebuf[filled++] = L'.';
+	
+	/* Finally, pop the entity we just processed from the
+	 * output queue, before falling through...
+	 */
+	curr = (pkgTroffLayoutEngine *)(curr->next);
+      }
       /* ...and write the output line at the designated position
        * within the display viewport.
        */
