@@ -35,6 +35,7 @@
 #include "pkgdata.h"
 #include "pkgkeys.h"
 #include "pkglist.h"
+#include "pkgtask.h"
 
 using WTK::StringResource;
 using WTK::WindowClassMaker;
@@ -263,15 +264,27 @@ class DataSheetMaker: public ChildWindowMaker
     virtual long OnPaint();
 
     HWND PackageRef, DataClass;
+    static DataSheetMaker *Display;
     HDC canvas; RECT bounding_box; 
     HFONT NormalFont, BoldFont;
 
+    static int Advance;
     long offset; char *desc;
+    void DisplayGeneralData( pkgXmlNode * );
+    static int DisplaySourceURL( const char * );
+    static int DisplayLicenceURL( const char * );
+    static int DisplayPackageURL( const char * );
     inline void DisplayDescription( pkgXmlNode * );
     void ComposeDescription( pkgXmlNode *, pkgXmlNode * );
-    inline void FormatText( HDC, const char * );
+    int FormatRecord( int, const char *, const char * );
+    inline void FormatText( const char * );
     long LineSpacing;
 };
+
+/* Don't forget to instantiate the static member variables...
+ */
+int DataSheetMaker::Advance;
+DataSheetMaker *DataSheetMaker::Display;
 
 enum
 { /* Tab identifiers for the available data sheet collection.
@@ -340,7 +353,7 @@ void DataSheetMaker::DisplayData( HWND tab, HWND package )
   UpdateWindow( AppWindow );
 }
 
-inline void DataSheetMaker::FormatText( HDC canvas, const char *text )
+inline void DataSheetMaker::FormatText( const char *text )
 {
   /* Helper method to transfer text to the display device, formatting
    * it to fill as many lines of the viewing window as may be required,
@@ -349,6 +362,110 @@ inline void DataSheetMaker::FormatText( HDC canvas, const char *text )
   pkgTroffLayoutEngine page( text, offset );
   while( page.WriteLn( canvas, &bounding_box ) )
     ;
+}
+
+int DataSheetMaker::FormatRecord( int offset, const char *tag, const char *text )
+{
+  /* Helper method to transfer text to the display device, prefacing
+   * it with a specified record key, before formatting as above.
+   */
+  const char *fmt = "%s: %s";
+  int span = snprintf( NULL, 0, fmt, tag, text );
+  char record[ 1 + span ]; snprintf( record, sizeof( record ), fmt, tag, text );
+  if( offset == 0 )
+    bounding_box.top += PARAGRAPH_MARGIN;
+  FormatText( record );
+  return offset + span;
+}
+
+void DataSheetMaker::DisplayGeneralData( pkgXmlNode *ref )
+{
+  /* Method to compile the package data, which is to be displayed
+   * on the general information tab; we begin by displaying the
+   * identification records for the selected package, and the
+   * subsystem to which it belongs.
+   */
+  FormatRecord( 0, "SubSystem",
+      ref->GetContainerAttribute( subsystem_key, value_unknown )
+    );
+  FormatRecord( 1, "Package Name",
+      ref->GetContainerAttribute( name_key, value_unknown )
+    );
+  if( ref->IsElementOfType( component_key ) )
+    FormatRecord( 1, "Component Class",
+	ref->GetPropVal( class_key, value_unknown )
+      );
+
+  /* Using a temporary action item, collect information on the
+   * available and installed (if any) versions of the selected
+   * package.
+   */
+  pkgActionItem avail;
+  ref = ref->FindFirstAssociate( release_key );
+  while( ref != NULL )
+  {
+    /* ...to scan all associated release keys, and select the
+     * most recent recorded in the database as available...
+     */
+    avail.SelectIfMostRecentFit( ref );
+    if( ref->GetInstallationRecord( ref->GetPropVal( tarname_key, NULL )) != NULL )
+      /*
+       * ...also noting if any is marked as installed...
+       */
+      avail.SelectPackage( ref, to_remove );
+
+    /* ...until all release keys have been inspected...
+     */
+    ref = ref->FindNextAssociate( release_key );
+  }
+  /* ...and performing a final check on installation status.
+   */
+  avail.ConfirmInstallationStatus();
+
+  /* Now print the applicable version information, noting that
+   * "none" may be appropriate for the installed version.
+   */
+  FormatRecord( 0, "Installed Version",
+      ((ref = avail.Selection( to_remove )) != NULL)
+	? ref->GetPropVal( tarname_key, value_unknown ) : value_none
+    );
+  FormatRecord( 1, "Repository Version",
+      (ref = avail.Selection())->GetPropVal( tarname_key, value_unknown )
+    );
+
+  /* Finally, report the download URLs for the selected package,
+   * and its associated source and licence archives; (note that we
+   * must save static callback references, so that the PrintURI()
+   * method can access this data sheet context).
+   */
+  Display = this; Advance = 0;
+  avail.PrintURI( ref->ArchiveName(), DisplayPackageURL );
+  avail.PrintURI( ref->SourceArchiveName( ACTION_LICENCE ), DisplayLicenceURL );
+  avail.PrintURI( ref->SourceArchiveName( ACTION_SOURCE ), DisplaySourceURL );
+}
+
+int DataSheetMaker::DisplayPackageURL( const char *uri )
+{
+  /* Static helper method, which may be passed to pkgActionItem::PrintURI(),
+   * to display the package download URL on the active data sheet panel.
+   */
+  return Advance = Display->FormatRecord( Advance, "Package URL", uri );
+}
+
+int DataSheetMaker::DisplaySourceURL( const char *uri )
+{
+  /* Static helper method, which may be passed to pkgActionItem::PrintURI(),
+   * to display the source download URL on the active data sheet panel.
+   */
+  return Advance = Display->FormatRecord( Advance, "Source URL", uri );
+}
+
+int DataSheetMaker::DisplayLicenceURL( const char *uri )
+{
+  /* Static helper method, which may be passed to pkgActionItem::PrintURI(),
+   * to display the licence download URL on the active data sheet panel.
+   */
+  return Advance = Display->FormatRecord( Advance, "Licence URL", uri );
 }
 
 inline void DataSheetMaker::DisplayDescription( pkgXmlNode *ref )
@@ -394,7 +511,7 @@ void DataSheetMaker::ComposeDescription( pkgXmlNode *ref, pkgXmlNode *root )
 		  /* ...before laying out the visible text of
 		   * this paragraph, (if any).
 		   */
-		  FormatText( canvas, ref->GetText() );
+		  FormatText( ref->GetText() );
 
 		  /* Cycle, to process any further paragraphs
 		   * which are included within the current
@@ -409,6 +526,17 @@ void DataSheetMaker::ComposeDescription( pkgXmlNode *ref, pkgXmlNode *root )
 	 } while( (root = root->FindNextAssociate( description_key )) != NULL );
     }
   }
+}
+
+static pkgXmlNode *pkgListSelection( HWND package_ref, LVITEM *lookup )
+{
+  /* Helper function, to retrieve the active selection from the
+   * package list, as displayed in the upper right data pane.
+   */
+  lookup->iSubItem = 0;
+  lookup->mask = LVIF_PARAM;
+  ListView_GetItem( package_ref, lookup );
+  return (pkgXmlNode *)(lookup->lParam);
 }
 
 long DataSheetMaker::OnPaint()
@@ -467,7 +595,7 @@ long DataSheetMaker::OnPaint()
     char desc[256];
     SelectObject( canvas, BoldFont );
     ListView_GetItemText( PackageRef, lookup.iItem, 5, desc, sizeof( desc ) );
-    FormatText( canvas, desc );
+    FormatText( desc );
     if( offset > 0 )
     {
       /* ...adjusting as appropriate, when the heading is scrolled
@@ -484,14 +612,19 @@ long DataSheetMaker::OnPaint()
     SelectObject( canvas, NormalFont );
     switch( tab )
     {
+      case PKG_DATASHEET_GENERAL:
+	/* This comprises package and subsystem identification,
+	 * followed by latest version availability, installation
+	 * status, and package download URLs.
+	 */
+	DisplayGeneralData( pkgListSelection( PackageRef, &lookup ) );
+	break;
+
       case PKG_DATASHEET_DESCRIPTION:
 	/* This represents the package description, provided by
 	 * the package maintainer, within the XML specification.
 	 */
-	lookup.iSubItem = 0;
-	lookup.mask = LVIF_PARAM;
-	ListView_GetItem( PackageRef, &lookup );
-	DisplayDescription( (pkgXmlNode *)(lookup.lParam) );
+	DisplayDescription( pkgListSelection( PackageRef, &lookup ) );
 	break;
 
       default:
@@ -499,7 +632,7 @@ long DataSheetMaker::OnPaint()
 	 * to provide a compiling routine.
 	 */
 	bounding_box.top += TOP_MARGIN;
-	FormatText( canvas,
+	FormatText(
 	    "FIXME:data sheet unavailable; a compiler for this "
 	    "data category has yet to be implemented."
 	  );
@@ -509,11 +642,11 @@ long DataSheetMaker::OnPaint()
   { /* There is no active package selection; advise accordingly.
      */
     bounding_box.top += TOP_MARGIN << 1;
-    FormatText( canvas,
+    FormatText(
 	"No package selected."
       );
     bounding_box.top += PARAGRAPH_MARGIN << 1;
-    FormatText( canvas,
+    FormatText(
 	"Please select a package from the list above, "
 	"to view related data."
       );

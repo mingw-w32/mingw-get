@@ -1,3 +1,31 @@
+2012-11-01  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add content compiler for package data sheet "general" tab.
+
+	* src/pkgbase.h (pkgActionItem::PrintURI): Make it public.  Add a
+	call-back reference argument, for output function; assign puts() as
+	default, where previously had hard coded printf() emulating puts()
+
+	* src/pkginet.cpp (pkgActionItem::PrintURI): Use call-back hook.
+
+	* src/pkgdata.cpp (DataSheetMaker::Display): New static property; it
+	stores a reference to the active class instance, so static call-back
+	methods may delegate processing requests to non-static methods.
+	(DataSheetMaker::Advance): New static property; it is used to instruct
+	call-back methods to interpose paragraph leading it the output stream.
+	(DataSheetMaker::FormatRecord): New private method; implement it.
+	(DataSheetMaker::FormatText): Don't pass "canvas" as an argument; we
+	can access it directly as a class property.  Update all callers as
+	necessary, to conform to modified function prototype.
+	(pkgListSelection): New static function; implement it, and...
+	(DataSheetMaker::OnPaint): ...use it in switch cases, when calling...
+	[PKG_DATASHEET_GENERAL]: DataSheetMaker::DisplayGeneralData(), and...
+	[PKG_DATASHEET_DESCRIPTION]: DataSheetMaker::DisplayDescription().
+	(DataSheetMaker::DisplayGeneralData): New public method; implement it.
+	(DataSheetMaker::DisplayPackageURL): New static method; implement it.
+	(DataSheetMaker::DisplayLicenceURL): Likewise.
+	(DataSheetMaker::DisplaySourceURL): Likewise.
+
 2012-10-30  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Fix error in counting of catalogue files during loading.

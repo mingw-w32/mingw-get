@@ -274,10 +274,6 @@ class pkgActionItem
      */
     pkgXmlNode* selection[ selection_types ];
 
-    /* Method to display the URI whence a package may be downloaded.
-     */
-    void PrintURI( const char* );
-
     /* Methods for retrieving packages from a distribution server.
      */
     void DownloadArchiveFiles( pkgActionItem* );
@@ -323,6 +319,10 @@ class pkgActionItem
       return selection[ mode ];
     }
     void ConfirmInstallationStatus();
+
+    /* Method to display the URI whence a package may be downloaded.
+     */
+    void PrintURI( const char*, int (*)( const char* ) = puts );
 
     /* Methods to download and unpack one or more source archives.
      */

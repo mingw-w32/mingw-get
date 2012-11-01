@@ -640,9 +640,10 @@ int pkgInternetStreamingAgent::Get( const char *from_url )
   return dl_status;
 }
 
-void pkgActionItem::PrintURI( const char *package_name )
+void pkgActionItem::PrintURI
+( const char *package_name, int (*output)( const char * ) )
 {
-  /* Private method to display the URI from which a package archive
+  /* Public method to display the URI from which a package archive
    * may be downloaded; called with "package_name" assigned by either
    * ArchiveName() or SourceArchiveName() as appropriate, and...
    */
@@ -666,7 +667,7 @@ void pkgActionItem::PrintURI( const char *package_name )
       /* ...then, rather than actually initiate the download,
        * we simply write out the generated URI to stdout.
        */
-      printf( "%s\n", package_url );
+      output( package_url );
     }
   }
 }
