@@ -160,6 +160,8 @@ class AppWindowMaker: public WTK::MainWindowMaker
     WTK::ChildWindowMaker *TabDataPane;
     HWND PackageTabControl, PackageTabPane;
     void InitPackageTabControl();
+
+    void UpdatePackageMenuBindings( void );
 };
 
 #endif /* ! RC_INVOKED */

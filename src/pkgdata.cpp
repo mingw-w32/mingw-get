@@ -904,6 +904,83 @@ void AppWindowMaker::InitPackageTabControl()
   }
 }
 
+void AppWindowMaker::UpdatePackageMenuBindings()
+# define PKGSTATE_FLAG( ID )  (1 << PKGSTATE( ID ))
+{
+  /* Helper method to enable or disable the set of options
+   * which may be chosen from the package menu; (this varies
+   * according to the installation status of the package, if
+   * any, which has been selected in the package list view).
+   */
+  HMENU menu;
+  if( (menu = GetMenu( AppWindow )) != NULL )
+  {
+    /* We got a valid handle for the menubar; identify the
+     * list view selection, which controls the available set
+     * of menu options...
+     */
+    LVITEM lookup;
+    lookup.iItem = (PackageListView != NULL)
+      ? ListView_GetNextItem( PackageListView, (WPARAM)(-1), LVIS_SELECTED )
+      : -1;
+
+    /* ...and identify its state of the associated package,
+     * as indicated by the assigned icon.
+     */
+    lookup.iSubItem = 0;
+    lookup.mask = LVIF_IMAGE;
+    ListView_GetItem( PackageListView, &lookup );
+
+    /* Convert the indicated state to a selector bit-flag.
+     */
+    int state = ((lookup.iItem >= 0) && (lookup.iImage <= PKGSTATE( PURGE )))
+      ? 1 << lookup.iImage : 0;
+
+    /* Walk over all state-conditional menu items...
+     */
+    for( int item = IDM_PACKAGE_UNMARK; item <= IDM_PACKAGE_REMOVE; item++ )
+    {
+      /* ...evaluating an independent state flag for each...
+       */
+      int state_flag = state;
+      switch( item )
+      {
+	/* ...testing against item specific flag groups, to
+	 * determine which menu items should be enabled for
+	 * the currently selected list view item...
+	 */
+	case IDM_PACKAGE_INSTALL:
+	  state_flag &= PKGSTATE_FLAG( AVAILABLE )
+	    | PKGSTATE_FLAG( AVAILABLE_NEW );
+	  break;
+
+	case IDM_PACKAGE_REMOVE:
+	case IDM_PACKAGE_REINSTALL:
+	  state_flag &= PKGSTATE_FLAG( INSTALLED_CURRENT )
+	    | PKGSTATE_FLAG( INSTALLED_OLD );
+	  break;
+
+	case IDM_PACKAGE_UPGRADE:
+	  state_flag &= PKGSTATE_FLAG( INSTALLED_OLD );
+	  break;
+
+	case IDM_PACKAGE_UNMARK:
+	  state_flag &= PKGSTATE_FLAG( AVAILABLE_INSTALL )
+	    | PKGSTATE_FLAG( UPGRADE ) | PKGSTATE_FLAG( DOWNGRADE )
+	    | PKGSTATE_FLAG( REMOVE ) | PKGSTATE_FLAG( PURGE )
+	    | PKGSTATE_FLAG( REINSTALL );
+	  break;
+
+	default:
+	  state_flag = 0;
+      }
+      /* ...and set the menu item enabled state accordingly.
+       */
+      EnableMenuItem( menu, item, (state_flag == 0) ? MF_GRAYED : MF_ENABLED );
+    }
+  }
+}
+
 long AppWindowMaker::OnNotify( WPARAM client_id, LPARAM data )
 {
   /* Handler for notifiable events to be processed in the context
@@ -921,11 +998,21 @@ long AppWindowMaker::OnNotify( WPARAM client_id, LPARAM data )
     case ID_PACKAGE_LISTVIEW:
     case ID_PACKAGE_TABCONTROL:
       if( ((NMHDR *)(data))->code == NM_CLICK )
-	/*
-	 * ...each of which may require the data sheet content
+      {
+	/* ...each of which may require the data sheet content
 	 * to be updated, (to reflect a changed selection).
 	 */
 	DataSheet->DisplayData( PackageTabControl, PackageListView );
+
+	if( client_id == ID_PACKAGE_LISTVIEW )
+	{
+	  /* A change of package selection, within the list view,
+	   * may also require an update of the available choices in
+	   * the "Package" drop-down menu.
+	   */
+	  UpdatePackageMenuBindings();
+	}
+      }
       break;
   }
   /* Otherwise, this return causes any other notifiable events

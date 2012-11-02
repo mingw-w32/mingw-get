@@ -1,3 +1,14 @@
+2012-11-02  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add dynamically enabled state control for package menu items.
+
+	* src/guimain.h (AppWindowMaker::UpdatePackageMenuBindings): New
+	private method; declare it.
+
+	* src/pkgdata.cpp (AppWindowMaker::UpdatePackageMenuBindings):
+	Implement it, and...
+	(AppWindowMaker::OnNotify): ...use it.
+
 2012-11-01  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Avoid excessive inter-word spaces in adjusted text.
