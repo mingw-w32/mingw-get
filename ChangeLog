@@ -1,3 +1,45 @@
+2012-11-16  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add GUI support for install, upgrade, and remove action scheduling.
+
+	* src/guimain.h (EXTERN_C): Ensure it is defined.
+	(pkgActionItem): Add forward declaration of class name.
+	(pkgMarkSchedule): New EXTERN_C function; declare and prototype it.
+	(AppWindowMaker::OnClose): New virtual method; declare it.
+	(AppWindowMaker::Schedule): New public method; declare it.
+	(AppWindowMaker::UnmarkSelectedPackage): Likewise.
+
+	* src/pkgbase.h (pkgActionItem::HasAttribute) [this == NULL]: Add
+	protective logic; ignore attempts to access non-existent objects.
+	(pkgActionItem::SelectPackage) [this == NULL]: Likewise.
+	(pkgActionItem::Selection) [this == NULL]: Likewise.
+	(pkgActionItem::GetReference): New overloaded public method; declare
+	prototype variant with argument type of pkgXmlNode*.
+	(pkgActionItem::Unapplied): New public method; declare it.
+	(pkgActionItem::CancelScheduledAction): Likewise.
+	(pkgXmlDocument::Schedule): Change return type from void to
+	pkgActionItem*; add default argument values.
+
+	* src/guixmld.cpp (AppWindowMaker::OnCommand): Add menu case hooks...
+	[IDM_PACKAGE_INSTALL]: ...to schedule package 'install' action...
+	[IDM_PACKAGE_UPGRADE]: ...package 'upgrade' action...
+	[IDM_PACKAGE_REMOVE]: ...package 'remove' action, or...
+	[IDM_PACKAGE_UNMARK]: ...to cancel any of these scheduling requests.
+	[IDM_REPO_QUIT]: Correct typo; s/WM_QUIT/WM_CLOSE/ in comment.
+
+	* src/pkgdata.cpp (pkgMarkSchedule): Implement it.
+	(pkgActionItem::CancelScheduledAction): Implement it.
+	(pkgActionItem::Unapplied): Implement it.
+	(AppWindowMaker::UpdatePackageMenuBindings): Improve comments.
+	(AppWindowMaker::UnmarkSelectedPackage): Implement it.
+	(AppWindowMaker::Schedule): Implement it.
+	(AppWindowMaker::OnClose): Implement it.
+
+	* src/pkgdeps.cpp (pkgActionItem::GetReference): Implement overload.
+	(pkgXmlDocument::Schedule): Change return type, and return value.
+	[this == NULL]: Add protective logic; ignore non-existent objects.
+	[name == NULL]: Do not schedule; just return existing action list.
+
 2012-11-02  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Add dynamically enabled state control for package menu items.

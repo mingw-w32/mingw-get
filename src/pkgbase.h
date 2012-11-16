@@ -294,11 +294,17 @@ class pkgActionItem
     unsigned long SetAuthorities( pkgActionItem* );
     inline unsigned long HasAttribute( unsigned long required )
     {
-      return flags & required;
+      return (this != NULL) ? flags & required : 0UL;
     }
+    pkgActionItem* GetReference( pkgXmlNode* );
     pkgActionItem* GetReference( pkgActionItem& );
     pkgActionItem* Schedule( unsigned long, pkgActionItem& );
+    inline unsigned long CancelScheduledAction( void );
     inline void SetPrimary( pkgActionItem* );
+
+    /* Method to check for residual unapplied changes.
+     */
+    inline unsigned long Unapplied( void );
 
     /* Methods for defining the selection criteria for
      * packages to be processed.
@@ -310,13 +316,13 @@ class pkgActionItem
     {
       /* Mark a package as the selection for a specified action.
        */
-      selection[ opt ] = pkg;
+      if (this != NULL) selection[ opt ] = pkg;
     }
     inline pkgXmlNode* Selection( int mode = to_install )
     {
       /* Retrieve the package selection for a specified action.
        */
-      return selection[ mode ];
+      return (this != NULL) ? selection[ mode ] : NULL;
     }
     void ConfirmInstallationStatus();
 
@@ -452,7 +458,7 @@ class pkgXmlDocument : public TiXmlDocument
 
     /* Methods for compiling a schedule of actions.
      */
-    void Schedule( unsigned long, const char* );
+    pkgActionItem* Schedule( unsigned long = 0UL, const char* = NULL );
     pkgActionItem* Schedule( unsigned long, pkgActionItem&, pkgActionItem* = NULL );
     void RescheduleInstalledPackages( unsigned long );
 

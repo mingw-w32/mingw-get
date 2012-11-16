@@ -108,6 +108,17 @@ class pkgXmlNode;
 class pkgXmlDocument;
 class pkgProgressMeter;
 class DataSheetMaker;
+class pkgActionItem;
+
+#ifndef EXTERN_C
+# ifdef __cplusplus
+#  define EXTERN_C  extern "C"
+# else
+#  define EXTERN_C
+# endif
+#endif
+
+EXTERN_C void pkgMarkSchedule( HWND, pkgActionItem * );
 
 class AppWindowMaker;
 inline AppWindowMaker *GetAppWindow( HWND lookup )
@@ -144,6 +155,7 @@ class AppWindowMaker: public WTK::MainWindowMaker
     virtual long OnCommand( WPARAM );
     virtual long OnNotify( WPARAM, LPARAM );
     virtual long OnSize( WPARAM, int, int );
+    virtual long OnClose();
 
     int LayoutEngine( HWND, LPARAM );
     static int CALLBACK LayoutController( HWND, LPARAM );
@@ -155,13 +167,14 @@ class AppWindowMaker: public WTK::MainWindowMaker
 
     HWND PackageListView;
     void InitPackageListView( void );
+    void UpdatePackageMenuBindings( void );
+    void Schedule( unsigned long, const char * = NULL, const char * = NULL );
+    void UnmarkSelectedPackage( void );
 
     DataSheetMaker *DataSheet;
     WTK::ChildWindowMaker *TabDataPane;
     HWND PackageTabControl, PackageTabPane;
     void InitPackageTabControl();
-
-    void UpdatePackageMenuBindings( void );
 };
 
 #endif /* ! RC_INVOKED */

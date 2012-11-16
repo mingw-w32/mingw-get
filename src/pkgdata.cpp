@@ -34,6 +34,7 @@
 #include "pkgbase.h"
 #include "pkgdata.h"
 #include "pkgkeys.h"
+#include "pkginfo.h"
 #include "pkglist.h"
 #include "pkgtask.h"
 
@@ -940,7 +941,9 @@ void AppWindowMaker::UpdatePackageMenuBindings()
      */
     for( int item = IDM_PACKAGE_UNMARK; item <= IDM_PACKAGE_REMOVE; item++ )
     {
-      /* ...evaluating an independent state flag for each...
+      /* ...evaluating an independent state flag for each,
+       * setting it as non-zero for menu items which may be
+       * made "selectable", or zero otherwise...
        */
       int state_flag = state;
       switch( item )
@@ -950,21 +953,41 @@ void AppWindowMaker::UpdatePackageMenuBindings()
 	 * the currently selected list view item...
 	 */
 	case IDM_PACKAGE_INSTALL:
+	  /*
+	   * "Mark for Installation" is available for packages
+	   * which exist in the repository, (long-term or new),
+	   * but which are not yet identified as "installed".
+	   */
 	  state_flag &= PKGSTATE_FLAG( AVAILABLE )
 	    | PKGSTATE_FLAG( AVAILABLE_NEW );
 	  break;
 
 	case IDM_PACKAGE_REMOVE:
 	case IDM_PACKAGE_REINSTALL:
+	  /*
+	   * "Mark for Removal" and "Mark for Reinstallation"
+	   * are viable selections only for packages identified
+	   * as "installed", (current or upgradeable).
+	   */
 	  state_flag &= PKGSTATE_FLAG( INSTALLED_CURRENT )
 	    | PKGSTATE_FLAG( INSTALLED_OLD );
 	  break;
 
 	case IDM_PACKAGE_UPGRADE:
+	  /*
+	   * "Mark for Upgrade" is viable only for packages
+	   * identified as "installed", and then only when an
+	   * upgrade has been published.
+	   */
 	  state_flag &= PKGSTATE_FLAG( INSTALLED_OLD );
 	  break;
 
 	case IDM_PACKAGE_UNMARK:
+	  /*
+	   * The "Unmark" facility is available only for packages
+	   * which have been marked, (perhaps inadvertently), for
+	   * any of the preceding actions.
+	   */
 	  state_flag &= PKGSTATE_FLAG( AVAILABLE_INSTALL )
 	    | PKGSTATE_FLAG( UPGRADE ) | PKGSTATE_FLAG( DOWNGRADE )
 	    | PKGSTATE_FLAG( REMOVE ) | PKGSTATE_FLAG( PURGE )
@@ -972,12 +995,241 @@ void AppWindowMaker::UpdatePackageMenuBindings()
 	  break;
 
 	default:
+	  /* When none of the preceding is applicable, the menu
+	   * item should not be selectable.
+	   */
 	  state_flag = 0;
       }
       /* ...and set the menu item enabled state accordingly.
        */
       EnableMenuItem( menu, item, (state_flag == 0) ? MF_GRAYED : MF_ENABLED );
     }
+  }
+}
+
+EXTERN_C void pkgMarkSchedule( HWND pkglist, pkgActionItem *actions )
+{
+  /* Helper routine to update the status icons within the package
+   * list view, to reflect scheduled actions in respect of the package
+   * associated with each.
+   */
+  LVITEM lookup;
+  lookup.iItem = 0;
+  lookup.iSubItem = 0;
+  lookup.mask = LVIF_IMAGE | LVIF_PARAM;
+  while( ListView_GetItem( pkglist, &lookup ) )
+  {
+    /* Traverse the displayed list of packages from top to bottom...
+     */
+    unsigned long op;
+    pkgActionItem *ref = actions->GetReference( (pkgXmlNode *)(lookup.lParam));
+    if( ref != NULL )
+    {
+      if( (op = ref->HasAttribute( ACTION_MASK )) != 0UL )
+      {
+	/* ...identifying any action scheduled on each package,
+	 * and selecting the appropriate list view icon...
+	 */
+	switch( op )
+	{
+	  case ACTION_INSTALL:
+	    /*
+	     * ...for packages scheduled for installation...
+	     *
+	     * FIXME: we should also consider that such packages
+	     * may have been scheduled for reinstallation.
+	     */
+	    lookup.iImage = PKGSTATE( AVAILABLE_INSTALL );
+	    break;
+
+	  case ACTION_UPGRADE:
+	    /*
+	     * ...for packages scheduled for upgrade...
+	     */
+	    lookup.iImage = PKGSTATE( UPGRADE );
+	    break;
+
+	  case ACTION_REMOVE:
+	    /*
+	     * ...for packages scheduled for removal.
+	     */
+	    lookup.iImage = PKGSTATE( REMOVE );
+	}
+      }
+      else
+      { /* A previously scheduled action has been cancelled.
+	 */
+	pkgActionItem avail;
+	pkgXmlNode *rel = ref->Selection();
+	if( rel == NULL ) rel = ref->Selection( to_remove );
+	rel = rel->GetParent()->FindFirstAssociate( release_key );
+	while( rel != NULL )
+	{
+	  /* Examine each available release specification for the nominated
+	   * package; select the one which represents the latest (most recent)
+	   * available release.
+	   */
+	  avail.SelectIfMostRecentFit( rel );
+
+	  /* Also check for the presence of an installation record for each
+	   * release; if found, mark it as the currently installed release;
+	   * (we assign the "to-remove" attribute, but we don't action it).
+	   */
+	  if( rel->GetInstallationRecord( rel->GetPropVal( tarname_key, NULL )) != NULL )
+	    avail.SelectPackage( rel, to_remove );
+
+	  /* Cycle, until all known releases have been examined.
+	   */
+	  rel = rel->FindNextAssociate( release_key );
+	}
+	avail.ConfirmInstallationStatus();
+	if( (rel = avail.Selection( to_remove )) == NULL )
+	  lookup.iImage = PKGSTATE( AVAILABLE );
+	else
+	{
+	  pkgSpecs current( rel );
+	  pkgSpecs latest( avail.Selection() );
+	  lookup.iImage = (latest > current) ? PKGSTATE( INSTALLED_OLD )
+	    : PKGSTATE( INSTALLED_CURRENT );
+	}
+      }
+      /* Apply new icon selection...
+       */
+      ListView_SetItem( pkglist, &lookup );
+    }
+    /* ...and move on to the next list view entry.
+     */
+    lookup.iItem++;
+  }
+}
+
+void AppWindowMaker::Schedule
+( unsigned long action, const char *bounds, const char *pkgname )
+{
+  /* GUI menu driven interface to the pkgActionItem task scheduler;
+   * it constructs a pseudo-argument string, emulating the effect of
+   * parsing a CLI argument, then passes this to the CLI scheduler
+   * API class method.
+   */
+  if( pkgname == NULL )
+  {
+    /* Initial entry on menu item selection; package name has not
+     * yet been identified, so find the selected list view item...
+     */
+    LVITEM lookup;
+    lookup.iItem = (PackageListView != NULL)
+      ? ListView_GetNextItem( PackageListView, (WPARAM)(-1), LVIS_SELECTED )
+      : -1;
+
+    /* ...and look up the package name identified within it.
+     */
+    const char *pkg, *fmt = "%s-%s";
+    pkgXmlNode *ref = pkgListSelection( PackageListView, &lookup );
+    if( (pkg = ref->GetContainerAttribute( name_key, NULL )) != NULL )
+    {
+      /* We now have a valid package name; check for a
+       * component package association.
+       */
+      const char *cpt;
+      if( (cpt = ref->GetPropVal( class_key, NULL )) == NULL )
+      {
+	/* Current list view selection represents a
+	 * non-component package; encode its name only
+	 * as a string argument, using only the final
+	 * string field of the format specification.
+	 */
+	char pkgspec[ 1 + snprintf( NULL, 0, fmt + 3, pkg ) ];
+	snprintf( pkgspec, sizeof( pkgspec ), fmt + 3, pkg );
+
+	/* Recurse, to capture any supplied version bounds
+	 * specification, and ultimately schedule the action.
+	 */
+	Schedule( action, bounds, pkgspec );
+      }
+      else
+      { /* Current list view selection represents a
+	 * package name qualified by a component name;
+	 * use the full format specification to encode
+	 * the fully qualified package name.
+	 */
+	char pkgspec[ 1 + snprintf( NULL, 0, fmt, pkg, cpt ) ];
+	snprintf( pkgspec, sizeof( pkgspec ), fmt, pkg, cpt );
+
+	/* Again, recurse to capture any supplied version
+	 * bounds specification, before ultimately scheduling
+	 * the selected action.
+	 */
+	Schedule( action, bounds, pkgspec );
+      }
+    }
+  }
+  else if( bounds != NULL )
+  {
+    /* Recursive entry, after package name identification,
+     * but with supplied version bounds specification yet
+     * to be resolved; append the bounds specification to
+     * the package name, as it would be in a CLI argument...
+     */
+    const char *fmt = "%s=%s";
+    char pkgspec[ 1 + snprintf( NULL, 0, fmt, pkgname, bounds ) ];
+    snprintf( pkgspec, sizeof( pkgspec ), fmt, pkgname, bounds );
+    /*
+     * ...then recurse a final time, to schedule the action.
+     */
+    Schedule( action, NULL, pkgspec );
+  }
+  else
+  { /* Final recursive entry, with pkgname argument in the
+     * same form as a CLI package name/bounds specification
+     * argument; hand it off to the CLI scheduler, capturing
+     * the resultant schedule of actions, and update the list
+     * view state icons to reflect the pending actions.
+     */
+    pkgMarkSchedule( PackageListView, pkgData->Schedule( action, pkgname ) );
+    UpdatePackageMenuBindings();
+  }
+}
+
+inline unsigned long pkgActionItem::CancelScheduledAction( void )
+{
+  /* Helper method to mark a scheduled action as "cancelled".
+   */
+  return (this != NULL) ? (flags &= ~ACTION_MASK) : 0UL;
+}
+
+void AppWindowMaker::UnmarkSelectedPackage( void )
+{
+  /* Method to clear any request for an action in respect of
+   * the currently selected package entry in the list view; we
+   * implement this as a cancellation of any pending scheduled
+   * action, in respect of the selected package.
+   *
+   * First, obtain a reference for the list view selection...
+   */
+  LVITEM lookup;
+  lookup.iItem = (PackageListView != NULL)
+    ? ListView_GetNextItem( PackageListView, (WPARAM)(-1), LVIS_SELECTED )
+    : -1;
+
+  /* ...and when it represents a valid selection...
+   */
+  if( lookup.iItem >= 0 )
+  {
+    /* ...retrieve its associated XML database package reference...
+     */
+    pkgXmlNode *pkg = pkgListSelection( PackageListView, &lookup );
+    /*
+     * ...search the action schedule, for an action associated with
+     * this package, if any, and cancel it.
+     */
+    pkgData->Schedule()->GetReference( pkg )->CancelScheduledAction();
+
+    /* The scheduling state for packages shown in the list view
+     * may have changed, so refresh the icon associations and the
+     * package menu bindings accordingly.
+     */
+    pkgMarkSchedule( PackageListView, pkgData->Schedule() );
+    UpdatePackageMenuBindings();
   }
 }
 
@@ -1019,6 +1271,67 @@ long AppWindowMaker::OnNotify( WPARAM client_id, LPARAM data )
    * to be simply ignored, (as they were by the original stub).
    */
   return EXIT_SUCCESS;
+}
+
+inline unsigned long pkgActionItem::Unapplied( void )
+{
+  /* Helper method to count the pending actions in a
+   * scheduled action list.
+   */
+  unsigned long count = 0;
+  if( this != NULL )
+  {
+    /* Assuming that the initial 'this' pointer is closer
+     * to the end of the list, than to the beginning...
+     */
+    pkgActionItem *item = this;
+    while( item->next != NULL )
+      /*
+       * ...advance, to ensure we have located the very
+       * last item in the schedule.
+       */
+      item = item->next;
+
+    /* Now, working back from end to beginning...
+     */
+    while( item != NULL )
+    {
+      /* ...note items with any scheduled action...
+       */
+      if( item->flags & ACTION_MASK )
+	/*
+	 * ...and count them...
+	 */
+	++count;
+
+      /* ...then move on, to consider the preceding
+       * entry, if any.
+       */
+      item = item->prev;
+    }
+  }
+  /* Ultimately, return the count of pending actions,
+   * as noted while processing the above loop.
+   */
+  return count;
+}
+
+long AppWindowMaker::OnClose()
+{
+  /* Intercept application termination requests; check for
+   * outstanding pending actions, and offer a cancellation
+   * option for the termination request, so that the user
+   * has an opportunity to complete such actions.
+   */
+  if( (pkgData->Schedule()->Unapplied() > 0)
+  &&  (MessageBox( AppWindow,
+	"You have marked changes which have not been applied;\n"
+	"these will be lost, if you quit without applying them.\n\n"
+	"Are you sure you want to discard these marked changes?",
+	"Discard Marked Changes?", MB_YESNO | MB_ICONWARNING
+      ) == IDNO)
+    ) return 0;
+  return -1;
 }
 
 /* $RCSfile$: end of file */

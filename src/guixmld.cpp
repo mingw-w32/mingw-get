@@ -27,6 +27,7 @@
 #include "guimain.h"
 #include "pkgbase.h"
 #include "pkgkeys.h"
+#include "pkgtask.h"
 
 #include <unistd.h>
 #include <wtkexcept.h>
@@ -409,6 +410,39 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
       WTK::GenericDialogue( AppInstance, AppWindow, IDD_HELP_ABOUT );
       break;
 
+    case IDM_PACKAGE_INSTALL:
+      /*
+       * Initiated by selecting the "Mark for Installation" option
+       * from the "Package" menu, this request will schedule the
+       * currently selected package, and any currently unfulfilled
+       * dependencies, for installation.
+       */
+      Schedule( ACTION_INSTALL );
+      break;
+
+    case IDM_PACKAGE_UPGRADE:
+      /*
+       * Initiated by selecting the "Mark for Upgrade" option
+       * from the "Package" menu, this request will schedule the
+       * currently selected package, and any currently unfulfilled
+       * dependencies, for upgrade or installation, as appropriate.
+       */
+      Schedule( ACTION_UPGRADE );
+      break;
+
+    case IDM_PACKAGE_REMOVE:
+      /*
+       * Initiated by selecting the "Mark for Removal" option
+       * from the "Package" menu, this request will schedule the
+       * currently selected package for removal.
+       */
+      Schedule( ACTION_REMOVE );
+      break;
+
+    case IDM_PACKAGE_UNMARK:
+      UnmarkSelectedPackage();
+      break;
+
     case IDM_REPO_UPDATE:
       /*
        * This request is initiated by selecting "Update Catalogue"
@@ -425,7 +459,7 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
     case IDM_REPO_QUIT:
       /*
        * This request is initiated by selecting the "Quit" option
-       * from the "Repository" menu; we respond by sending a WM_QUIT
+       * from the "Repository" menu; we respond by sending a WM_CLOSE
        * message, to terminate the current application instance.
        */
       SendMessage( AppWindow, WM_CLOSE, 0, 0L );
