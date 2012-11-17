@@ -124,6 +124,43 @@ pkgListViewMaker::pkgListViewMaker( HWND pane ): ListView( pane )
   content.iItem = -1;
 }
 
+EXTERN_C pkgXmlNode *pkgGetStatus( pkgXmlNode *pkg, pkgActionItem *avail )
+{
+  /* Helper function to acquire release availability and installation
+   * status attributes for a specified package.
+   */
+  pkg = pkg->FindFirstAssociate( release_key );
+  while( pkg != NULL )
+  {
+    /* Examine each available release specification for the nominated
+     * package; select the one which represents the latest (most recent)
+     * available release.
+     */
+    avail->SelectIfMostRecentFit( pkg );
+
+    /* Also check for the presence of an installation record for each
+     * release; if found, mark it as the currently installed release;
+     * (we assign the "to-remove" attribute, but we don't action it).
+     */
+    if( pkg->GetInstallationRecord( pkg->GetPropVal( tarname_key, NULL )) != NULL )
+      avail->SelectPackage( pkg, to_remove );
+
+    /* Cycle, until all known releases have been examined.
+     */
+    pkg = pkg->FindNextAssociate( release_key );
+  }
+  /* Check the identification of any currently installed release; this
+   * will capture property data for any installed release which may have
+   * been subsequently withdrawn from distribution.
+   */
+  avail->ConfirmInstallationStatus();
+
+  /* Finally, return a pointer to the specification for the installed
+   * release, if any, of the package under consideration.
+   */
+  return avail->Selection( to_remove );
+}
+
 void pkgListViewMaker::InsertItem( pkgXmlNode *pkg, char *class_name )
 {
   /* Private method to add a single package record, as an individual
@@ -140,42 +177,18 @@ void pkgListViewMaker::InsertItem( pkgXmlNode *pkg, char *class_name )
    * attributes for the package under consideration.
    */
   pkgActionItem avail;
-  pkgXmlNode *rel = pkg->FindFirstAssociate( release_key );
-  while( rel != NULL )
-  {
-    /* Examine each available release specification for the nominated
-     * package; select the one which represents the latest (most recent)
-     * available release.
-     */
-    avail.SelectIfMostRecentFit( rel );
-
-    /* Also check for the presence of an installation record for each
-     * release; if found, mark it as the currently installed release;
-     * (we assign the "to-remove" attribute, but we don't action it).
-     */
-    if( rel->GetInstallationRecord( rel->GetPropVal( tarname_key, NULL )) != NULL )
-      avail.SelectPackage( rel, to_remove );
-
-    /* Cycle, until all known releases have been examined.
-     */
-    rel = rel->FindNextAssociate( release_key );
-  }
-  /* Check the identification of any currently installed release; this
-   * will capture property data for any installed release which may have
-   * been subsequently withdrawn from distribution.
-   */
-  avail.ConfirmInstallationStatus();
+  pkgXmlNode *rel = pkgGetStatus( pkg, &avail );
 
   /* Decompose the package tarname identifier for the latest available
    * release, into its individual package specification properties.
    */
-  pkgSpecs latest( rel = avail.Selection() );
+  pkgSpecs latest( pkg = avail.Selection() );
 
   /* Allocate a temporary working text buffer, in which to format
    * package property values for display...
    */
-  size_t len = strlen( rel->GetPropVal( tarname_key, value_none ) );
-  if( (rel = avail.Selection( to_remove )) != NULL )
+  size_t len = strlen( pkg->GetPropVal( tarname_key, value_none ) );
+  if( rel != NULL )
   {
     /* ...ensuring that it is at least as large as the longer of the
      * latest or installed release tarname.
@@ -200,6 +213,7 @@ void pkgListViewMaker::InsertItem( pkgXmlNode *pkg, char *class_name )
        * an installed package with an available update...
        */
       content.iImage = PKGSTATE( INSTALLED_OLD );
+
     else
       /* ...or, when the latest available is NOT NEWER than
        * the installed version, then we choose the alternative

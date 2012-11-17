@@ -100,4 +100,12 @@ class pkgDirectory
     pkgDirectory *next;
 };
 
+/* The following helper function is used to retrieve release availability
+ * and installation status attributes for any specified package, from the
+ * XML database, returning specifications for the latest available release
+ * and the installed release, if any, in the to_install and the to_remove
+ * selection fields of the passed pkgActionItem structure respectively.
+ */
+EXTERN_C pkgXmlNode *pkgGetStatus( pkgXmlNode *, pkgActionItem * );
+
 #endif /* PKGLIST_H: $RCSfile$: end of file */ 

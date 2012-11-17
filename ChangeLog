@@ -1,3 +1,13 @@
+2012-11-17  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Refactor to consolidate three instances of duplicate code.
+
+	* src/pkglist.h (pkgGetStatus): New function; declare it.
+	* src/pkglist.cpp (pkgGetStatus): Implement it; factor out from...
+	(pkgListViewMaker::InsertItem): ...here, whence use it.
+	* src/pkgdata.cpp (pkgMarkSchedule): Likewise here...
+	(DataSheetMaker::DisplayGeneralData): ...and here.
+
 2012-11-16  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Add GUI support for install, upgrade, and remove action scheduling.

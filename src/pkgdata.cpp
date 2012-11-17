@@ -455,37 +455,16 @@ void DataSheetMaker::DisplayGeneralData( pkgXmlNode *ref )
       );
 
   /* Using a temporary action item, collect information on the
-   * available and installed (if any) versions of the selected
-   * package.
+   * latest available version, and the installed version if any,
+   * of the selected package; print the applicable information,
+   * noting that "none" may be appropriate in the case of the
+   * installed version.
    */
   pkgActionItem avail;
-  ref = ref->FindFirstAssociate( release_key );
-  while( ref != NULL )
-  {
-    /* ...to scan all associated release keys, and select the
-     * most recent recorded in the database as available...
-     */
-    avail.SelectIfMostRecentFit( ref );
-    if( ref->GetInstallationRecord( ref->GetPropVal( tarname_key, NULL )) != NULL )
-      /*
-       * ...also noting if any is marked as installed...
-       */
-      avail.SelectPackage( ref, to_remove );
-
-    /* ...until all release keys have been inspected...
-     */
-    ref = ref->FindNextAssociate( release_key );
-  }
-  /* ...and performing a final check on installation status.
-   */
-  avail.ConfirmInstallationStatus();
-
-  /* Now print the applicable version information, noting that
-   * "none" may be appropriate for the installed version.
-   */
   FormatRecord( 0, "Installed Version",
-      ((ref = avail.Selection( to_remove )) != NULL)
-	? ref->GetPropVal( tarname_key, value_unknown ) : value_none
+      ((ref = pkgGetStatus( ref, &avail )) != NULL)
+	? ref->GetPropVal( tarname_key, value_unknown )
+	: value_none
     );
   FormatRecord( 1, "Repository Version",
       (ref = avail.Selection())->GetPropVal( tarname_key, value_unknown )
@@ -1057,43 +1036,31 @@ EXTERN_C void pkgMarkSchedule( HWND pkglist, pkgActionItem *actions )
 	}
       }
       else
-      { /* A previously scheduled action has been cancelled.
+      { /* A previously scheduled action has been cancelled;
+	 * retrieve the package release status attributes, so
+	 * we may reinstate the appropriate unmarked icon.
 	 */
 	pkgActionItem avail;
 	pkgXmlNode *rel = ref->Selection();
 	if( rel == NULL ) rel = ref->Selection( to_remove );
-	rel = rel->GetParent()->FindFirstAssociate( release_key );
-	while( rel != NULL )
-	{
-	  /* Examine each available release specification for the nominated
-	   * package; select the one which represents the latest (most recent)
-	   * available release.
+	if( (rel = pkgGetStatus( rel->GetParent(), &avail )) == NULL )
+	  /*
+	   * For a package which has not been installed, this
+	   * indicates an available package...
 	   */
-	  avail.SelectIfMostRecentFit( rel );
-
-	  /* Also check for the presence of an installation record for each
-	   * release; if found, mark it as the currently installed release;
-	   * (we assign the "to-remove" attribute, but we don't action it).
-	   */
-	  if( rel->GetInstallationRecord( rel->GetPropVal( tarname_key, NULL )) != NULL )
-	    avail.SelectPackage( rel, to_remove );
-
-	  /* Cycle, until all known releases have been examined.
-	   */
-	  rel = rel->FindNextAssociate( release_key );
-	}
-	avail.ConfirmInstallationStatus();
-	if( (rel = avail.Selection( to_remove )) == NULL )
 	  lookup.iImage = PKGSTATE( AVAILABLE );
+
 	else
-	{
+	{ /* ...while for an installed package, it indicates
+	   * currency or upgradeability, as appropriate.
+	   */
 	  pkgSpecs current( rel );
 	  pkgSpecs latest( avail.Selection() );
 	  lookup.iImage = (latest > current) ? PKGSTATE( INSTALLED_OLD )
 	    : PKGSTATE( INSTALLED_CURRENT );
 	}
       }
-      /* Apply new icon selection...
+      /* Apply the new icon selection...
        */
       ListView_SetItem( pkglist, &lookup );
     }
