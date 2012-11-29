@@ -1,3 +1,14 @@
+2012-11-29  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Maintain consistent internal vs. external installation records.
+
+	* src/pkginst.cpp (pkgInstall): Set "installed" attribute on internal
+	package reference, to "yes", after installation; CLI didn't need this,
+	but GUI will do so, for any package revisited in a single session.
+
+	* src/pkgunst.cpp (pkgRemove): Similarly, negate "installed" attribute
+	after package removal.
+
 2012-11-17  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Refactor to consolidate three instances of duplicate code.

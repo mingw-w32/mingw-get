@@ -524,6 +524,14 @@ EXTERN_C void pkgRemove( pkgActionItem *current )
 	sysroot->SetAttribute( modified_key, value_yes );
       }
     }
+    /* Update the internal record of installed state; although no
+     * running CLI instance will return to any point where it needs
+     * this, we may have been called from the GUI, and it requires
+     * consistency here, if the user revisits this package within
+     * any single active session.
+     */
+    pkg->SetAttribute( installed_key, value_no );
+
     /* After package removal has been completed, we invoke any
      * post-remove script which may be associated with the package.
      */

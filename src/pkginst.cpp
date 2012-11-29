@@ -431,8 +431,7 @@ EXTERN_C void pkgInstall( pkgActionItem *current )
 	    pkgRegister( sysroot, pkg, tarname, pkgfile );
 	}
 	else
-	{
-	  /* Here we have a "real" (physical) package to install;
+	{ /* Here we have a "real" (physical) package to install;
 	   * for the time being, we assume it is packaged in our
 	   * standard "tar" archive format.
 	   */
@@ -440,6 +439,14 @@ EXTERN_C void pkgInstall( pkgActionItem *current )
 	  if( install.IsOk() )
 	    install.Process();
 	}
+	/* Update the internal record of installed state; although no
+	 * running CLI instance will return to any point where it needs
+	 * this, we may have been called from the GUI, and it requires
+	 * consistency here, if the user revisits this package within
+	 * any single active session.
+	 */
+	pkg->SetAttribute( installed_key, value_yes );
+
 	/* Whether we just installed a virtual package or a real package,
 	 * we may now run its post-install script, (if any).
 	 */
