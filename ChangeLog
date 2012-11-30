@@ -1,3 +1,11 @@
+2012-11-30  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Increase width of window sash bars by 50%.
+
+	* src/guimain.h (SASH_BAR_THICKNESS): Increase from 4 to 6; this makes
+	it easier to grab the sash bars, so they may be dragged; IMO, it also
+	results in a better appearance.
+
 2012-11-29  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Maintain consistent internal vs. external installation records.
