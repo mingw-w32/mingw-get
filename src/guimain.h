@@ -110,6 +110,8 @@ class pkgProgressMeter;
 class DataSheetMaker;
 class pkgActionItem;
 
+typedef void (pkgDialogueThread)( void * );
+
 #ifndef EXTERN_C
 # ifdef __cplusplus
 #  define EXTERN_C  extern "C"
@@ -142,6 +144,9 @@ class AppWindowMaker: public WTK::MainWindowMaker
     HWND Create( const char *, const char * );
     inline long AdjustLayout( void ){ return OnSize( 0, 0, 0 ); }
     int Invoked( void );
+
+    static pkgDialogueThread *DialogueThread;
+    int DispatchDialogueThread( int, pkgDialogueThread * );
 
     void LoadPackageData( bool = false );
     void ClearPackageList( void ){ ListView_DeleteAllItems( PackageListView ); }

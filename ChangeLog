@@ -1,5 +1,21 @@
 2012-12-03  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Implement generalised API for dialogue boxes with worker threads.
+
+	* src/guimain.h (pkgDialogueThread): New typedef; declare it.
+	(AppWindowMaker::DialogueThread): New static property; declare it.
+	(AppWindowMaker::DispatchDialogueThread): New method; declare it.
+
+	* src/guixmld.cpp: Formatting of several comments adjusted.
+	(pkgUpdate, pkgInitDataLoad): Defunct functions; replaced by...
+	(pkgDialogue): ...this new static call-back function; implement it.
+	(AppWindowMaker::DialogueThread): Instantiate and initialise it.
+	(AppWindowMaker::DispatchDialogueThread): Implement it.
+	(AppWindowMaker::Invoked): Use it to invoke pkgInvokeInitDataLoad()...
+	(AppWindowMaker::OnCommand): ...and pkgInvokeUpdate().
+
+2012-12-03  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Consolidate GUI implementation for package list view management.
 
 	* src/pkglist.h (pkgListViewMaker::GetTitle): Disused overloaded

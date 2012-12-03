@@ -145,8 +145,7 @@ void AppWindowMaker::LoadPackageData( bool force_update )
     }
   }
   else
-  {
-    /* This is a reload request; in this case we adopt the
+  { /* This is a reload request; in this case we adopt the
      * starting point as established for the initial load...
      */
     dfile = strdup( pkgData->Value() );
@@ -243,40 +242,6 @@ static void pkgInvokeInitDataLoad( void *window )
   }
 }
 
-static int CALLBACK pkgInitDataLoad
-( HWND window, unsigned int msg, WPARAM wParam, LPARAM lParam )
-{
-  /* Handler for the initial catalogue loading progress dialogue.
-   */
-  switch( msg )
-  {
-    /* We need to handle only two classes of windows messages
-     * on behalf of this dialogue box...
-     */
-    case WM_INITDIALOG:
-      /*
-       * ...viz. on initial dialogue box creation, we delegate the actual
-       * activity, of loading the catalogue, to this background thread...
-       */
-      _beginthread( pkgInvokeInitDataLoad, 0, (void *)(window) );
-      return TRUE;
-
-    case WM_COMMAND:
-      if( LOWORD( wParam ) == IDOK )
-      {
-	/* ...then we wait for a notification that the dialogue may be
-	 * closed, (which isn't permitted until the thread completes).
-	 */
-	EndDialog( window, 0 );
-	return TRUE;
-      }
-  }
-  /* Any other messages, which are directed to this dialogue box, may be
-   * safely ignored.
-   */
-  return FALSE;
-}
-
 static void pkgInvokeUpdate( void *window )
 {
   /* Thread procedure for performing a package catalogue update.
@@ -320,24 +285,23 @@ static void pkgInvokeUpdate( void *window )
   }
 }
 
-static int CALLBACK pkgUpdate
+static int CALLBACK pkgDialogue
 ( HWND window, unsigned int msg, WPARAM wParam, LPARAM lParam )
 {
-  /* Handler for the package catalogue update dialogue box, as
-   * invoked by the "Update catalogue" menu pick, (or equivalent
-   * tool-bar button selection).
+  /* Generic handler for dialogue boxes which delegate an associated
+   * processing activity to a background thread.
    */
   switch( msg )
   {
     /* We need to handle only two classes of windows messages
-     * on behalf of this dialogue box...
+     * on behalf of such dialogue boxes...
      */
     case WM_INITDIALOG:
       /*
-       * ...viz. on initial dialogue box creation, we delegate the actual
-       * activity, of updating the catalogue, to this background thread...
+       * ...viz. on initial dialogue box creation, we delegate the
+       * designated activity to the background thread...
        */
-      _beginthread( pkgInvokeUpdate, 0, (void *)(window) );
+      _beginthread( AppWindowMaker::DialogueThread, 0, (void *)(window) );
       return TRUE;
 
     case WM_COMMAND:
@@ -350,10 +314,26 @@ static int CALLBACK pkgUpdate
 	return TRUE;
       }
   }
-  /* Any other messages, which are directed to this dialogue box, may be
-   * safely ignored.
+  /* Any other messages, which are directed to this dialogue box,
+   * may be safely ignored.
    */
   return FALSE;
+}
+
+/* The following static member of the AppWindowMaker class is used
+ * to pass the function reference for the worker thread process to
+ * the preceding dialogue box handler function, when it is invoked
+ * by the following helper method.
+ */
+pkgDialogueThread *AppWindowMaker::DialogueThread = NULL;
+
+int AppWindowMaker::DispatchDialogueThread( int id, pkgDialogueThread *handler )
+{
+  /* Helper method to open a dialogue box, and to initiate a worker
+   * thread to handle a designated background process on its behalf.
+   */
+  DialogueThread = handler;
+  return DialogBox( AppInstance, MAKEINTRESOURCE( id ), AppWindow, pkgDialogue );
 }
 
 int AppWindowMaker::Invoked( void )
@@ -374,9 +354,7 @@ int AppWindowMaker::Invoked( void )
    * is invoked in a background thread, initiated from a progress
    * dialogue derived from the "Update Catalogue" template.
    */
-  DialogBox( AppInstance,
-      MAKEINTRESOURCE( IDD_REPO_UPDATE ), AppWindow, pkgInitDataLoad
-    );
+  DispatchDialogueThread( IDD_REPO_UPDATE, pkgInvokeInitDataLoad );
   InitPackageListView();
 
   /* Initialise the data-sheet tab control, displaying the default
@@ -402,8 +380,7 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
    */
   switch( cmd )
   { case IDM_HELP_ABOUT:
-      /*
-       * This request is initiated by selecting "About mingw-get"
+      /* This request is initiated by selecting "About mingw-get"
        * from the "Help" menu; we respond by displaying the "about"
        * dialogue box.
        */
@@ -411,8 +388,7 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
       break;
 
     case IDM_PACKAGE_INSTALL:
-      /*
-       * Initiated by selecting the "Mark for Installation" option
+      /* Initiated by selecting the "Mark for Installation" option
        * from the "Package" menu, this request will schedule the
        * currently selected package, and any currently unfulfilled
        * dependencies, for installation.
@@ -421,8 +397,7 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
       break;
 
     case IDM_PACKAGE_UPGRADE:
-      /*
-       * Initiated by selecting the "Mark for Upgrade" option
+      /* Initiated by selecting the "Mark for Upgrade" option
        * from the "Package" menu, this request will schedule the
        * currently selected package, and any currently unfulfilled
        * dependencies, for upgrade or installation, as appropriate.
@@ -431,8 +406,7 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
       break;
 
     case IDM_PACKAGE_REMOVE:
-      /*
-       * Initiated by selecting the "Mark for Removal" option
+      /* Initiated by selecting the "Mark for Removal" option
        * from the "Package" menu, this request will schedule the
        * currently selected package for removal.
        */
@@ -440,25 +414,26 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
       break;
 
     case IDM_PACKAGE_UNMARK:
+      /* Initiated by selecting the "Unmark" option from the
+       * "Package" menu, this request will cancel the effect of
+       * any previously scheduled action, in respect of the
+       * currently selected package.
+       */
       UnmarkSelectedPackage();
       break;
 
     case IDM_REPO_UPDATE:
-      /*
-       * This request is initiated by selecting "Update Catalogue"
+      /* This request is initiated by selecting "Update Catalogue"
        * from the "Repository" menu; we respond by initiating a progress
        * dialogue, from which a background thread is invoked to download
        * fresh copies of the package catalogue files from the remote
        * repository, and consolidate them into the local catalogue.
        */
-      DialogBox(
-	  AppInstance, MAKEINTRESOURCE( IDD_REPO_UPDATE ), AppWindow, pkgUpdate
-	);
+      DispatchDialogueThread( IDD_REPO_UPDATE, pkgInvokeUpdate );
       break;
 
     case IDM_REPO_QUIT:
-      /*
-       * This request is initiated by selecting the "Quit" option
+      /* This request is initiated by selecting the "Quit" option
        * from the "Repository" menu; we respond by sending a WM_CLOSE
        * message, to terminate the current application instance.
        */
