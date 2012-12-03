@@ -7,9 +7,9 @@
  * Copyright (C) 2012, MinGW Project
  *
  *
- * Implementation of the methods for the pkgListViewMaker class, to
- * support the display of the package list in the mingw-get graphical
- * user interface.
+ * Implementation of the methods for the pkgListViewMaker class, and
+ * its AppWindowMaker client API, to support the display of the package
+ * list in the mingw-get graphical user interface.
  *
  *
  * This is free software.  Permission is granted to copy, modify and
@@ -31,6 +31,7 @@
 #include "guimain.h"
 #include "pkgbase.h"
 #include "pkglist.h"
+#include "pkgtask.h"
 #include "pkgkeys.h"
 #include "pkginfo.h"
 
@@ -114,13 +115,124 @@ void AppWindowMaker::UpdatePackageList()
   delete dir;
 }
 
+static char *pkgGetTitle( pkgXmlNode *pkg, const pkgXmlNode *xml_root )
+{
+  /* A private helper method, to retrieve the title attribute
+   * associated with the description for the nominated package.
+   *
+   * Note: this should really return a const char *, but then
+   * we would need to cast it to non-const for mapping into the
+   * ill-formed structure of Microsoft's LVITEM, so we may just
+   * as well return the non-const result anyway.
+   */
+  pkgXmlNode *desc = pkg->FindFirstAssociate( description_key );
+  while( desc != NULL )
+  {
+    /* Handling it internally as the const which it should be...
+     */
+    const char *title;
+    if( (title = desc->GetPropVal( title_key, NULL )) != NULL )
+      /*
+       * As soon as we find a description element with an
+       * assigned title attribute, immediately return it,
+       * (with the required cast to non-const).
+       */
+      return (char *)(title);
+
+    /* If we haven't yet found any title attribute, check for any
+     * further description elements at the current XML nesting level.
+     */
+    desc = desc->FindNextAssociate( description_key );
+  }
+
+  /* If we've exhausted all description elements at the current XML
+   * nesting level, without finding a title attribute, and we haven't
+   * checked all enclosing levels back to the document root...
+   */
+  if( pkg != xml_root )
+    /*
+     * ...then continue the search in the immediately enclosing level.
+     */
+    return pkgGetTitle( pkg->GetParent(), xml_root );
+
+  /* If we get to here, then we've searched all levels back to the
+   * document root, and have failed to find any title attribute; we
+   * have nothing to return.
+   */
+  return NULL;
+}
+
+static inline char *pkgGetTitle( pkgXmlNode *pkg )
+{
+  /* Overload the preceding function, to automatically generate
+   * the required reference to the XML document root.
+   */
+  return pkgGetTitle( pkg->GetParent(), pkg->GetDocumentRoot() );
+}
+
+static inline
+char *version_string_copy( char *buf, const char *text, int fill = 0 )
+{
+  /* Local helper function to construct a package version string
+   * from individual version specific elements of the tarname.
+   */
+  if( text != NULL )
+  {
+    /* First, if a fill character is specified, copy it as the
+     * first character of the result; (we assume that we are
+     * appending to a previously constructed result, and that
+     * this is the field separator character).
+     */
+    if( fill != 0 ) *buf++ = fill;
+
+    /* Now, append "text" up to, and including its final NUL
+     * terminator; (note that we do NOT guard against buffer
+     * overrun, as we have complete control over the calling
+     * context, where we allocated a result buffer at least
+     * as long as the tarname string from which the composed
+     * version string is extracted, and the composed result
+     * can never exceed the original length of this).
+     */
+    do { if( (*buf = *text) != '\0' ) ++buf; } while( *text++ != '\0' );
+  }
+  /* Finally, we return a pointer to the terminating NUL of
+   * the result, so as to facilitate appending further text.
+   */
+  return buf;
+}
+
+static char *pkgVersionString( char *buf, pkgSpecs *pkg )
+{
+  /* Helper method to construct a fully qualified version string
+   * from the decomposed package tarname form in a pkgSpecs structure.
+   *
+   * We begin with the concatenation of package version and build ID
+   * fields, retrieved from the pkgSpecs representation...
+   */
+  char *update = version_string_copy( buf, pkg->GetPackageVersion() );
+  update = version_string_copy( update, pkg->GetPackageBuild(), '-' );
+  if( pkg->GetSubSystemVersion() != NULL )
+  {
+    /* ...then, we append the sub-system ID, if applicable...
+     */
+    update = version_string_copy( update, pkg->GetSubSystemName(), '-' );
+    update = version_string_copy( update, pkg->GetSubSystemVersion(), '-' );
+    update = version_string_copy( update, pkg->GetSubSystemBuild(), '-' );
+  }
+  /* ...and finally, we return a pointer to the buffer in which
+   * we constructed the fully qualified version string.
+   */
+  return buf;
+}
+
 pkgListViewMaker::pkgListViewMaker( HWND pane ): ListView( pane )
 {
   /* Constructor: initialise the invariant parameters within the
    * embedded W32API ListView control structure.
    */
   content.stateMask = 0;
-  content.mask = LVIF_PARAM | LVIF_TEXT | LVIF_IMAGE | LVIF_STATE;
+  content.mask = LVIF_PARAM | LVIF_IMAGE | LVIF_STATE;
+  content.iSubItem = 0;
   content.iItem = -1;
 }
 
@@ -164,36 +276,52 @@ EXTERN_C pkgXmlNode *pkgGetStatus( pkgXmlNode *pkg, pkgActionItem *avail )
 void pkgListViewMaker::InsertItem( pkgXmlNode *pkg, char *class_name )
 {
   /* Private method to add a single package record, as an individual
-   * row item, to the displayed list view table.
+   * row item, to the displayed list view table; begin by filling in
+   * the appropriate fields within the "content" structure...
    */
+  content.iItem++;
   content.state = 0;
-  content.iItem += 1;
-  content.iSubItem = 0;
   content.lParam = (unsigned long)(pkg);
-  content.pszText = "";
 
+  /* ...then delegate the actual entry construction to...
+   */
+  UpdateItem( class_name, true );
+}
+
+inline bool pkgListViewMaker::GetItem( void )
+{
+  /* An inline helper method to load the content structure from the
+   * next available item, if any, in the package list view; returns
+   * true when content is successfully loaded, else returns false.
+   */
+  content.iItem++; return ListView_GetItem( ListView, &content );
+}
+
+void pkgListViewMaker::UpdateItem( char *class_name, bool new_entry )
+{
   /* Assign a temporary action item, through which we may identify
    * the latest available, and currently installed (if any), version
    * attributes for the package under consideration.
    */
   pkgActionItem avail;
-  pkgXmlNode *rel = pkgGetStatus( pkg, &avail );
+  pkgXmlNode *package = (pkgXmlNode *)(content.lParam);
+  pkgXmlNode *installed = pkgGetStatus( package, &avail );
 
   /* Decompose the package tarname identifier for the latest available
    * release, into its individual package specification properties.
    */
-  pkgSpecs latest( pkg = avail.Selection() );
+  pkgSpecs latest( package = avail.Selection() );
 
   /* Allocate a temporary working text buffer, in which to format
    * package property values for display...
    */
-  size_t len = strlen( pkg->GetPropVal( tarname_key, value_none ) );
-  if( rel != NULL )
+  size_t len = strlen( package->GetPropVal( tarname_key, value_none ) );
+  if( installed != NULL )
   {
     /* ...ensuring that it is at least as large as the longer of the
      * latest or installed release tarname.
      */
-    size_t altlen = strlen( rel->GetPropVal( tarname_key, value_none ) );
+    size_t altlen = strlen( installed->GetPropVal( tarname_key, value_none ) );
     if( altlen > len ) len = altlen;
   }
   char buf[1 + len];
@@ -201,162 +329,75 @@ void pkgListViewMaker::InsertItem( pkgXmlNode *pkg, char *class_name )
   /* Choose a suitable icon for representation of the installation
    * status of the package under consideration...
    */
-  if( rel != NULL )
+  if( installed != NULL )
   {
     /* ...noting that, when it is already installed...
      */
-    pkgSpecs current( rel );
-    if( latest > current )
-      /*
-       * ...and, when the latest available is NEWER than the
-       * installed version, then we choose the icon indicating
-       * an installed package with an available update...
-       */
-      content.iImage = PKGSTATE( INSTALLED_OLD );
+    pkgSpecs current( installed );
+    content.iImage = (latest > current)
+      ? /* ...and, when the latest available is NEWER than the
+	 * installed version, then we choose the icon indicating
+	 * an installed package with an available update...
+	 */
+	PKGSTATE( INSTALLED_OLD )
 
-    else
-      /* ...or, when the latest available is NOT NEWER than
-       * the installed version, then we choose the alternative
-       * icon, simply indicating an installed package...
-       */
-      content.iImage = PKGSTATE( INSTALLED_CURRENT );
+      : /* ...or, when the latest available is NOT NEWER than
+	 * the installed version, then we choose the alternative
+	 * icon, simply indicating an installed package...
+	 */
+	PKGSTATE( INSTALLED_CURRENT );
 
     /* ...and also, load the version identification string for
      * the installed version into the working text buffer.
      */
-    GetVersionString( buf, &current );
+    pkgVersionString( buf, &current );
   }
   else
-    /* Alternatively, for any package which is not recorded as
+  { /* Alternatively, for any package which is not recorded as
      * installed, choose the icon indicating an available, but
-     * not (yet) installed package.
+     * not (yet) installed package...
      */
     content.iImage = PKGSTATE( AVAILABLE );
 
-  /* Add the package identification record, as a list item...
-   */
-  ListView_InsertItem( ListView, &content );
-  /*
-   * ...and fill in the text for the package name and class columns.
-   */
-  ListView_SetItemText( ListView, content.iItem, 1, package_name );
-  ListView_SetItemText( ListView, content.iItem, 2, class_name );
+    /* ...and mark the list view column entry, for the installed
+     * version, as empty.
+     */
+    *buf = '\0';
+  }
 
-  /* When an installed package release has been identified...
+  /* When compiling a new list entry...
    */
-  if( rel != NULL )
+  if( new_entry )
+  {
+    /* ...add the package identification record, as a new item...
+     */
+    ListView_InsertItem( ListView, &content );
     /*
-     * ...fill in the version identificaton text appropriately.
+     * ...and fill in the text for the package name, class name,
+     * and package description columns...
      */
-    ListView_SetItemText( ListView, content.iItem, 3, buf );
-
-  /* Finally, fill in the text for the latest version identification
-   * and package description columns.
-   */
-  ListView_SetItemText( ListView, content.iItem, 4, GetVersionString( buf, &latest ) );
-  ListView_SetItemText( ListView, content.iItem, 5, GetTitle( avail.Selection()) );
-}
-
-char *pkgListViewMaker::GetTitle( pkgXmlNode *pkg, const pkgXmlNode *xml_root )
-{
-  /* A private helper method, to retrieve the title attribute
-   * associated with the description for the nominated package.
-   *
-   * Note: this should really return a const char *, but then
-   * we would need to cast it to non-const for mapping into the
-   * ill-formed structure of Microsoft's LVITEM, so we may just
-   * as well return the non-const result anyway.
-   */
-  pkgXmlNode *desc = pkg->FindFirstAssociate( description_key );
-  while( desc != NULL )
-  {
-    /* Handling it internally as the const which it should be...
-     */
-    const char *title;
-    if( (title = desc->GetPropVal( title_key, NULL )) != NULL )
-      /*
-       * As soon as we find a description element with an
-       * assigned title attribute, immediately return it,
-       * (with the required cast to non-const).
-       */
-      return (char *)(title);
-
-    /* If we haven't yet found any title attribute, check for any
-     * further description elements at the current XML nesting level.
-     */
-    desc = desc->FindNextAssociate( description_key );
+    ListView_SetItemText( ListView, content.iItem, 1, package_name );
+    ListView_SetItemText( ListView, content.iItem, 2, class_name );
+    ListView_SetItemText( ListView, content.iItem, 5, pkgGetTitle( package ) );
   }
-
-  /* If we've exhausted all description elements at the current XML
-   * nesting level, without finding a title attribute, and we haven't
-   * checked all enclosing levels back to the document root...
-   */
-  if( pkg != xml_root )
-    /*
-     * ...then continue the search in the immediately enclosing level.
+  else
+    /* ...otherwise, this is simply a request to update an
+     * existing item, in place; do so.  (Note that, in this
+     * case, we DO NOT touch the package name, class name,
+     * or package description column content).
      */
-    return GetTitle( pkg->GetParent() );
+    ListView_SetItem( ListView, &content );
 
-  /* If we get to here, then we've searched all levels back to the
-   * document root, and have failed to find any title attribute; we
-   * have nothing to return.
+  /* Always fill in the text, as established above, in the
+   * column which identifies the currently installed version,
+   * if any, or clear it if the package is not installed.
    */
-  return NULL;
-}
+  ListView_SetItemText( ListView, content.iItem, 3, buf );
 
-static inline
-char *version_string_copy( char *buf, const char *text, int fill = 0 )
-{
-  /* Local helper function to construct a package version string
-   * from individual version specific elements of the tarname.
+  /* Finally, fill in the text of the column which identifies
+   * the latest available version of the package.
    */
-  if( text != NULL )
-  {
-    /* First, if a fill character is specified, copy it as the
-     * first character of the result; (we assume that we are
-     * appending to a previously constructed result, and that
-     * this is the field separator character).
-     */
-    if( fill != 0 ) *buf++ = fill;
-
-    /* Now, append "text" up to, and including its final NUL
-     * terminator; (note that we do NOT guard against buffer
-     * overrun, as we have complete control over the calling
-     * context, where we allocated a result buffer at least
-     * as long as the tarname string from which the composed
-     * version string is extracted, and the composed result
-     * can never exceed the original length of this).
-     */
-    do { if( (*buf = *text) != '\0' ) ++buf; } while( *text++ != '\0' );
-  }
-  /* Finally, we return a pointer to the terminating NUL of
-   * the result, so as to facilitate appending further text.
-   */
-  return buf;
-}
-
-char *pkgListViewMaker::GetVersionString( char *buf, pkgSpecs *pkg )
-{
-  /* Helper method to construct a fully qualified version string
-   * from the decomposed package tarname form in a pkgSpecs structure.
-   *
-   * We begin with the concatenation of package version and build ID
-   * fields, retrieved from the pkgSpecs representation...
-   */
-  char *update = version_string_copy( buf, pkg->GetPackageVersion() );
-  update = version_string_copy( update, pkg->GetPackageBuild(), '-' );
-  if( pkg->GetSubSystemVersion() != NULL )
-  {
-    /* ...then, we append the sub-system ID, if applicable...
-     */
-    update = version_string_copy( update, pkg->GetSubSystemName(), '-' );
-    update = version_string_copy( update, pkg->GetSubSystemVersion(), '-' );
-    update = version_string_copy( update, pkg->GetSubSystemBuild(), '-' );
-  }
-  /* ...and finally, we return a pointer to the buffer in which
-   * we constructed the fully qualified version string.
-   */
-  return buf;
+  ListView_SetItemText( ListView, content.iItem, 4, pkgVersionString( buf, &latest ) );
 }
 
 void pkgListViewMaker::Dispatch( pkgXmlNode *package )
@@ -399,6 +440,74 @@ void pkgListViewMaker::Dispatch( pkgXmlNode *package )
      */
     InsertItem( package, (char *)(package->GetPropVal( class_key, "" )) );
   }
+}
+
+void pkgListViewMaker::MarkScheduledActions( pkgActionItem *schedule )
+{
+  /* Method to reassign icons to entries within the package list view,
+   * indicating any which have been marked for installation, upgrade,
+   * or removal of the associated package.
+   */
+  for( content.iItem = -1; GetItem(); )
+  {
+    /* Visiting every entry in the list...
+     */
+    pkgActionItem *ref;
+    if( (ref = schedule->GetReference( (pkgXmlNode *)(content.lParam) )) != NULL )
+    {
+      /* ...identify those which are associated with a scheduled action...
+       */
+      unsigned long opcode;
+      if( (opcode = ref->HasAttribute( ACTION_MASK )) == ACTION_INSTALL )
+      {
+	/* ...selecting the appropriate icon to mark those packages
+	 * which have been scheduled for installation...
+	 *
+	 * FIXME: we should also consider that such packages
+	 * may have been scheduled for reinstallation.
+	 */
+	content.iImage = PKGSTATE( AVAILABLE_INSTALL );
+      }
+      else if( opcode == ACTION_UPGRADE )
+      {
+	/* ...those which have been scheduled for upgrade...
+	 */
+	content.iImage = PKGSTATE( UPGRADE );
+      }
+      else if( opcode == ACTION_REMOVE )
+      {
+	/* ...and those which have been scheduled for removal.
+	 */
+	content.iImage = PKGSTATE( REMOVE );
+      }
+      else
+      { /* Where a scheduled action is any other than those above,
+	 * handle as if there was no scheduled action...
+	 */
+	opcode = 0UL;
+	/*
+	 * ...and ensure that the list view entry reflects the
+	 * normal display state for the associated package.
+	 */
+	UpdateItem( NULL );
+      }
+      if( opcode != 0UL )
+	/*
+	 * Where an action mark is appropriate, ensure that it
+	 * is applied to the list view entry.
+	 */
+	ListView_SetItem( ListView, &content );
+    }
+  }
+}
+
+void pkgListViewMaker::UpdateListView( void )
+{
+  /* A simple helper method, to refresh the content of the
+   * package list view, resetting each item to its initial
+   * unmarked display state.
+   */
+  for( content.iItem = -1; GetItem(); ) UpdateItem( NULL );
 }
 
 /* $RCSfile$: end of file */

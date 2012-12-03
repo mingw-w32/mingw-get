@@ -986,88 +986,15 @@ void AppWindowMaker::UpdatePackageMenuBindings()
   }
 }
 
-EXTERN_C void pkgMarkSchedule( HWND pkglist, pkgActionItem *actions )
+inline void AppWindowMaker::MarkSchedule( pkgActionItem *pending_actions )
 {
-  /* Helper routine to update the status icons within the package
-   * list view, to reflect scheduled actions in respect of the package
-   * associated with each.
+  /* Helper routine to update the status icons within the package list view,
+   * reflecting any scheduled action in respect of the package associated with
+   * each, and updating the menu bindings to match.
    */
-  LVITEM lookup;
-  lookup.iItem = 0;
-  lookup.iSubItem = 0;
-  lookup.mask = LVIF_IMAGE | LVIF_PARAM;
-  while( ListView_GetItem( pkglist, &lookup ) )
-  {
-    /* Traverse the displayed list of packages from top to bottom...
-     */
-    unsigned long op;
-    pkgActionItem *ref = actions->GetReference( (pkgXmlNode *)(lookup.lParam));
-    if( ref != NULL )
-    {
-      if( (op = ref->HasAttribute( ACTION_MASK )) != 0UL )
-      {
-	/* ...identifying any action scheduled on each package,
-	 * and selecting the appropriate list view icon...
-	 */
-	switch( op )
-	{
-	  case ACTION_INSTALL:
-	    /*
-	     * ...for packages scheduled for installation...
-	     *
-	     * FIXME: we should also consider that such packages
-	     * may have been scheduled for reinstallation.
-	     */
-	    lookup.iImage = PKGSTATE( AVAILABLE_INSTALL );
-	    break;
-
-	  case ACTION_UPGRADE:
-	    /*
-	     * ...for packages scheduled for upgrade...
-	     */
-	    lookup.iImage = PKGSTATE( UPGRADE );
-	    break;
-
-	  case ACTION_REMOVE:
-	    /*
-	     * ...for packages scheduled for removal.
-	     */
-	    lookup.iImage = PKGSTATE( REMOVE );
-	}
-      }
-      else
-      { /* A previously scheduled action has been cancelled;
-	 * retrieve the package release status attributes, so
-	 * we may reinstate the appropriate unmarked icon.
-	 */
-	pkgActionItem avail;
-	pkgXmlNode *rel = ref->Selection();
-	if( rel == NULL ) rel = ref->Selection( to_remove );
-	if( (rel = pkgGetStatus( rel->GetParent(), &avail )) == NULL )
-	  /*
-	   * For a package which has not been installed, this
-	   * indicates an available package...
-	   */
-	  lookup.iImage = PKGSTATE( AVAILABLE );
-
-	else
-	{ /* ...while for an installed package, it indicates
-	   * currency or upgradeability, as appropriate.
-	   */
-	  pkgSpecs current( rel );
-	  pkgSpecs latest( avail.Selection() );
-	  lookup.iImage = (latest > current) ? PKGSTATE( INSTALLED_OLD )
-	    : PKGSTATE( INSTALLED_CURRENT );
-	}
-      }
-      /* Apply the new icon selection...
-       */
-      ListView_SetItem( pkglist, &lookup );
-    }
-    /* ...and move on to the next list view entry.
-     */
-    lookup.iItem++;
-  }
+  pkgListViewMaker pkglist( PackageListView );
+  pkglist.MarkScheduledActions( pending_actions );
+  UpdatePackageMenuBindings();
 }
 
 void AppWindowMaker::Schedule
@@ -1152,8 +1079,7 @@ void AppWindowMaker::Schedule
      * the resultant schedule of actions, and update the list
      * view state icons to reflect the pending actions.
      */
-    pkgMarkSchedule( PackageListView, pkgData->Schedule( action, pkgname ) );
-    UpdatePackageMenuBindings();
+    MarkSchedule( pkgData->Schedule( action, pkgname ) );
   }
 }
 
@@ -1195,8 +1121,7 @@ void AppWindowMaker::UnmarkSelectedPackage( void )
      * may have changed, so refresh the icon associations and the
      * package menu bindings accordingly.
      */
-    pkgMarkSchedule( PackageListView, pkgData->Schedule() );
-    UpdatePackageMenuBindings();
+    MarkSchedule( pkgData->Schedule() );
   }
 }
 

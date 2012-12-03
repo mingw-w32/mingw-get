@@ -1,3 +1,41 @@
+2012-12-03  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Consolidate GUI implementation for package list view management.
+
+	* src/pkglist.h (pkgListViewMaker::GetTitle): Disused overloaded
+	method; remove all declarations.
+	(pkgListViewMaker::GetVersionString): Disused method; remove
+	declaration.
+	(pkgListViewMaker::GetItem): New private inline method; declare it.
+	(pkgListViewMaker::UpdateItem): New private method; declare it.
+	(pkgListViewMaker::UpdateListView): New public method; declare it.
+	(pkgListViewMaker::MarkScheduledActions): Likewise.
+
+	* src/guimain.h (AppWindowMaker::MarkSchedule): New public inline
+	method; declare it, but defer implementation to...
+
+	* src/pkgdata.cpp (AppWindowMaker::MarkSchedule): ...here; not used
+	elsewhere, it is derived from, and replaces...
+	(pkgMarkSchedule): ...this function; factor out redundant code, in
+	favour of delegation to pkgListViewMaker::MarkScheduledActions(), with
+	following call to AppWindowMaker::UpdatePackageMenuBindings(); update
+	calling function references...
+	(AppWindowMaker::UnmarkSelectedPackage): ...here, and...
+	(AppWindowMaker::Schedule): ...here.
+
+	* src/pkglist.cpp (pkgVersionString): New static function; implement
+	it as a local replacement for...
+	(pkgListViewMaker::GetVersionString): ...this defunct class method.
+	(pkgGetTitle): New overloaded static function; implement two variants,
+	as local replacements for...
+	(pkgListViewMaker::GetTitle): ...this defunct overloaded class method.
+	(pkgListViewMaker::UpdateItem): Implement it; factor code from...
+	(pkgListViewMaker::InsertItem): ...here, whence use it.
+	(pkgListViewMaker::MarkScheduledActions): Implement it.
+	(pkgListViewMaker::UpdateListView): Implement it.
+	(pkgListViewMaker::pkgListViewMaker): Remove references to...
+	(LVIF_TEXT): ...this.
+
 2012-11-30  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Increase width of window sash bars by 50%.

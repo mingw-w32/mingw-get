@@ -169,6 +169,7 @@ class AppWindowMaker: public WTK::MainWindowMaker
     void InitPackageListView( void );
     void UpdatePackageMenuBindings( void );
     void Schedule( unsigned long, const char * = NULL, const char * = NULL );
+    inline void MarkSchedule( pkgActionItem * );
     void UnmarkSelectedPackage( void );
 
     DataSheetMaker *DataSheet;

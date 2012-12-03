@@ -65,17 +65,15 @@ class pkgListViewMaker: public pkgDirectoryViewerEngine
   public:
     pkgListViewMaker( HWND );
     virtual void Dispatch( pkgXmlNode * );
+    virtual void MarkScheduledActions( pkgActionItem * );
+    virtual void UpdateListView( void );
 
   private:
     HWND ListView;
     LVITEM content;
-    char *GetTitle( pkgXmlNode *pkg )
-    {
-      return GetTitle( pkg, pkg->GetDocumentRoot() );
-    }
-    char *GetTitle( pkgXmlNode *, const pkgXmlNode * );
-    char *GetVersionString( char *, pkgSpecs * );
+    inline bool GetItem( void );
     void InsertItem( pkgXmlNode *, char * );
+    void UpdateItem( char *, bool = false );
     char *package_name;
 };
 
