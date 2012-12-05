@@ -1,3 +1,26 @@
+2012-12-05  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement PTY display emulation for GUI mode DMH.
+
+	* src/dmhcore.h (dmhTypeGeneric::set_console_hook): New public virtual
+	method; declare it, providing inline default do-nothing implementation.
+	(dmhTypeGeneric::severity_tag): New protected static method; declare it.
+	(dmhTypeGeneric::notification_format): New protected static property;
+	declare it.
+
+	* src/dmh.cpp (dmhTypeGeneric::severity_tag): Implement it.
+	(dmhTypeGeneric::notification_format): Define and initialise it.
+	(dmhTypeTTY::notify): Use them.
+	(dmh_setpty): New function; declare prototype and implement it.
+
+	* src/guidmh.cpp (dmhTypePTY): New locally implemented class.
+	(dmhTypeGUI::set_console_hook): New virtual method; declare and
+	implement it; it stores a dmhTypePTY reference pointer into...
+	(dmhTypeGUI::console_hook): ...this new private member variable.
+	(dmhTypeGUI::dmhTypeGUI): Initialise it.
+	(dmhTypeGUI::notify) [console_hook != NULL]: Delegate to it.
+	(dmhTypeGUI::printf) [console_hook != NULL]: Likewise.
+
 2012-12-03  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Implement generalised API for dialogue boxes with worker threads.

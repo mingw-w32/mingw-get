@@ -36,12 +36,15 @@ class dmhTypeGeneric
    */
   public:
     dmhTypeGeneric( const char* );
+    virtual void set_console_hook( void * ){}
     virtual uint16_t control( const uint16_t, const uint16_t ) = 0;
     virtual int notify( const dmh_severity, const char*, va_list ) = 0;
     virtual int printf( const char*, va_list ) = 0;
 
   protected:
     const char *progname;
+    static const char *severity_tag( dmh_severity );
+    static const char *notification_format;
 };
 
 #endif /* DMHCORE_H: $RCSfile$: end of file */

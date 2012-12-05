@@ -34,6 +34,12 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+/* Prototype this at point of use, rather than in dmhcore.h,
+ * so that we don't need to arbitrarily include windows.h in
+ * any DMH client.
+ */
+EXTERN_C void dmh_setpty( HWND );
+
 /* Implementation of the dmh_exception class.
  */
 static const char *unspecified_error = "Unspecified error";
@@ -161,9 +167,9 @@ inline int dmhTypeTTY::emit_and_flush( int status )
   return status;
 }
 
-int dmhTypeTTY::notify( const dmh_severity code, const char *fmt, va_list argv )
+const char *dmhTypeGeneric::severity_tag( dmh_severity code )
 {
-  /* Message dispatcher for console class applications.
+  /* Helper function to assign labels to the known severity codes.
    */
   static const char *severity[] =
   {
@@ -174,13 +180,24 @@ int dmhTypeTTY::notify( const dmh_severity code, const char *fmt, va_list argv )
     "ERROR",		/* DMH_ERROR */
     "FATAL"		/* DMH_FATAL */
   };
+  return severity[code];
+}
 
+/* Establish the format to be used for the prefix string, which is
+ * attached to TTY and PTY notifications.
+ */
+const char *dmhTypeGeneric::notification_format = "%s: *** %s *** ";
+
+int dmhTypeTTY::notify( const dmh_severity code, const char *fmt, va_list argv )
+{
+  /* Message dispatcher for console class applications.
+   */
   /* Dispatch the message to standard error, terminate application
    * if DMH_FATAL, else continue, returning the message length.
    */
   return abort_if_fatal( code,
       emit_and_flush(
-	fprintf( stderr, "%s: *** %s *** ", progname, severity[code] )
+	fprintf( stderr, notification_format, progname, severity_tag( code ) )
 	+ vfprintf( stderr, fmt, argv )
 	)
       );
@@ -196,7 +213,19 @@ int dmhTypeTTY::printf( const char *fmt, va_list argv )
 
 EXTERN_C uint16_t dmh_control( const uint16_t request, const uint16_t mask )
 {
+  /* Public helper to access and manipulate the control channel for
+   * the diagnostic message handler.
+   */
   return dmh->control( request, mask );
+}
+
+EXTERN_C void dmh_setpty( HWND console )
+{
+  /* Public API for assignment of a GUI window as a pseudo-console
+   * for streaming of diagnostic message handler output; ("console"
+   * is assumed to refer to a Windows EDITTEXT control).
+   */
+  dmh->set_console_hook( (void *)(console) );
 }
 
 EXTERN_C int dmh_notify( const dmh_severity code, const char *fmt, ... )
