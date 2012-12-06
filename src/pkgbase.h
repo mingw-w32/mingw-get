@@ -302,9 +302,10 @@ class pkgActionItem
     inline unsigned long CancelScheduledAction( void );
     inline void SetPrimary( pkgActionItem* );
 
-    /* Method to check for residual unapplied changes.
+    /* Method to enumerate and identify pending changes,
+     * and/or check for residual unapplied changes.
      */
-    inline unsigned long Unapplied( void );
+    unsigned long EnumeratePendingActions( int = 0 );
 
     /* Methods for defining the selection criteria for
      * packages to be processed.

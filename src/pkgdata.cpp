@@ -1165,7 +1165,7 @@ long AppWindowMaker::OnNotify( WPARAM client_id, LPARAM data )
   return EXIT_SUCCESS;
 }
 
-inline unsigned long pkgActionItem::Unapplied( void )
+unsigned long pkgActionItem::EnumeratePendingActions( int classified )
 {
   /* Helper method to count the pending actions in a
    * scheduled action list.
@@ -1173,33 +1173,64 @@ inline unsigned long pkgActionItem::Unapplied( void )
   unsigned long count = 0;
   if( this != NULL )
   {
-    /* Assuming that the initial 'this' pointer is closer
-     * to the end of the list, than to the beginning...
+    /* Regardless of the position of the 'this' pointer,
+     * within the list of scheduled actions...
      */
     pkgActionItem *item = this;
-    while( item->next != NULL )
+    while( item->prev != NULL )
       /*
-       * ...advance, to ensure we have located the very
-       * last item in the schedule.
+       * ...we want to get a reference to the first
+       * item in the list.
        */
-      item = item->next;
+      item = item->prev;
 
-    /* Now, working back from end to beginning...
+    /* Now, working through the list...
      */
     while( item != NULL )
     {
       /* ...note items with any scheduled action...
        */
-      if( item->flags & ACTION_MASK )
-	/*
-	 * ...and count them...
+      int action;
+      if( (action = item->flags & ACTION_MASK) != 0 )
+      {
+	/* ...and, when one is found...
 	 */
-	++count;
-
-      /* ...then move on, to consider the preceding
-       * entry, if any.
+	if( action == classified )
+	{
+	  /* ...and it matches the classification in which
+	   * we are interested, then we retrieve the tarname
+	   * for the related package...
+	   */
+	  pkgXmlNode *selected = (classified & ACTION_REMOVE)
+	    ? item->Selection( to_remove )
+	    : item->Selection();
+	  const char *notification = (selected != NULL)
+	    ? selected->GetPropVal( tarname_key, NULL )
+	    : NULL;
+	  if( notification != NULL )
+	  {
+	    /* ...and, provided it is valid, we append it to
+	     * the DMH driven dialogue in which the enumeration
+	     * is being reported...
+	     */
+	    dmh_printf( "%s\n", notification );
+	    /*
+	     * ...and include it in the accumulated count...
+	     */
+	    ++count;
+	  }
+	}
+	else if( classified == 0 )
+	  /*
+	   * ...otherwise, when we aren't interested in any
+	   * particular class of action, just count all those
+	   * which are found, regardless of classification.
+	   */
+	  ++count;
+      }
+      /* ...then move on, to consider the next entry, if any.
        */
-      item = item->prev;
+      item = item->next;
     }
   }
   /* Ultimately, return the count of pending actions,
@@ -1215,7 +1246,7 @@ long AppWindowMaker::OnClose()
    * option for the termination request, so that the user
    * has an opportunity to complete such actions.
    */
-  if( (pkgData->Schedule()->Unapplied() > 0)
+  if( (pkgData->Schedule()->EnumeratePendingActions() > 0)
   &&  (MessageBox( AppWindow,
 	"You have marked changes which have not been applied;\n"
 	"these will be lost, if you quit without applying them.\n\n"

@@ -1,3 +1,18 @@
+2012-12-06  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement enhanced action item enumeration capability.
+
+	* src/pkgbase.h (pkgActionItem::EnumeratePendingActions): New public
+	method; declare it.  It provides the capability to enumerate scheduled
+	actions, filtered by action classification; when invoked such that it
+	selects all actions, it may be used as a replacement for...
+	(pkgActionItem::Unapplied): ...this; delete declaration.
+
+	* src/pkgdata.cpp (pkgActionItem::EnumeratePendingActions): Implement
+	it; it is derived, with enhancement, from original implementation...
+	(pkgActionItem::Unapplied): ...of this; delete it, and...
+	(AppWindowMaker::OnClose): ...update calling reference accordingly.
+
 2012-12-05  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Implement PTY display emulation for GUI mode DMH.
