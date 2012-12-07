@@ -67,13 +67,14 @@ END
  */
 ID_MAIN_WINDOW	MENU	DISCARDABLE
 BEGIN
-  /* The "Repository" drop-down menu; this also includes options
+  /* The "Installation" drop-down menu; this includes options
    * which are commonly found on the "File" menu of applications
    * with conventional menu bar content.
    */
-  POPUP 	"&Repository"
+  POPUP 	"&Installation"
   BEGIN
     MENUITEM	  "&Update Catalogue",			IDM_REPO_UPDATE
+    MENUITEM	  "&Apply Changes",			IDM_REPO_APPLY
     MENUITEM	  SEPARATOR
     MENUITEM	  "&Quit\tAlt+F4", 			IDM_REPO_QUIT
   END
@@ -144,6 +145,32 @@ BEGIN
   CONTROL				"", IDD_PROGRESS_BAR, PROGRESS_CLASS, WS_CHILD \
 					| PBS_SMOOTH, 6, 20, 258, 10
   LTEXT 				"", IDD_PROGRESS_MSG, 7, 6, 256, 12
+END
+
+#define SS_CTEXTBOX			SS_SUNKEN | SS_CENTER
+#define ES_VT100			ES_LEFT | ES_READONLY | ES_MULTILINE | ES_AUTOVSCROLL
+
+/* Template for dialogue requesting user confirmation of intent
+ * to proceed with scheduled change actions.
+ */
+IDD_APPLY_APPROVE DIALOG DISCARDABLE	10, 10, 306, 191
+CAPTION					"Schedule of Pending Actions"
+STYLE					DS_MODALFRAME | DS_SETFONT | WS_POPUP | WS_CAPTION | WS_DLGFRAME
+FONT					10, "Verdana"
+BEGIN
+  GROUPBOX				"Okay to proceed?", IDD_PROGRESS_TXT, 6, 5, 294, 33
+  LTEXT 				"The package changes itemised below will\n" \
+  					"be implemented when you choose ""Apply""", IDD_PROGRESS_MSG, \
+					10, 15, 150, 20
+  DEFPUSHBUTTON 			"Apply", ID_APPLY, 166, 17, 40, 12, WS_GROUP
+  PUSHBUTTON 				"Defer", ID_DEFER, 210, 17, 40, 12, WS_GROUP
+  PUSHBUTTON 				"Discard", ID_DISCARD, 254, 17, 40, 12, WS_GROUP
+  GROUPBOX				"", IDD_APPLY_REMOVES_SUMMARY, 6, 40, 294, 47
+  EDITTEXT				IDD_APPLY_REMOVES_PACKAGES, 7, 50, 292, 36, WS_VSCROLL | ES_VT100
+  GROUPBOX				"", IDD_APPLY_UPGRADES_SUMMARY, 6, 89, 294, 47
+  EDITTEXT				IDD_APPLY_UPGRADES_PACKAGES, 7, 99, 292, 36, WS_VSCROLL | ES_VT100
+  GROUPBOX				"", IDD_APPLY_INSTALLS_SUMMARY, 6, 138, 294, 47
+  EDITTEXT				IDD_APPLY_INSTALLS_PACKAGES, 7, 148, 292, 36, WS_VSCROLL | ES_VT100
 END
 
 /* $RCSfile$: end of file */

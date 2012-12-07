@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, MinGW Project
+ * Copyright (C) 2012, MinGW.org Project
  *
  *
  * Implementation of XML data loading services for the mingw-get GUI.
@@ -27,10 +27,19 @@
 #include "guimain.h"
 #include "pkgbase.h"
 #include "pkgkeys.h"
+#include "pkglist.h"
 #include "pkgtask.h"
 
 #include <unistd.h>
 #include <wtkexcept.h>
+
+/* The DMH sub-system provides the following function, but it does not
+ * declare the prototype; (this is to obviate any automatic requirement
+ * for every DMH client to include windows.h).  We have already included
+ * windows.h indirectly, via guimain.h, so it is convenient for us to
+ * declare the requisite prototype here.
+ */
+EXTERN_C void dmh_setpty( HWND );
 
 class ProgressMeterMaker: public pkgProgressMeter
 {
@@ -297,8 +306,7 @@ static int CALLBACK pkgDialogue
      * on behalf of such dialogue boxes...
      */
     case WM_INITDIALOG:
-      /*
-       * ...viz. on initial dialogue box creation, we delegate the
+      /* ...viz. on initial dialogue box creation, we delegate the
        * designated activity to the background thread...
        */
       _beginthread( AppWindowMaker::DialogueThread, 0, (void *)(window) );
@@ -333,7 +341,93 @@ int AppWindowMaker::DispatchDialogueThread( int id, pkgDialogueThread *handler )
    * thread to handle a designated background process on its behalf.
    */
   DialogueThread = handler;
-  return DialogBox( AppInstance, MAKEINTRESOURCE( id ), AppWindow, pkgDialogue );
+  return DialogueResponse( id, pkgDialogue );
+}
+
+inline unsigned long AppWindowMaker::EnumerateActions( int classified )
+{
+  /* Helper method to enumerate the actions of a specified
+   * class, within the current schedule.
+   */
+  return pkgData->Schedule()->EnumeratePendingActions( classified );
+}
+
+static int pkgActionCount( HWND dlg, int id, const char *fmt, int classified )
+{
+  /* Helper function to itemise the currently scheduled actions
+   * of a specified class, recording the associated package name
+   * within the passed EDITTEXT control, and noting the count of
+   * itemised actions within the heading of the control.
+   *
+   * First, count the actions, while adding the package names
+   * to the edit control with the specified ID.
+   */
+  dmh_setpty( GetDlgItem( dlg, id ) );
+  int count = GetAppWindow( GetParent( dlg ))->EnumerateActions( classified );
+
+  /* Construct the heading, according to the specified format,
+   * and including the identified action count.
+   */
+  const char *packages = (count == 1) ? "package" : "packages";
+  char label_text[1 + snprintf( NULL, 0, fmt, count, packages )];
+  snprintf( label_text, sizeof( label_text), fmt, count, packages );
+
+  /* Finally, update the heading on the edit control, assigning
+   * it to the dialogue control with ID one greater than that of
+   * the edit control itself.
+   */
+  SendMessage( GetDlgItem( dlg, ++id ), WM_SETTEXT, 0, (LPARAM)(label_text) );
+  dmh_setpty( NULL );
+  return count;
+}
+
+/* Implement a macro as shorthand notation for passing of action
+ * specific argument lists to the pkgActionCount() function...
+ */
+#define ACTION_APPLY(OP)    APPLIES_TO(OP), FMT_APPLY_##OP##S, ACTION_##OP
+#define APPLIES_TO(OP)      IDD_APPLY_##OP##S_PACKAGES
+
+/* ...using the appropriate selection from these action specific
+ * message formats.
+ */
+#define FMT_APPLY_REMOVES   "%u installed %s will be removed"
+#define FMT_APPLY_UPGRADES  "%u installed %s will be upgraded"
+#define FMT_APPLY_INSTALLS  "%u new/upgraded %s will be installed"
+
+static int CALLBACK pkgApplyApproved
+( HWND window, unsigned int msg, WPARAM wParam, LPARAM lParam )
+{
+  /* Callback function servicing the custom dialogue box in which
+   * scheduled actions are itemised for user confirmation, prior
+   * to applying them.
+   */
+  switch( msg )
+  { case WM_INITDIALOG:
+      /* On opening the dialogue box, itemise each of the
+       * remove, upgrade, and install action classes.
+       */
+      pkgActionCount( window, ACTION_APPLY( REMOVE ) );
+      pkgActionCount( window, ACTION_APPLY( UPGRADE ) );
+      pkgActionCount( window, ACTION_APPLY( INSTALL ) );
+      return TRUE;
+
+    case WM_COMMAND:
+      /* Wait for the user to review the itemised schedule
+       * of pending changes, confirm intent to proceed...
+       */
+      long opt = LOWORD( wParam );
+      if( (opt == ID_APPLY) || (opt == ID_DISCARD) || (opt == ID_DEFER) )
+      {
+	/* ...then close the dialogue, passing the selected
+	 * continuation option back to the caller.
+	 */
+	EndDialog( window, opt );
+	return TRUE;
+      }
+  }
+  /* Ignore any window messages we don't recognise.
+   */
+  return FALSE;
 }
 
 int AppWindowMaker::Invoked( void )
@@ -430,6 +524,58 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
        * repository, and consolidate them into the local catalogue.
        */
       DispatchDialogueThread( IDD_REPO_UPDATE, pkgInvokeUpdate );
+      break;
+
+    case IDM_REPO_APPLY:
+      /* Initiated when the user selects the "Apply Changes" option,
+       * we present the user with a dialogue requesting confirmation
+       * of intent to proceed...
+       */
+      switch( DialogueResponse( IDD_APPLY_APPROVE, pkgApplyApproved ) )
+      {
+	/* ...then, of the three possible return conditions, we simply
+	 * ignore the "Defer" option, (since it requires no action), but
+	 * we must explicitly handle the "Apply" and "Discard" options.
+	 */
+	case ID_APPLY:
+	  /* When "Apply" confirmation is forthcoming, we proceed to
+	   * download any required packages, and invoke the scheduled
+	   * remove, upgrade, or install actions.
+	   *
+	   * FIXME: the pkgInvokeDownload() and pkgApplyChanges() thread
+	   * handlers have yet to be implemented.
+	   */
+//	  DispatchDialogueThread( IDD_APPLY_DOWNLOAD, pkgInvokeDownload );
+//	  DispatchDialogueThread( IDD_APPLY_MONITORED, pkgApplyChanges );
+
+	  /* After applying changes, we fall through...
+	   */
+	case ID_DISCARD:
+	  /* ...so that on explicit "Discard" selection by the user,
+	   * or following application of all scheduled actions, as a
+	   * result of processing the "Apply" selection, we clear the
+	   * actions schedule, remove all marker icons, and refresh
+	   * the package list to reflect current status.
+	   *
+	   * FIXME: the pkgXmlDocument::ClearScheduledActions() method
+	   * has yet to be implemented.
+	   */
+	  pkgListViewMaker pkglist( PackageListView );
+//	  pkgData->ClearScheduledActions( PRESERVE_FAILED );
+	  pkglist.UpdateListView();
+	  
+	  /* Updating the list view clears pending action marks from
+	   * every entry, but clearing the schedule may not cancel any
+	   * request relating to a failed action; restore marked state
+	   * for such residual actions.
+	   */
+	  pkglist.MarkScheduledActions( pkgData->Schedule() );
+
+	  /* Clearing the schedule of actions may also affect the
+	   * validity of menu options; update accordingly.
+	   */
+	  UpdatePackageMenuBindings();
+      }
       break;
 
     case IDM_REPO_QUIT:

@@ -49,7 +49,8 @@
 
 #define IDM_MAIN_MENU			 300
 #define IDM_REPO_UPDATE 		 301
-#define IDM_REPO_QUIT			 302
+#define IDM_REPO_APPLY	 		 302
+#define IDM_REPO_QUIT			 312
 
 #define IDM_PACKAGE_UNMARK		 400
 #define IDM_PACKAGE_INSTALL		 401
@@ -85,6 +86,16 @@
 #define IDD_AUTO_CLOSE_OPTION		 612
 #define IDD_PROGRESS_BAR		 613
 #define IDD_PROGRESS_MSG		 614
+#define IDD_PROGRESS_TXT		 618
+
+#define IDD_APPLY_APPROVE		 630
+
+#define IDD_APPLY_REMOVES_PACKAGES	 633
+#define IDD_APPLY_REMOVES_SUMMARY	 634
+#define IDD_APPLY_UPGRADES_PACKAGES	 635
+#define IDD_APPLY_UPGRADES_SUMMARY	 636
+#define IDD_APPLY_INSTALLS_PACKAGES	 637
+#define IDD_APPLY_INSTALLS_SUMMARY	 638
 
 #define ID_PKGLIST_TABLE_HEADINGS	1024
 #define ID_PKGNAME_COLUMN_HEADING	1025
@@ -92,6 +103,10 @@
 #define ID_INSTVER_COLUMN_HEADING	1027
 #define ID_REPOVER_COLUMN_HEADING	1028
 #define ID_PKGDESC_COLUMN_HEADING	1029
+
+#define ID_APPLY			2048
+#define ID_DISCARD			2049
+#define ID_DEFER			2050
 
 #ifndef RC_INVOKED
 #define WIN32_LEAN_AND_MEAN
@@ -145,6 +160,8 @@ class AppWindowMaker: public WTK::MainWindowMaker
     inline long AdjustLayout( void ){ return OnSize( 0, 0, 0 ); }
     int Invoked( void );
 
+    inline long DialogueResponse( int, DLGPROC );
+
     static pkgDialogueThread *DialogueThread;
     int DispatchDialogueThread( int, pkgDialogueThread * );
 
@@ -154,6 +171,8 @@ class AppWindowMaker: public WTK::MainWindowMaker
 
     inline pkgProgressMeter *AttachProgressMeter( pkgProgressMeter * );
     inline void DetachProgressMeter( pkgProgressMeter * );
+
+    inline unsigned long EnumerateActions( int = 0 );
 
   private:
     virtual long OnCreate();
@@ -182,6 +201,14 @@ class AppWindowMaker: public WTK::MainWindowMaker
     HWND PackageTabControl, PackageTabPane;
     void InitPackageTabControl();
 };
+
+inline long AppWindowMaker::DialogueResponse( int id, DLGPROC handler )
+{
+  /* A convenience method for invoking a conventional windows dialogue,
+   * having the owner application window as its parent.
+   */
+  return DialogBox( AppInstance, MAKEINTRESOURCE( id ), AppWindow, handler );
+}
 
 #endif /* ! RC_INVOKED */
 #endif /* GUIMAIN_H: $RCSfile$: end of file */

@@ -1,3 +1,36 @@
+2012-12-07  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement GUI dialogue for "Apply Changes" action approval.
+
+	* src/guidata.rc (ID_MAIN_WINDOW_MENU): Rename...
+	("&Repository"): ...this drop-down menu entry...
+	("&Installation"): ...this; add...
+	("&Apply Changes"): ...this new selection.
+	(IDD_APPLY_APPROVE): New dialogue box resource template; define it.
+	(SS_CTEXTBOX): New aggregate style convenience macro; define it.
+	(ES_VT100): Likewise.
+
+	* src/guimain.h (IDM_REPO_APPLY): New resource ID; define it.
+	(IDM_REPO_QUIT): Redefined resource ID; was 302; changed to 312.
+	(IDD_APPLY_APPROVE, IDD_PROGRESS_TXT): New resource IDs; define them.
+	(IDD_APPLY_REMOVES_PACKAGES, IDD_APPLY_REMOVES_SUMMARY): Likewise.
+	(IDD_APPLY_INSTALLS_PACKAGES, IDD_APPLY_INSTALLS_SUMMARY): Likewise.
+	(IDD_APPLY_UPGRADES_PACKAGES, IDD_APPLY_UPGRADES_SUMMARY): Likewise.
+	(ID_APPLY, ID_DISCARD, ID_DEFER): New response IDs; define them.
+	(AppWindowMaker::EnumerateActions): New inline method; declare it.
+	(AppWindowMaker::DialogueResponse): New inline method; declare and
+	implement it.
+
+	* src/guixmld.cpp (pkglist.h): #included.
+	(dmh_setpty): Add locally declared prototype.
+	(AppWindowMaker::EnumerateActions): Implement it.
+	(pkgActionCount): New static helper function; implement it.
+	(ACTION_APPLY, APPLIES_TO): New macros; define them.
+	(FMT_APPLY_REMOVES, FMT_APPLY_INSTALLS, FMT_APPLY_UPGRADES): New
+	manifest string constants; define them.
+	(pkgApplyApproved): New static call-back function; implement...
+	(AppWindowMaker::OnCommand) [IDM_REPO_APPLY]: ...and use it.
+
 2012-12-06  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Implement enhanced action item enumeration capability.
