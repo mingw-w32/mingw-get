@@ -340,6 +340,18 @@ class pkgActionItem
      */
     void Execute();
 
+    /* Method to manipulate error trapping, control, and state
+     * flags for the schedule of actions.
+     */
+    void Reset( unsigned long, unsigned long = ~0UL, pkgActionItem * = NULL );
+
+    /* Method to filter actions from an action list: the default is to
+     * clear ALL entries; specify a value of ACTION_MASK for the second
+     * argument, to filter out entries with no assigned action.
+     */
+    pkgActionItem *Clear( pkgActionItem * = NULL, unsigned long = 0UL );
+    pkgActionItem *Clear( unsigned long mask ){ return Clear( this, mask ); }
+
     /* Destructor...
      */
     ~pkgActionItem();
@@ -466,6 +478,13 @@ class pkgXmlDocument : public TiXmlDocument
     /* Method to execute a sequence of scheduled actions.
      */
     inline void ExecuteActions(){ actions->Execute(); }
+
+    /* Method to clear the list of scheduled actions.
+     */
+    inline pkgActionItem* ClearScheduledActions( unsigned long mask = 0UL )
+    {
+      return actions = actions->Clear( mask );
+    }
 
     /* Methods to retrieve and optionally extract source archives
      * for a collection of dependent packages.

@@ -352,6 +352,83 @@ inline unsigned long AppWindowMaker::EnumerateActions( int classified )
   return pkgData->Schedule()->EnumeratePendingActions( classified );
 }
 
+pkgActionItem *pkgActionItem::Clear( pkgActionItem *schedule, unsigned long mask )
+# define ACTION_PRESERVE_FAILED  (ACTION_DOWNLOAD_FAILED | ACTION_APPLY_FAILED)
+{
+  /* Method to remove those action items which have no attribute flags in common
+   * with the specified mask, from the schedule; return the residual schedule of
+   * items, if any, which were not removed.  (Note that specifying a mask with a
+   * value of 0UL, which is the default, results in removal of all items).
+   */
+  pkgActionItem *residual = NULL;
+
+  /* Starting at the specified item, or the invoking class object item
+   * if no starting point is specified...
+   */
+  if( (schedule != NULL) || ((schedule = this) != NULL) )
+  {
+    /* ...and provided this starting point is not NULL, walk back to
+     * the first item in the associated task schedule...
+     */
+    while( schedule->prev != NULL ) schedule = schedule->prev;
+    while( schedule != NULL )
+    {
+      /* ...then, processing each scheduled task item in sequence, and
+       * keeping track of the next to be processed...
+       */
+      pkgActionItem *nextptr = schedule->next;
+      if( (schedule->flags & mask) == 0 )
+	/*
+	 * ...delete each which doesn't match any masked attribute...
+	 */
+	delete schedule;
+
+      else
+        /* ...otherwise add it to the residual schedule.
+	 */
+	residual = schedule;
+
+      /* In either event, move on to the next item in sequence, if any.
+       */
+      schedule = nextptr;
+    }
+  }
+  /* Ultimately, return a pointer to the last item added to the residual
+   * schedule, or NULL if all items were deleted.
+   */
+  return residual;
+}
+
+void pkgActionItem::Reset
+( unsigned long set, unsigned long mask, pkgActionItem *schedule )
+{
+  /* A method to manipulate the control, error trapping, and state
+   * flags for all items in the specified schedule of actions.
+   *
+   * Starting at the specified item, or the invoking class object
+   * item if no starting point is specified...
+   */
+  if( (schedule != NULL) || ((schedule = this) != NULL) )
+  {
+    /* ...and provided this starting point is not NULL, walk back
+     * to the first item in the associated task schedule...
+     */
+    while( schedule->prev != NULL ) schedule = schedule->prev;
+    while( schedule != NULL )
+    {
+      /* ...then, processing each scheduled task item in sequence,
+       * update the flags according to the specified mask and new
+       * bits to be set...
+       */
+      schedule->flags = (flags & mask) | set;
+      /*
+       * ...before moving on to the next item in the sequence.
+       */
+      schedule = schedule->next;
+    }
+  }
+}
+
 static int pkgActionCount( HWND dlg, int id, const char *fmt, int classified )
 {
   /* Helper function to itemise the currently scheduled actions
@@ -528,14 +605,16 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
 
     case IDM_REPO_APPLY:
       /* Initiated when the user selects the "Apply Changes" option,
-       * we present the user with a dialogue requesting confirmation
-       * of intent to proceed...
+       * we first reset the error trapping and download request state
+       * for all scheduled actions, then we present the user with a
+       * dialogue requesting confirmation of approval to proceed.
        */
+      pkgData->Schedule()->Reset( ACTION_DOWNLOAD, ~ACTION_PRESERVE_FAILED );
       switch( DialogueResponse( IDD_APPLY_APPROVE, pkgApplyApproved ) )
       {
-	/* ...then, of the three possible return conditions, we simply
-	 * ignore the "Defer" option, (since it requires no action), but
-	 * we must explicitly handle the "Apply" and "Discard" options.
+	/* Of the three possible responses, we simply ignore the "Defer"
+	 * option, (since it requires no action), but we must explicitly
+	 * handle the "Apply" and "Discard" options.
 	 */
 	case ID_APPLY:
 	  /* When "Apply" confirmation is forthcoming, we proceed to
@@ -556,12 +635,8 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
 	   * result of processing the "Apply" selection, we clear the
 	   * actions schedule, remove all marker icons, and refresh
 	   * the package list to reflect current status.
-	   *
-	   * FIXME: the pkgXmlDocument::ClearScheduledActions() method
-	   * has yet to be implemented.
 	   */
 	  pkgListViewMaker pkglist( PackageListView );
-//	  pkgData->ClearScheduledActions( PRESERVE_FAILED );
 	  pkglist.UpdateListView();
 	  
 	  /* Updating the list view clears pending action marks from
@@ -569,7 +644,8 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
 	   * request relating to a failed action; restore marked state
 	   * for such residual actions.
 	   */
-	  pkglist.MarkScheduledActions( pkgData->Schedule() );
+	  if( pkgData->ClearScheduledActions( ACTION_PRESERVE_FAILED ) != NULL )
+	    pkglist.MarkScheduledActions( pkgData->Schedule() );
 
 	  /* Clearing the schedule of actions may also affect the
 	   * validity of menu options; update accordingly.

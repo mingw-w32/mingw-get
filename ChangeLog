@@ -1,3 +1,23 @@
+2012-12-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement "Discard" handler for GUI "Apply Changes" dialogue.
+
+	* src/pkgbase.h (pkgActionItem::Reset): New public method; declare it.
+	(pkgActionItem::Clear): New public method; declare two overloaded
+	variants, of which implement one inline.
+	(pkgXmlDocument::ClearScheduledActions): New public method; declare
+	and implement it inline.
+
+	* src/pkgtask.h (ACTION_DOWNLOAD_FAILED, ACTION_APPLY_FAILED): New
+	manifest bit-flag constants; define them.  They provide a mechanism
+	for blocking the discard event in respect of failed actions.
+
+	* src/guixmld.cpp (pkgActionItem::Reset): Implement it.
+	(pkgActionItem::Clear): Implement second, out-of-line variant.
+	(ACTION_PRESERVE_FAILED): New local manifest bit-flag constant; define
+	it as an aggregate of ACTION_DOWNLOAD_FAILED and ACTION_APPLY_FAILED.
+	(AppWindowMaker::OnCommand) [IDD_REPO_APPLY]: Use them.
+
 2012-12-07  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Implement GUI dialogue for "Apply Changes" action approval.
