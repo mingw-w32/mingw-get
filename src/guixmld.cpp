@@ -26,6 +26,7 @@
  */
 #include "guimain.h"
 #include "pkgbase.h"
+#include "pkginet.h"
 #include "pkgkeys.h"
 #include "pkglist.h"
 #include "pkgtask.h"
@@ -621,10 +622,10 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
 	   * download any required packages, and invoke the scheduled
 	   * remove, upgrade, or install actions.
 	   *
-	   * FIXME: the pkgInvokeDownload() and pkgApplyChanges() thread
-	   * handlers have yet to be implemented.
+	   * FIXME: the pkgInvokeDownload() thread handler has yet to
+	   * be implemented.
 	   */
-//	  DispatchDialogueThread( IDD_APPLY_DOWNLOAD, pkgInvokeDownload );
+	  DispatchDialogueThread( IDD_APPLY_DOWNLOAD, pkgInvokeDownload );
 //	  DispatchDialogueThread( IDD_APPLY_MONITORED, pkgApplyChanges );
 
 	  /* After applying changes, we fall through...

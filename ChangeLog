@@ -1,3 +1,52 @@
+2012-12-10  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement GUI bindings for package download agent.
+
+	* src/guimain.h (IDD_PROGRESS_VAL, IDD_PROGRESS_MAX):
+	(IDD_PROGRESS_PCT): New manifest resource IDs; define them.  They will
+	be used to identify dialogue controls, to be associated with...
+	(IDD_APPLY_DOWNLOAD): ...this new dialogue template ID; define it.
+	(AppWindowMaker::DownloadArchiveFiles): New inline method; declare it.
+
+	* src/guidata.rc (IDD_APPLY_DOWNLOAD): Implement dialogue template.
+
+	* src/pkgbase.h (pkgActionItem::DownloadArchiveFiles): New public
+	inline method; declare it.  It overloads an existing private method of
+	the same name, which it subsequently invokes.
+
+	* src/pkginet.h: New header file; it declares...
+	(pkgInvokeDownload): ...this new extern "C" function prototype, and...
+	(pkgDownloadMeter): ...this abstract class; it is factored from its
+	original implementation in pkginet.cpp, augmented by addition of...
+	(pkgDownloadMeter::primary): New static member variable; declare it.
+	(pkgDownloadMeter::UseGUI): New public method; implement it inline.
+	(pkgDownloadMeter::ResetGUI): New public method; declare it, providing
+	a do-nothing inline default implementation.  Any derived class, which
+	supports GUI capability, should override this.
+
+	* src/pkgnget.cpp: New file; it implements...
+	(pkgDownloadMeterGUI): New class, derived from pkgDownloadMeter.
+	(pkgActionItem::DownloadArchiveFiles): New overloaded inline method.
+	(AppWindowMaker::DownloadArchiveFiles): New inline method.
+	(pkgInvokeDownload): New dialogue box worker thread handler.
+
+	* src/pkginet.cpp: Include pkginet.h; hence...
+	(pkgDownloadMeter): ...remove redundant class declaration.
+	(pkgDownloadMeter::primary): Define and initialise it.
+	(pkgInternetStreamingAgent::Get) [pkgDownloadMeter::UseGUI]: Delegate
+	progress metering to referenced pkgDownloadMeterGUI class instance.
+	[! pkgDownloadMeter::UseGUI]: Continue to use the existing built-in
+	pkgDownloadMeterTTY mechanism.
+	(pkgActionItem::DownloadSingleArchive) [ACTION_DOWLOAD_FAILED]: Assert
+	this initially; subsequently clear it on successful completion.
+	(pkgActionItem::DownloadArchiveFiles): Collect diagnostic messages
+	into a single DMH_BEGIN_DIGEST ... DMH_END_DIGEST group.
+
+	* src/guixmld.cpp: Include pkginet.h; it is required by...
+	(AppWindowMaker::OnCommand) [IDD_REPO_APPLY]: Use pkgInvokeDownload.
+
+	* Makefile.in (GUIMAIN_OBJECTS): Include pkgnget.$OBJEXT
+
 2012-12-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Implement "Discard" handler for GUI "Apply Changes" dialogue.

@@ -5,7 +5,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, 2012, MinGW Project
+ * Copyright (C) 2009, 2010, 2011, 2012, MinGW.org Project
  *
  *
  * Public interface for the package directory management routines;
@@ -336,9 +336,10 @@ class pkgActionItem
     void GetSourceArchive( pkgXmlNode*, unsigned long );
     void GetScheduledSourceArchives( unsigned long );
 
-    /* Method for processing all scheduled actions.
+    /* Methods for processing all scheduled actions.
      */
     void Execute();
+    inline void DownloadArchiveFiles( void );
 
     /* Method to manipulate error trapping, control, and state
      * flags for the schedule of actions.

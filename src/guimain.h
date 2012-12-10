@@ -5,7 +5,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, MinGW Project
+ * Copyright (C) 2012, MinGW.org Project
  *
  *
  * Resource definitions and window management class declarations for
@@ -86,9 +86,13 @@
 #define IDD_AUTO_CLOSE_OPTION		 612
 #define IDD_PROGRESS_BAR		 613
 #define IDD_PROGRESS_MSG		 614
+#define IDD_PROGRESS_VAL		 615
+#define IDD_PROGRESS_MAX		 616
+#define IDD_PROGRESS_PCT		 617
 #define IDD_PROGRESS_TXT		 618
 
 #define IDD_APPLY_APPROVE		 630
+#define IDD_APPLY_DOWNLOAD		 631
 
 #define IDD_APPLY_REMOVES_PACKAGES	 633
 #define IDD_APPLY_REMOVES_SUMMARY	 634
@@ -173,6 +177,7 @@ class AppWindowMaker: public WTK::MainWindowMaker
     inline void DetachProgressMeter( pkgProgressMeter * );
 
     inline unsigned long EnumerateActions( int = 0 );
+    inline void DownloadArchiveFiles( void );
 
   private:
     virtual long OnCreate();

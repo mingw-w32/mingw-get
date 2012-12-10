@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, 2012, MinGW Project
+ * Copyright (C) 2009, 2010, 2011, 2012, MinGW.org Project
  *
  *
  * Implementation of the package download machinery for mingw-get.
@@ -50,29 +50,20 @@
 #include "debug.h"
 
 #include "pkgbase.h"
+#include "pkginet.h"
 #include "pkgkeys.h"
 #include "pkgtask.h"
 
-class pkgDownloadMeter
-{
-  /* Abstract base class, from which facilities for monitoring the
-   * progress of file downloads may be derived.
-   */
-  public:
-    /* The working method to refresh the download progress display;
-     * each derived class MUST furnish an implementation for this.
-     */
-    virtual int Update( unsigned long length ) = 0;
-
-  protected:
-    /* Storage for the expected size of the active download...
-     */
-    unsigned long content_length;
-
-    /* ...and a method to format it for human readable display.
-     */
-    int SizeFormat( char*, unsigned long );
-};
+/* This static member variable of the pkgDownloadMeter class
+ * provides a mechanism for communicating with a pre-existing
+ * download monitoring dialogue, such as is employed in the GUI.
+ * We MUST define it, and we also initialise it to NULL.  While
+ * it remains thus, (as it always does in the CLI), no attempt
+ * will be made to access any pre-existing dialogue, and local
+ * monitoring objects will be employed; the GUI sets this to
+ * refer to its dialogue, when this is activated.
+ */
+pkgDownloadMeter *pkgDownloadMeter::primary = NULL;
 
 class pkgDownloadMeterTTY : public pkgDownloadMeter
 {
@@ -602,12 +593,33 @@ int pkgInternetStreamingAgent::Get( const char *from_url )
 	/* With the download transaction fully specified, we may
 	 * request processing of the file transfer...
 	 */
-	pkgDownloadMeterTTY download_meter
-	  (
-	    from_url, pkgDownloadAgent.QueryContentLength( dl_host )
-	  );
-	dl_meter = &download_meter;
-	dl_status = TransferData( fd );
+	if( (dl_meter = pkgDownloadMeter::UseGUI()) != NULL )
+	{
+	  /* ...with progress monitoring delegated to the GUI's
+	   * dialogue box, when running under its auspices...
+	   */
+	  dl_meter->ResetGUI(
+	      filename, pkgDownloadAgent.QueryContentLength( dl_host )
+	    );
+	  dl_status = TransferData( fd );
+	}
+	else
+	{ /* ...otherwise creating our own TTY progress monitor,
+	   * when running under the auspices of the CLI.
+	   */
+	  pkgDownloadMeterTTY download_meter(
+	      from_url, pkgDownloadAgent.QueryContentLength( dl_host )
+	    );
+	  dl_meter = &download_meter;
+
+	  /* Note that the following call MUST be kept within the
+	   * scope in which the progress monitor was created; thus,
+	   * it CANNOT be factored out of this "else" block scope,
+	   * even though it also appears at the end of the scope
+	   * of the preceding "if" block.
+	   */
+	  dl_status = TransferData( fd );
+	}
       }
       else DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_INTERNET_REQUESTS ),
 	  dmh_printf( "OpenURL:error:%d\n", GetLastError() )
@@ -682,8 +694,10 @@ void pkgActionItem::DownloadSingleArchive
   if(  ((flags & ACTION_DOWNLOAD) == ACTION_DOWNLOAD)
   &&   ((access( download.DestFile(), R_OK ) != 0) && (errno == ENOENT))  )
   {
-    /* ...if not, ask the download agent to fetch it...
+    /* ...if not, ask the download agent to fetch it,
+     * anticipating that this may fail...
      */
+    flags |= ACTION_DOWNLOAD_FAILED;
     const char *url_template = get_host_info( Selection(), uri_key );
     if( url_template != NULL )
     {
@@ -695,9 +709,9 @@ void pkgActionItem::DownloadSingleArchive
       mkpath( package_url, url_template, package_name, mirror );
       if( download.Get( package_url ) > 0 )
 	/*
-	 * Download was successful; clear the pending flag.
+	 * Download was successful; clear the pending and failure flags.
 	 */
-	flags &= ~(ACTION_DOWNLOAD);
+	flags &= ~(ACTION_DOWNLOAD | ACTION_DOWNLOAD_FAILED);
       else
 	/* Diagnose failure; leave pending flag set.
 	 */
@@ -728,8 +742,10 @@ void pkgActionItem::DownloadArchiveFiles( pkgActionItem *current )
    */
   while( current != NULL )
   {
-    /* ...while we haven't run off the end...
+    /* ...while we haven't run off the end, and collecting any diagnositic
+     * messages relating to any one package into a common digest...
      */
+    dmh_control( DMH_BEGIN_DIGEST );
     if( (current->flags & ACTION_INSTALL) == ACTION_INSTALL )
     {
       /* For all packages specified in the current action list,
@@ -755,9 +771,11 @@ void pkgActionItem::DownloadArchiveFiles( pkgActionItem *current )
 	 */
 	current->DownloadSingleArchive( package_name, pkgArchivePath() );
     }
-    /* Repeat download action, for any additional packages specified
+    /* Flush out any diagnostics relating to the current package, then
+     * repeat the download action, for any additional packages specified
      * in the current "actions" list.
      */
+    dmh_control( DMH_END_DIGEST );
     current = current->next;
   }
 }
