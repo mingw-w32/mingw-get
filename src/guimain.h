@@ -93,6 +93,7 @@
 
 #define IDD_APPLY_APPROVE		 630
 #define IDD_APPLY_DOWNLOAD		 631
+#define IDD_APPLY_EXECUTE		 632
 
 #define IDD_APPLY_REMOVES_PACKAGES	 633
 #define IDD_APPLY_REMOVES_SUMMARY	 634
@@ -100,6 +101,8 @@
 #define IDD_APPLY_UPGRADES_SUMMARY	 636
 #define IDD_APPLY_INSTALLS_PACKAGES	 637
 #define IDD_APPLY_INSTALLS_SUMMARY	 638
+
+#define IDD_DMH_CONSOLE 		 650
 
 #define ID_PKGLIST_TABLE_HEADINGS	1024
 #define ID_PKGNAME_COLUMN_HEADING	1025
@@ -178,6 +181,7 @@ class AppWindowMaker: public WTK::MainWindowMaker
 
     inline unsigned long EnumerateActions( int = 0 );
     inline void DownloadArchiveFiles( void );
+    inline void ExecuteScheduledActions( void );
 
   private:
     virtual long OnCreate();

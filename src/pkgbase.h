@@ -338,7 +338,7 @@ class pkgActionItem
 
     /* Methods for processing all scheduled actions.
      */
-    void Execute();
+    void Execute( bool = true );
     inline void DownloadArchiveFiles( void );
 
     /* Method to manipulate error trapping, control, and state

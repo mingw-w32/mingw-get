@@ -1,5 +1,25 @@
 2012-12-11  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Implement GUI bindings for processing a schedule of actions.
+
+	* src/guimain.h (IDD_DMH_CONSOLE): New resource ID; define it.
+	(IDD_APPLY_EXECUTE): New dialogue template resource ID; define it.
+	(AppWindowMaker::ExecuteScheduledActions): New method; declare it.
+
+	* src/guidata.rc (IDD_APPLY_EXECUTE): Implement dialogue template.
+
+	* src/guixmld.cpp (pkgApplyChanges): New thread function; implement it.
+	(AppWindowMaker::OnCommand) [IDD_REPO_APPLY]: Use it; it is invoked...
+	(IDD_APPLY_EXECUTE): ...via this dialogue box, subsequently calling...
+	(AppWindowMaker::ExecuteScheduledActions): ...this; implement it.
+
+	* src/pkgexec.cpp (pkgActionItem::Execute): Add argument; use it.
+	(pkgActionItem::~pkgActionItem): Unlink chained references.
+
+	* src/pkgbase.h (pkgActionItem::Execute): Adjust prototype.
+
+2012-12-11  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Do not preserve unnecessary download requests.
 
 	* src/pkginet.cpp (pkgActionItem::DownloadArchiveFiles):

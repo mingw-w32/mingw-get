@@ -295,6 +295,52 @@ static void pkgInvokeUpdate( void *window )
   }
 }
 
+inline void AppWindowMaker::ExecuteScheduledActions( void )
+{
+  /* Helper method to delegate execution of a schedule of actions from
+   * the application window to its associated action item controller.
+   */
+  pkgData->Schedule()->Execute( false );
+  pkgData->UpdateSystemMap();
+}
+
+static void pkgApplyChanges( void *window )
+{
+  /* Worker thread processing function, run while displaying the
+   * IDD_APPLY_EXECUTE dialogue box, to apply scheduled changes.
+   */
+  dmh_setpty( GetDlgItem( (HWND)(window), IDD_DMH_CONSOLE ) );
+  GetAppWindow( GetParent( (HWND)(window) ))->ExecuteScheduledActions();
+  dmh_setpty( NULL );
+
+  /* During processing, the user may have selected the option for
+   * automatic dismissal of the dialogue box on completion...
+   *
+   * FIXME: We need to adapt this, so that auto-close is ignored
+   * when any scheduled action fails to complete successfully.
+   */
+  if( IsDlgButtonChecked( (HWND)(window), IDD_AUTO_CLOSE_OPTION ) )
+    /*
+     * ...in which case, we dismiss it without further ado...
+     */
+    SendMessage( (HWND)(window), WM_COMMAND, (WPARAM)(IDOK), 0 );
+
+  else
+  { /* ...otherwise, we activate the manual dismissal button...
+     */
+    HWND dlg;
+    if( (dlg = GetDlgItem( (HWND)(window), IDOK )) != NULL )
+      EnableWindow( dlg, TRUE );
+
+    /* ...and notify the user that it must be clicked to continue.
+     */
+    if( (dlg = GetDlgItem( (HWND)(window), IDD_PROGRESS_MSG )) != NULL )
+      SendMessage( dlg, WM_SETTEXT, 0,
+	  (LPARAM)("All changes have been successfully applied; you may close this dialogue.")
+	);
+  }
+}
+
 static int CALLBACK pkgDialogue
 ( HWND window, unsigned int msg, WPARAM wParam, LPARAM lParam )
 {
@@ -353,8 +399,9 @@ inline unsigned long AppWindowMaker::EnumerateActions( int classified )
   return pkgData->Schedule()->EnumeratePendingActions( classified );
 }
 
-pkgActionItem *pkgActionItem::Clear( pkgActionItem *schedule, unsigned long mask )
-# define ACTION_PRESERVE_FAILED  (ACTION_DOWNLOAD_FAILED | ACTION_APPLY_FAILED)
+pkgActionItem
+*pkgActionItem::Clear( pkgActionItem *schedule, unsigned long mask )
+#define ACTION_PRESERVE_FAILED (ACTION_DOWNLOAD_FAILED | ACTION_APPLY_FAILED)
 {
   /* Method to remove those action items which have no attribute flags in common
    * with the specified mask, from the schedule; return the residual schedule of
@@ -621,12 +668,9 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
 	  /* When "Apply" confirmation is forthcoming, we proceed to
 	   * download any required packages, and invoke the scheduled
 	   * remove, upgrade, or install actions.
-	   *
-	   * FIXME: the pkgInvokeDownload() thread handler has yet to
-	   * be implemented.
 	   */
 	  DispatchDialogueThread( IDD_APPLY_DOWNLOAD, pkgInvokeDownload );
-//	  DispatchDialogueThread( IDD_APPLY_MONITORED, pkgApplyChanges );
+	  DispatchDialogueThread( IDD_APPLY_EXECUTE, pkgApplyChanges );
 
 	  /* After applying changes, we fall through...
 	   */

@@ -429,7 +429,7 @@ int reinstall_action_scheduled( pkgActionItem *package )
     );
 }
 
-void pkgActionItem::Execute()
+void pkgActionItem::Execute( bool with_download )
 {
   if( this != NULL )
   {
@@ -447,7 +447,8 @@ void pkgActionItem::Execute()
 	    * be necessary to fetch all required archives into
 	    * the local package cache.
 	    */
-	   DownloadArchiveFiles( current );
+	   if( with_download )
+	     DownloadArchiveFiles( current );
 	 } while( SetAuthorities( current ) > 0 );
 
     else while( current != NULL )
@@ -597,6 +598,13 @@ pkgActionItem::~pkgActionItem()
      * the same memory referenced by "max_wanted".
      */
     free( (void *)(min_wanted) );
+
+  /* Also ensure that we preserve the integrity of any linked list of
+   * action items in which this item participates, by detaching this
+   * item from the pointer chain.
+   */
+  if( prev != NULL ) prev->next = next;
+  if( next != NULL ) next->prev = prev;
 }
 
 /*

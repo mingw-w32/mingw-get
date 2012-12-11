@@ -173,7 +173,7 @@ BEGIN
   EDITTEXT				IDD_APPLY_INSTALLS_PACKAGES, 7, 148, 292, 36, WS_VSCROLL | ES_VT100
 END
 
-/* Template for GUI styled package download monitoring dialogue box.
+/* Template for a GUI styled package download monitoring dialogue box.
  */
 IDD_APPLY_DOWNLOAD DIALOG DISCARDABLE	10, 20, 280, 52
 CAPTION					"Download Package"
@@ -188,6 +188,19 @@ BEGIN
   CONTROL				"", IDD_PROGRESS_PCT, "STATIC", SS_CTEXTBOX, 234, 20, 40, 10
   CONTROL				"", IDD_PROGRESS_BAR, PROGRESS_CLASS, WS_CHILD \
 					| PBS_SMOOTH, 6, 35, 268, 10
+END
+
+IDD_APPLY_EXECUTE DIALOG DISCARDABLE	10, 10, 306, 193
+CAPTION					"Applying Scheduled Changes"
+STYLE					DS_MODALFRAME | DS_SETFONT | WS_POPUP | WS_CAPTION | WS_DLGFRAME
+FONT					10, "Verdana"
+BEGIN
+  LTEXT 				"", IDD_PROGRESS_MSG, 7, 6, 294, 10
+  AUTOCHECKBOX				"Close dialogue automatically, when activity is complete.", \
+					IDD_AUTO_CLOSE_OPTION, 8, 19, 240, 11
+  DEFPUSHBUTTON 			"Close", IDOK, 258, 18, 40, 12, WS_GROUP | WS_DISABLED
+  GROUPBOX				"Details", IDD_PROGRESS_TXT, 6, 35, 294, 152
+  EDITTEXT				IDD_DMH_CONSOLE, 7, 45, 292, 141, WS_BORDER | WS_VSCROLL | ES_VT100
 END
 
 /* $RCSfile$: end of file */
