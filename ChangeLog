@@ -1,3 +1,12 @@
+2012-12-11  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Do not preserve unnecessary download requests.
+
+	* src/pkginet.cpp (pkgActionItem::DownloadArchiveFiles):
+	[(flags & ACTION_INSTALL) != ACTION_INSTALL]: Actions having no
+	"install" effect do not require a download; cancel any associated
+	download request.
+
 2012-12-10  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Implement GUI bindings for package download agent.

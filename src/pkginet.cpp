@@ -771,6 +771,12 @@ void pkgActionItem::DownloadArchiveFiles( pkgActionItem *current )
 	 */
 	current->DownloadSingleArchive( package_name, pkgArchivePath() );
     }
+    else
+      /* The current action has no associated "install" requirement,
+       * so neither is there any need to request a "download".
+       */
+      current->flags &= ~(ACTION_DOWNLOAD);
+
     /* Flush out any diagnostics relating to the current package, then
      * repeat the download action, for any additional packages specified
      * in the current "actions" list.
