@@ -74,7 +74,7 @@ BEGIN
   POPUP 	"&Installation"
   BEGIN
     MENUITEM	  "&Update Catalogue",			IDM_REPO_UPDATE
-    MENUITEM	  "&Apply Changes",			IDM_REPO_APPLY
+    MENUITEM	  "&Apply Changes",			IDM_REPO_APPLY, GRAYED
     MENUITEM	  SEPARATOR
     MENUITEM	  "&Quit\tAlt+F4", 			IDM_REPO_QUIT
   END

@@ -926,14 +926,12 @@ void AppWindowMaker::UpdatePackageMenuBindings()
        */
       int state_flag = state;
       switch( item )
-      {
-	/* ...testing against item specific flag groups, to
+      { /* ...testing against item specific flag groups, to
 	 * determine which menu items should be enabled for
 	 * the currently selected list view item...
 	 */
 	case IDM_PACKAGE_INSTALL:
-	  /*
-	   * "Mark for Installation" is available for packages
+	  /* "Mark for Installation" is available for packages
 	   * which exist in the repository, (long-term or new),
 	   * but which are not yet identified as "installed".
 	   */
@@ -942,9 +940,8 @@ void AppWindowMaker::UpdatePackageMenuBindings()
 	  break;
 
 	case IDM_PACKAGE_REMOVE:
-	case IDM_PACKAGE_REINSTALL:
-	  /*
-	   * "Mark for Removal" and "Mark for Reinstallation"
+	//case IDM_PACKAGE_REINSTALL: // FIXME: for now, we don't consider this!
+	  /* "Mark for Removal" and "Mark for Reinstallation"
 	   * are viable selections only for packages identified
 	   * as "installed", (current or upgradeable).
 	   */
@@ -953,8 +950,7 @@ void AppWindowMaker::UpdatePackageMenuBindings()
 	  break;
 
 	case IDM_PACKAGE_UPGRADE:
-	  /*
-	   * "Mark for Upgrade" is viable only for packages
+	  /* "Mark for Upgrade" is viable only for packages
 	   * identified as "installed", and then only when an
 	   * upgrade has been published.
 	   */
@@ -962,8 +958,7 @@ void AppWindowMaker::UpdatePackageMenuBindings()
 	  break;
 
 	case IDM_PACKAGE_UNMARK:
-	  /*
-	   * The "Unmark" facility is available only for packages
+	  /* The "Unmark" facility is available only for packages
 	   * which have been marked, (perhaps inadvertently), for
 	   * any of the preceding actions.
 	   */
@@ -984,6 +979,14 @@ void AppWindowMaker::UpdatePackageMenuBindings()
       EnableMenuItem( menu, item, (state_flag == 0) ? MF_GRAYED : MF_ENABLED );
     }
   }
+  /* Although it is listed under the "Installation" drop-down menu,
+   * this is also a convenient point to consider activation of the
+   * "Apply Changes" capability.
+   */
+  EnableMenuItem( menu, IDM_REPO_APPLY,
+      (pkgData->Schedule()->EnumeratePendingActions() > 0) ? MF_ENABLED
+	: MF_GRAYED
+    );
 }
 
 inline void AppWindowMaker::MarkSchedule( pkgActionItem *pending_actions )

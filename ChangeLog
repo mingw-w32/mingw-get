@@ -1,3 +1,15 @@
+2012-12-12  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Improve conditionally enabled state manipulation for menu items.
+
+	* src/guidata.rc (IDM_REPO_APPLY): Set its initial state as GRAYED.
+
+	* src/pkgdata.cpp (AppWindowMaker::UpdatePackageMenuBindings):
+	[IDM_PACKAGE_REINSTALL]: Always leave it GRAYED; this is a temporary
+	provision, until the GUI is updated to support "reinstall" capability.
+	[IDM_REPO_APPLY && !(EnumeratePendingActions > 0)]: Make it GRAYED.
+	[IDM_REPO_APPLY && (EnumeratePendingActions > 0)]: Enable it.
+
 2012-12-11  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Implement GUI bindings for processing a schedule of actions.
