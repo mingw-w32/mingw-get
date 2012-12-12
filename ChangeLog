@@ -1,5 +1,15 @@
 2012-12-12  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Make a clone of the package menu available as a pop-up.
+
+	* src/guimain.h (AppWindowMaker::SelectPackageAction): New private
+	method; declare it.
+
+	* src/pkgdata.cpp (AppWindowMaker::SelectPackageAction): Implement it.
+	(AppWindowMaker::OnNotify) [ID_PACKAGE_LISTVIEW]: Use it.
+
+2012-12-12  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Improve conditionally enabled state manipulation for menu items.
 
 	* src/guidata.rc (IDM_REPO_APPLY): Set its initial state as GRAYED.

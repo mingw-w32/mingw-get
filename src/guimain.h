@@ -203,6 +203,7 @@ class AppWindowMaker: public WTK::MainWindowMaker
     void UpdatePackageMenuBindings( void );
     void Schedule( unsigned long, const char * = NULL, const char * = NULL );
     inline void MarkSchedule( pkgActionItem * );
+    void SelectPackageAction( unsigned );
     void UnmarkSelectedPackage( void );
 
     DataSheetMaker *DataSheet;

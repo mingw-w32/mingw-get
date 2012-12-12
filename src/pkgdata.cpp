@@ -25,6 +25,8 @@
  * arising from the use of this software.
  *
  */
+#define _WIN32_IE 0x0300
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -37,6 +39,8 @@
 #include "pkginfo.h"
 #include "pkglist.h"
 #include "pkgtask.h"
+
+#include <windowsx.h>
 
 using WTK::StringResource;
 using WTK::WindowClassMaker;
@@ -1128,6 +1132,47 @@ void AppWindowMaker::UnmarkSelectedPackage( void )
   }
 }
 
+void AppWindowMaker::SelectPackageAction( unsigned mode )
+{
+  /* Helper method to present the package menu as a floating pop-up.
+   */
+  HMENU popup;
+  LVHITTESTINFO whence;
+
+  /* Before presenting the menu, ensure that its selection bindings
+   * are current, as determined for the selected package; note that
+   * we do this unconditionally, to ensure that the bindings remain
+   * current, when the user accesses the menu from the menu bar.
+   */
+  UpdatePackageMenuBindings();
+  
+  /* Locate the cursor position, mapping it into the co-ordinate
+   * system of the list view client window.
+   */
+  whence.pt.y = GetMessagePos();
+  whence.pt.x = GET_X_LPARAM( whence.pt.y );
+  whence.pt.y = GET_Y_LPARAM( whence.pt.y );
+  ScreenToClient( PackageListView, &whence.pt );
+
+  /* Perform a hit-test, to confirm that either the left mouse
+   * button was clicked on the package status icon, or the right
+   * button was clicked anywhere on the package list entry; only
+   * if one of these is detected, do we then proceed to retrieve
+   * a handle for the pop-up menu itself...
+   */
+  if(  (ListView_SubItemHitTest( PackageListView, &whence ) >= 0)
+  &&  ((whence.flags & mode) != 0) && ((popup = GetMenu( AppWindow )) != NULL)
+  &&  ((popup = GetSubMenu( popup, 1 )) != NULL)   )
+  {
+    /* ...and provided it is valid, we remap the cursor position 
+     * back into the screen co-ordinate system, and present the
+     * menu at the resultant position.
+     */
+    ClientToScreen( PackageListView, &whence.pt );
+    TrackPopupMenu( popup, 0, whence.pt.x, whence.pt.y, 0, AppWindow, NULL );
+  }
+}
+
 long AppWindowMaker::OnNotify( WPARAM client_id, LPARAM data )
 {
   /* Handler for notifiable events to be processed in the context
@@ -1143,6 +1188,19 @@ long AppWindowMaker::OnNotify( WPARAM client_id, LPARAM data )
      * package list view and data sheet tab control panes...
      */
     case ID_PACKAGE_LISTVIEW:
+      if( ((NMHDR *)(data))->code == NM_RCLICK )
+      {
+	/* A right button mouse click within the package list view
+	 * selects the package under the cursor, and offers a pop-up
+	 * menu of actions which may be performed on it.
+	 */
+	SelectPackageAction( LVHT_ONITEMICON | LVHT_ONITEMLABEL );
+	break;
+      }
+    /* Any other notification from the list view control is handled
+     * in common with similar notifications from the tab control, so
+     * we do not break here, but simply fall through.
+     */
     case ID_PACKAGE_TABCONTROL:
       if( ((NMHDR *)(data))->code == NM_CLICK )
       {
@@ -1151,14 +1209,12 @@ long AppWindowMaker::OnNotify( WPARAM client_id, LPARAM data )
 	 */
 	DataSheet->DisplayData( PackageTabControl, PackageListView );
 
+	/* Additionally, for a left click on the package status
+	 * icon within the list view, we present a pop-up menu
+	 * offering a selection of available actions.
+	 */
 	if( client_id == ID_PACKAGE_LISTVIEW )
-	{
-	  /* A change of package selection, within the list view,
-	   * may also require an update of the available choices in
-	   * the "Package" drop-down menu.
-	   */
-	  UpdatePackageMenuBindings();
-	}
+	  SelectPackageAction( LVHT_ONITEMICON );
       }
       break;
   }
