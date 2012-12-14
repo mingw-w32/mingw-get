@@ -281,6 +281,13 @@ pkgXmlDocument::ResolveDependencies( pkgXmlNode* package, pkgActionItem* rank )
 
   while( package != NULL )
   {
+    /* Collect any debugging messages, relating to this dependency,
+     * into a single message digest.
+     */
+    DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_DEPENDENCIES ),
+	dmh_control( DMH_BEGIN_DIGEST )
+      );
+
     /* We have a valid XML entity, which may identify dependencies;
      * check if it includes any "requires" specification...
      */
@@ -527,6 +534,14 @@ pkgXmlDocument::ResolveDependencies( pkgXmlNode* package, pkgActionItem* rank )
        */
       dep = dep->FindNextAssociate( requires_key );
     }
+
+    /* Flush out any digest of debugging messages, which may
+     * have been collected, in respect of this dependency.
+     */
+    DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_DEPENDENCIES ),
+	dmh_control( DMH_END_DIGEST )
+      );
+
     /* Also consider any dependencies which may be common to
      * all releases, or all components, of the current package;
      * we do this by walking back through the XML hierarchy,

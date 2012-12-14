@@ -697,6 +697,17 @@ int pkgTarArchiveInstaller::ProcessDataStream( const char *pathname )
 	 */
 	commit_saved_entity( pathname, octval( header.field.mtime ) );
 	installed->AddEntry( filename_key, pathname + sysroot_len );
+
+	/* Additionally, when the appropriate level of debug
+	 * tracing has been enabled, report the installation of
+	 * this file to the diagnostic log.
+	 *
+	 * FIXME: this would be a good place to add reporting
+	 * of installation, in verbose execution mode.
+	 */
+	DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_TRANSACTIONS ),
+	    dmh_printf( "  %s\n", pathname )
+	  );
     }
     return status;
   }
