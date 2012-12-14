@@ -73,11 +73,11 @@ void pkgDownloadMeterGUI::ResetGUI( const char *filename, unsigned long size )
    * download of a new archive file; the name of this file, and its
    * anticipated size are preset, as specified by the arguments.
    */
-  char size_buf[12]; SizeFormat( size_buf, 0 );
+  char buf[12]; SizeFormat( buf, 0 );
   SendMessage( file_name, WM_SETTEXT, 0, (LPARAM)(filename) );
-  SendMessage( copy_size, WM_SETTEXT, 0, (LPARAM)(size_buf) );
-  SizeFormat( size_buf, content_length = size );
-  SendMessage( file_size, WM_SETTEXT, 0, (LPARAM)(size_buf) );
+  SendMessage( copy_size, WM_SETTEXT, 0, (LPARAM)(buf) );
+  SizeFormat( buf, content_length = size );
+  SendMessage( file_size, WM_SETTEXT, 0, (LPARAM)(buf) );
   SendMessage( copy_frac, WM_SETTEXT, 0, (LPARAM)("0 %") );
   SendMessage( progress_bar, PBM_SETRANGE, 0, MAKELPARAM( 0, 100 ) );
   SendMessage( progress_bar, PBM_SETPOS, 0, 0 );
@@ -90,21 +90,21 @@ int pkgDownloadMeterGUI::Update( unsigned long count )
    * received from the repository host, so that this method may
    * refresh the progress counters in the dialogue box.
    */
-  char size_buf[12];
+  char buf[12];
 
   /* First, we update the display of the actual byte count...
    */
-  SizeFormat( size_buf, count );
-  SendMessage( copy_size, WM_SETTEXT, 0, (LPARAM)(size_buf) );
+  SizeFormat( buf, count );
+  SendMessage( copy_size, WM_SETTEXT, 0, (LPARAM)(buf) );
 
   /* ...then we convert that byte count to a percentage of
    * the anticipated file size, using the result to update
    * the percentage completed, and the progress bar.
    */
   count = (count * 100) / content_length;
-  if( snprintf( size_buf, sizeof( size_buf ), "%d %", count ) >= sizeof( size_buf ) )
-    strcpy( size_buf, "*** %" );
-  SendMessage( copy_frac, WM_SETTEXT, 0, (LPARAM)(size_buf) );
+  if( snprintf( buf, sizeof( buf ), "%d %%", count ) >= sizeof( buf ) )
+    strcpy( buf, "*** %" );
+  SendMessage( copy_frac, WM_SETTEXT, 0, (LPARAM)(buf) );
   SendMessage( progress_bar, PBM_SETPOS, count, 0 );
 }
 

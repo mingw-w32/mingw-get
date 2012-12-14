@@ -1,5 +1,15 @@
 2012-12-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Insert a missing snprintf format effector.
+
+	* src/pkgnget.cpp (pkgDownloadMeterGUI::Update): Add omitted '%'
+	format specifier, in "%%", for formatting percentage-complete value.
+	Rename "size_buf" automatic variable as "buf"; this results in shorter
+	source lines, and consequently a tidier source code layout.
+	(pkgDownloadMeterGUI::ResetGUI): Likewise s/size_buf/buf/
+
+2012-12-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Add a missing header reference.
 
 	* src/approot.h: Include stdint.h; this ensures that wchar_t is
