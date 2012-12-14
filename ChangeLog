@@ -1,3 +1,10 @@
+2012-12-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add a missing header reference.
+
+	* src/approot.h: Include stdint.h; this ensures that wchar_t is
+	properly typedef'd, before attempting to use it.
+
 2012-12-12  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Make a clone of the package menu available as a pop-up.

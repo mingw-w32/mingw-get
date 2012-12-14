@@ -35,6 +35,11 @@
 # endif
 #endif
 
+/* We must ensure that wchar_t is typedef'd; (it isn't automatically,
+ * but including stdint.h will do the trick).
+ */
+#include <stdint.h>
+
 EXTERN_C wchar_t *AppPathNameW( const wchar_t * );
 
 #endif /* APPROOT_H: $RCSfile$: end of file */
