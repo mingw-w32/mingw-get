@@ -344,13 +344,13 @@ class pkgActionItem
     /* Method to manipulate error trapping, control, and state
      * flags for the schedule of actions.
      */
-    void Reset( unsigned long, unsigned long = ~0UL, pkgActionItem * = NULL );
+    void Assert( unsigned long, unsigned long = ~0UL, pkgActionItem* = NULL );
 
     /* Method to filter actions from an action list: the default is to
      * clear ALL entries; specify a value of ACTION_MASK for the second
      * argument, to filter out entries with no assigned action.
      */
-    pkgActionItem *Clear( pkgActionItem * = NULL, unsigned long = 0UL );
+    pkgActionItem *Clear( pkgActionItem* = NULL, unsigned long = 0UL );
     pkgActionItem *Clear( unsigned long mask ){ return Clear( this, mask ); }
 
     /* Destructor...

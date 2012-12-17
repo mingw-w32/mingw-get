@@ -447,7 +447,7 @@ pkgActionItem
   return residual;
 }
 
-void pkgActionItem::Reset
+void pkgActionItem::Assert
 ( unsigned long set, unsigned long mask, pkgActionItem *schedule )
 {
   /* A method to manipulate the control, error trapping, and state
@@ -468,7 +468,7 @@ void pkgActionItem::Reset
        * update the flags according to the specified mask and new
        * bits to be set...
        */
-      schedule->flags = (flags & mask) | set;
+      schedule->flags = (schedule->flags & mask) | set;
       /*
        * ...before moving on to the next item in the sequence.
        */
@@ -657,7 +657,7 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
        * for all scheduled actions, then we present the user with a
        * dialogue requesting confirmation of approval to proceed.
        */
-      pkgData->Schedule()->Reset( ACTION_DOWNLOAD, ~ACTION_PRESERVE_FAILED );
+      pkgData->Schedule()->Assert( 0UL, ~ACTION_PRESERVE_FAILED );
       switch( DialogueResponse( IDD_APPLY_APPROVE, pkgApplyApproved ) )
       {
 	/* Of the three possible responses, we simply ignore the "Defer"
@@ -689,8 +689,9 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
 	   * request relating to a failed action; restore marked state
 	   * for such residual actions.
 	   */
-	  if( pkgData->ClearScheduledActions( ACTION_PRESERVE_FAILED ) != NULL )
-	    pkglist.MarkScheduledActions( pkgData->Schedule() );
+	  pkglist.MarkScheduledActions(
+	      pkgData->ClearScheduledActions( ACTION_PRESERVE_FAILED )
+	    );
 
 	  /* Clearing the schedule of actions may also affect the
 	   * validity of menu options; update accordingly.

@@ -999,8 +999,11 @@ inline void AppWindowMaker::MarkSchedule( pkgActionItem *pending_actions )
    * reflecting any scheduled action in respect of the package associated with
    * each, and updating the menu bindings to match.
    */
-  pkgListViewMaker pkglist( PackageListView );
-  pkglist.MarkScheduledActions( pending_actions );
+  if( pending_actions != NULL )
+  {
+    pkgListViewMaker pkglist( PackageListView );
+    pkglist.MarkScheduledActions( pending_actions );
+  }
   UpdatePackageMenuBindings();
 }
 

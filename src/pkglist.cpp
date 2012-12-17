@@ -448,57 +448,58 @@ void pkgListViewMaker::MarkScheduledActions( pkgActionItem *schedule )
    * indicating any which have been marked for installation, upgrade,
    * or removal of the associated package.
    */
-  for( content.iItem = -1; GetItem(); )
-  {
-    /* Visiting every entry in the list...
-     */
-    pkgActionItem *ref;
-    if( (ref = schedule->GetReference( (pkgXmlNode *)(content.lParam) )) != NULL )
+  if( schedule != NULL )
+    for( content.iItem = -1; GetItem(); )
     {
-      /* ...identify those which are associated with a scheduled action...
+      /* Visiting every entry in the list...
        */
-      unsigned long opcode;
-      if( (opcode = ref->HasAttribute( ACTION_MASK )) == ACTION_INSTALL )
+      pkgActionItem *ref;
+      if( (ref = schedule->GetReference( (pkgXmlNode *)(content.lParam) )) != NULL )
       {
-	/* ...selecting the appropriate icon to mark those packages
-	 * which have been scheduled for installation...
-	 *
-	 * FIXME: we should also consider that such packages
-	 * may have been scheduled for reinstallation.
+	/* ...identify those which are associated with a scheduled action...
 	 */
-	content.iImage = PKGSTATE( AVAILABLE_INSTALL );
+	unsigned long opcode;
+	if( (opcode = ref->HasAttribute( ACTION_MASK )) == ACTION_INSTALL )
+	{
+	  /* ...selecting the appropriate icon to mark those packages
+	   * which have been scheduled for installation...
+	   *
+	   * FIXME: we should also consider that such packages
+	   * may have been scheduled for reinstallation.
+	   */
+	  content.iImage = PKGSTATE( AVAILABLE_INSTALL );
+	}
+	else if( opcode == ACTION_UPGRADE )
+	{
+	  /* ...those which have been scheduled for upgrade...
+	   */
+	  content.iImage = PKGSTATE( UPGRADE );
+	}
+	else if( opcode == ACTION_REMOVE )
+	{
+	  /* ...and those which have been scheduled for removal.
+	   */
+	  content.iImage = PKGSTATE( REMOVE );
+	}
+	else
+	{ /* Where a scheduled action is any other than those above,
+	   * handle as if there was no scheduled action...
+	   */
+	  opcode = 0UL;
+	  /*
+	   * ...and ensure that the list view entry reflects the
+	   * normal display state for the associated package.
+	   */
+	  UpdateItem( NULL );
+	}
+	if( opcode != 0UL )
+	  /*
+	   * Where an action mark is appropriate, ensure that it
+	   * is applied to the list view entry.
+	   */
+	  ListView_SetItem( ListView, &content );
       }
-      else if( opcode == ACTION_UPGRADE )
-      {
-	/* ...those which have been scheduled for upgrade...
-	 */
-	content.iImage = PKGSTATE( UPGRADE );
-      }
-      else if( opcode == ACTION_REMOVE )
-      {
-	/* ...and those which have been scheduled for removal.
-	 */
-	content.iImage = PKGSTATE( REMOVE );
-      }
-      else
-      { /* Where a scheduled action is any other than those above,
-	 * handle as if there was no scheduled action...
-	 */
-	opcode = 0UL;
-	/*
-	 * ...and ensure that the list view entry reflects the
-	 * normal display state for the associated package.
-	 */
-	UpdateItem( NULL );
-      }
-      if( opcode != 0UL )
-	/*
-	 * Where an action mark is appropriate, ensure that it
-	 * is applied to the list view entry.
-	 */
-	ListView_SetItem( ListView, &content );
     }
-  }
 }
 
 void pkgListViewMaker::UpdateListView( void )

@@ -1,3 +1,20 @@
+2012-12-17  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add more protection against NULL pointer abuse.
+
+	* src/pkgbase.h (pkgActionItem::Reset): Method renamed to...
+	* src/guixmld.cpp (pkgActionItem::Assert): ...this; also renamed here.
+	(AppWindowMaker::OnCommand): When calling...
+	(pkgListViewMaker::MarkScheduledActions): ...this, pass argument as...
+	(pkgXmlDocument::ClearScheduledActions): ...pointer returned by this.
+
+	* src/pkgdata.cpp (AppWindowMaker::MarkSchedule):
+	[pending_actions == NULL]: Do not propagate invocation request to...
+	(pkgListViewMaker::MarkScheduledActions): ...this.
+
+	* src/pkglist.cpp (pkgListViewMaker::MarkScheduledActions):
+	[schedule == NULL]: Do nothing.
+
 2012-12-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Implement some additional permanent debugging support.
