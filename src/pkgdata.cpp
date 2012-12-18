@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, MinGW Project
+ * Copyright (C) 2012, MinGW.org Project
  *
  *
  * Implementation of the classes and methods required to support the
@@ -1193,10 +1193,12 @@ long AppWindowMaker::OnNotify( WPARAM client_id, LPARAM data )
     case ID_PACKAGE_LISTVIEW:
       if( ((NMHDR *)(data))->code == NM_RCLICK )
       {
-	/* A right button mouse click within the package list view
-	 * selects the package under the cursor, and offers a pop-up
-	 * menu of actions which may be performed on it.
+	/* A right mouse button click within the package list view
+	 * selects the package under the cursor, refreshing the tab
+	 * pane to display its associated data sheet, and offers a
+	 * pop-up menu of actions which may be performed on it.
 	 */
+	DataSheet->DisplayData( PackageTabControl, PackageListView );
 	SelectPackageAction( LVHT_ONITEMICON | LVHT_ONITEMLABEL );
 	break;
       }

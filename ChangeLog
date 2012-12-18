@@ -1,3 +1,10 @@
+2012-12-18  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Update tab display on right-click in package list view.
+
+	* src/pkgdata.cpp (AppWindowMaker::OnNotify) [NM_RCLICK]:
+	Call DataSheetMaker::DisplayData(), before invoking pop-up menu.
+
 2012-12-17  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Add more protection against NULL pointer abuse.
