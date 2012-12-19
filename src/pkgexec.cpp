@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, 2012, MinGW Project
+ * Copyright (C) 2009, 2010, 2011, 2012, MinGW.org Project
  *
  *
  * Implementation of package management task scheduler and executive.
@@ -31,8 +31,44 @@
 #include "pkgkeys.h"
 #include "pkginfo.h"
 #include "pkgtask.h"
+#include "pkgstat.h"
 #include "pkgopts.h"
 #include "pkgproc.h"
+
+/* The following static member of the pkgSpinWait class provides
+ * the access hook through which the static core implementation of
+ * the base class methods may pass reports back to any derivative
+ * class object, while retaining the capability to issue reports
+ * even when no such object exists.
+ */
+pkgSpinWait *pkgSpinWait::referrer = NULL;
+
+int pkgSpinWait::Report( const char *fmt, ... )
+{
+  /* Also declared as static, this directs printf() style reports
+   * to any existing derivative class object, while behaving as a
+   * no-op in the absence of any such object.
+   */
+  int count = 0;
+  if( referrer != NULL )
+  {
+    va_list argv;
+    va_start( argv, fmt );
+    count = referrer->DispatchReport( fmt, argv );
+    va_end( argv );
+  }
+  return count;
+}
+
+int pkgSpinWait::Indicator( void )
+{
+  /* Once again, declared as static, this method provides a
+   * mechanism for spin-wait animation of any "%c" formatted
+   * field within a progress reporting message.
+   */
+  static const char *marker = "|/-\\";
+  return marker[ referrer->UpdateIndex() ];
+}
 
 EXTERN_C const char *action_name( unsigned long index )
 {
@@ -432,8 +468,7 @@ int reinstall_action_scheduled( pkgActionItem *package )
 void pkgActionItem::Execute( bool with_download )
 {
   if( this != NULL )
-  {
-    pkgActionItem *current = this;
+  { pkgActionItem *current = this;
     bool init_rites_pending = true;
     while( current->prev != NULL ) current = current->prev;
 
@@ -570,6 +605,7 @@ void pkgActionItem::Execute( bool with_download )
 	}
 	/* Proceed to the next package, if any, with scheduled actions.
 	 */
+	pkgSpinWait::Report( "Processing... (%c)", pkgSpinWait::Indicator() );
 	current = current->next;
       }
     }

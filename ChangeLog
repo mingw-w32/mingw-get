@@ -1,3 +1,30 @@
+2012-12-19  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Improve progress reporting in "Apply Changes" dialogue.
+
+	* src/pkgstat.h: New header file; it declares...
+	(pkgSpinWait): ...this new pure abstract base class; it specifies an
+	infrastructure for posting arbitrary text to dialogue controls.
+
+	* src/pkgexec.cpp (pkgSpinWait): Implement its static elements.
+	(pkgActionItem::Execute): Dispatch progress reports, handled by...
+	(pkgSpinWait::Report, pkgSpinWait::Indicator): ...these.
+
+	* src/guixmld.cpp (pkgDialogueSpinWait): New class; declare it and
+	implement locally.  It is derived from, and provides a listener for...
+	(pkgSpinWait): ...this abstract class.
+	(pkgApplyChanges): Use it.
+
+	* src/tarproc.cpp (pkgTarArchiveInstaller::ProcessDataStream): Call...
+	(pkgSpinWait::Report): ...this, to report extracted files.
+
+	* src/pkgunst.cpp (pkg_unst): Call...
+	(pkgSpinWait::Report): ...this, to report deleted files.
+
+	* src/sysroot.cpp (pkgXmlDocument::UpdateSystemMap): Call...
+	(pkgSpinWait::Report, pkgSpinWait::Indicator): ...these, to confirm
+	continuing database update activity.
+
 2012-12-18  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Update tab display on right-click in package list view.

@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2011, 2012, MinGW Project
+ * Copyright (C) 2011, 2012, MinGW.org Project
  *
  *
  * Implementation of the primary package removal methods.
@@ -37,6 +37,7 @@
 #include "pkgkeys.h"
 #include "pkgproc.h"
 #include "pkgtask.h"
+#include "pkgstat.h"
 
 #include "mkpath.h"
 
@@ -286,6 +287,7 @@ int pkg_unlink( const char *sysroot, const char *pathname )
     char filepath[ mkpath( NULL, sysroot, pathname, NULL ) ];
     mkpath( filepath, sysroot, pathname, NULL );
 
+    pkgSpinWait::Report( "Deleting %s", pathname );
     DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_TRANSACTIONS ),
 	dmh_printf( "  %s: unlink file\n", filepath )
       );

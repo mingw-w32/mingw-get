@@ -29,6 +29,7 @@
 #include "pkginet.h"
 #include "pkgkeys.h"
 #include "pkglist.h"
+#include "pkgstat.h"
 #include "pkgtask.h"
 
 #include <unistd.h>
@@ -304,13 +305,43 @@ inline void AppWindowMaker::ExecuteScheduledActions( void )
   pkgData->UpdateSystemMap();
 }
 
+class pkgDialogueSpinWait: public pkgSpinWait
+{
+  /* Derivative class for redirection of pkgSpinWait::Report()
+   * messages to a specified dialogue box text control.
+   */
+  public:
+    pkgDialogueSpinWait( HWND msg ): dlg( msg ){}
+
+  private:
+    virtual int DispatchReport( const char *, va_list );
+    HWND dlg;
+};
+
+int pkgDialogueSpinWait::DispatchReport( const char *fmt, va_list argv )
+{
+  /* Method to handle pkgSpinWait::Report() message redirection.
+   */
+  char buf[ 1 + vsnprintf( NULL, 0, fmt, argv ) ];
+  int count = vsnprintf( buf, sizeof( buf ), fmt, argv );
+  SendMessage( dlg, WM_SETTEXT, 0, (LPARAM)(buf) );
+  return count;
+}
+
 static void pkgApplyChanges( void *window )
 {
   /* Worker thread processing function, run while displaying the
    * IDD_APPLY_EXECUTE dialogue box, to apply scheduled changes.
    */
+  HWND msg = GetDlgItem( (HWND)(window), IDD_PROGRESS_MSG );
+  AppWindowMaker *app = GetAppWindow( GetParent( (HWND)(window) ) );
+
+  /* Set up progess reporting and diagnostic message display
+   * channels, and execute the scheduled actions.
+   */
+  pkgDialogueSpinWait stat( msg );
   dmh_setpty( GetDlgItem( (HWND)(window), IDD_DMH_CONSOLE ) );
-  GetAppWindow( GetParent( (HWND)(window) ))->ExecuteScheduledActions();
+  app->ExecuteScheduledActions();
   dmh_setpty( NULL );
 
   /* During processing, the user may have selected the option for
@@ -334,10 +365,9 @@ static void pkgApplyChanges( void *window )
 
     /* ...and notify the user that it must be clicked to continue.
      */
-    if( (dlg = GetDlgItem( (HWND)(window), IDD_PROGRESS_MSG )) != NULL )
-      SendMessage( dlg, WM_SETTEXT, 0,
-	  (LPARAM)("All changes have been successfully applied; you may close this dialogue.")
-	);
+    stat.Report( "All changes have been successfully applied;"
+	" you may now close this dialogue."
+      );
   }
 }
 

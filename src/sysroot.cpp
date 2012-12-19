@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2010, 2011, 2012, MinGW Project
+ * Copyright (C) 2010, 2011, 2012, MinGW.org Project
  *
  *
  * Implementation of the system map loader, sysroot management and
@@ -42,6 +42,7 @@
 #include "mkpath.h"
 
 #include "pkgbase.h"
+#include "pkgstat.h"
 #include "pkgkeys.h"
 
 #include "debug.h"
@@ -425,7 +426,9 @@ void pkgXmlDocument::UpdateSystemMap()
   pkgXmlNode *entry = GetRoot()->FindFirstAssociate( sysroot_key );
 
   while( entry != NULL )
-  {
+  { pkgSpinWait::Report( "Updating system map... (%c)",
+	pkgSpinWait::Indicator()
+      );
     /* We found a sysroot record...
      * evaluate and clear its 'modified' attribute...
      */
