@@ -344,15 +344,18 @@ static void pkgApplyChanges( void *window )
   app->ExecuteScheduledActions();
   dmh_setpty( NULL );
 
+  /* Check for successful application of all scheduled changes.
+   */
+  int error_count = app->EnumerateActions( ACTION_UNSUCCESSFUL );
+
   /* During processing, the user may have selected the option for
    * automatic dismissal of the dialogue box on completion...
-   *
-   * FIXME: We need to adapt this, so that auto-close is ignored
-   * when any scheduled action fails to complete successfully.
    */
-  if( IsDlgButtonChecked( (HWND)(window), IDD_AUTO_CLOSE_OPTION ) )
+  if(  (error_count == 0)
+  &&  IsDlgButtonChecked( (HWND)(window), IDD_AUTO_CLOSE_OPTION )  )
     /*
-     * ...in which case, we dismiss it without further ado...
+     * ...in which case, and provided all changes were applied
+     * successfully, we dismiss it without further ado...
      */
     SendMessage( (HWND)(window), WM_COMMAND, (WPARAM)(IDOK), 0 );
 
@@ -365,8 +368,11 @@ static void pkgApplyChanges( void *window )
 
     /* ...and notify the user that it must be clicked to continue.
      */
-    stat.Report( "All changes have been successfully applied;"
-	" you may now close this dialogue."
+    stat.Report( (error_count == 0)
+	? "All changes were applied successfully;"
+	  " you may now close this dialogue."
+	: "Not all changes were applied successfully;"
+	  " please refer to details below."
       );
   }
 }
@@ -475,36 +481,6 @@ pkgActionItem
    * schedule, or NULL if all items were deleted.
    */
   return residual;
-}
-
-void pkgActionItem::Assert
-( unsigned long set, unsigned long mask, pkgActionItem *schedule )
-{
-  /* A method to manipulate the control, error trapping, and state
-   * flags for all items in the specified schedule of actions.
-   *
-   * Starting at the specified item, or the invoking class object
-   * item if no starting point is specified...
-   */
-  if( (schedule != NULL) || ((schedule = this) != NULL) )
-  {
-    /* ...and provided this starting point is not NULL, walk back
-     * to the first item in the associated task schedule...
-     */
-    while( schedule->prev != NULL ) schedule = schedule->prev;
-    while( schedule != NULL )
-    {
-      /* ...then, processing each scheduled task item in sequence,
-       * update the flags according to the specified mask and new
-       * bits to be set...
-       */
-      schedule->flags = (schedule->flags & mask) | set;
-      /*
-       * ...before moving on to the next item in the sequence.
-       */
-      schedule = schedule->next;
-    }
-  }
 }
 
 static int pkgActionCount( HWND dlg, int id, const char *fmt, int classified )

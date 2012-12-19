@@ -1284,11 +1284,16 @@ unsigned long pkgActionItem::EnumeratePendingActions( int classified )
 	    ++count;
 	  }
 	}
-	else if( classified == 0 )
+	else if( (classified == 0)
 	  /*
-	   * ...otherwise, when we aren't interested in any
-	   * particular class of action, just count all those
-	   * which are found, regardless of classification.
+	   * ...otherwise, when we aren't interested in any particular
+	   * class of action regardless of classification...
+	   */
+	|| ((classified == ACTION_UNSUCCESSFUL) && ((flags & classified) != 0)) )
+	  /*
+	   * ...or when we are checking for unsuccessful actions, we
+	   * count all those which are found, either unclassified, or
+	   * marked as unsuccessful, respectively.
 	   */
 	  ++count;
       }

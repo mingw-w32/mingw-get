@@ -301,9 +301,11 @@ int pkg_unlink( const char *sysroot, const char *pathname )
 
 EXTERN_C void pkgRemove( pkgActionItem *current )
 {
-  /* Common handler for all package removal tasks...
+  /* Common handler for all package removal tasks; note that we
+   * initially assert failure, pending reversion on success...
    */
   pkgXmlNode *pkg;
+  current->Assert( ACTION_REMOVE_FAILED );
   if( ((pkg = current->Selection( to_remove )) != NULL)
   &&  (current->HasAttribute( ACTION_DOWNLOAD_OK ) == ACTION_REMOVE_OK)  )
   {
@@ -399,6 +401,12 @@ EXTERN_C void pkgRemove( pkgActionItem *current )
 	      "%s: unreferenced in %s\n", sysname, id_lookup( manifest, value_unknown )
 	    );
 	}
+	else
+	  /* Removal should be successful: revert our original
+	   * assertion of failure...
+	   */
+	  current->Assert( 0UL, ~ACTION_REMOVE_FAILED );
+
 	/* Now, we've validated the manifest, and confirmed that it
 	 * correctly records its association with the current sysroot,
 	 * (or we've reported the inconsistency; we may proceed with

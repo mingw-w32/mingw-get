@@ -306,6 +306,36 @@ pkgActionItem::Schedule( unsigned long action, pkgActionItem& item )
   return rtn;
 }
 
+void pkgActionItem::Assert
+( unsigned long set, unsigned long mask, pkgActionItem *schedule )
+{
+  /* A method to manipulate the control, error trapping, and state
+   * flags for all items in the specified schedule of actions.
+   *
+   * Starting at the specified item, or the invoking class object
+   * item if no starting point is specified...
+   */
+  if( (schedule != NULL) || ((schedule = this) != NULL) )
+  {
+    /* ...and provided this starting point is not NULL, walk back
+     * to the first item in the associated task schedule...
+     */
+    while( schedule->prev != NULL ) schedule = schedule->prev;
+    while( schedule != NULL )
+    {
+      /* ...then, processing each scheduled task item in sequence,
+       * update the flags according to the specified mask and new
+       * bits to be set...
+       */
+      schedule->flags = (schedule->flags & mask) | set;
+      /*
+       * ...before moving on to the next item in the sequence.
+       */
+      schedule = schedule->next;
+    }
+  }
+}
+
 pkgActionItem*
 pkgActionItem::GetReference( pkgActionItem& item )
 {
