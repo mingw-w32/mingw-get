@@ -198,6 +198,9 @@ class AppWindowMaker: public WTK::MainWindowMaker
     pkgProgressMeter *AttachedProgressMeter;
     HFONT DefaultFont;
 
+    HWND PackageTreeView;
+    void InitPackageTreeView( void );
+
     HWND PackageListView;
     void InitPackageListView( void );
     void UpdatePackageMenuBindings( void );
@@ -219,6 +222,10 @@ inline long AppWindowMaker::DialogueResponse( int id, DLGPROC handler )
    */
   return DialogBox( AppInstance, MAKEINTRESOURCE( id ), AppWindow, handler );
 }
+
+/* FIXME: this prototype belongs in pkgtree.h
+ */
+EXTERN_C void pkgInitCategoryTreeGraft( pkgXmlNode* );
 
 #endif /* ! RC_INVOKED */
 #endif /* GUIMAIN_H: $RCSfile$: end of file */

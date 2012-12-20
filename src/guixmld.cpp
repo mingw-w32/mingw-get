@@ -184,6 +184,11 @@ void AppWindowMaker::LoadPackageData( bool force_update )
    */
   free( (void *)(dfile) );
 
+  /* Create a graft point for attachment of the package
+   * group hierarchy tree to the loaded XML data image.
+   */
+  pkgInitCategoryTreeGraft( pkgData->GetRoot() );
+
   /* Establish the repository URI references, for retrieval
    * of the downloadable catalogue files, and load them...
    */
@@ -574,12 +579,17 @@ int AppWindowMaker::Invoked( void )
    */
   InitCommonControls();
 
-  /* Load the data from the XML catalogue files, and construct
-   * the initial view of the available package list; this activity
+  /* Load the data from the XML catalogue files; this activity
    * is invoked in a background thread, initiated from a progress
    * dialogue derived from the "Update Catalogue" template.
    */
   DispatchDialogueThread( IDD_REPO_UPDATE, pkgInvokeInitDataLoad );
+
+  /* Establish the initial views of the package category selection
+   * tree, and the list of available packages; (the initial package
+   * list includes everything in the "All Packages" category).
+   */
+  InitPackageTreeView();
   InitPackageListView();
 
   /* Initialise the data-sheet tab control, displaying the default
