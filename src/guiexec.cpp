@@ -1,5 +1,5 @@
 /*
- * guixmld.cpp
+ * guiexec.cpp
  *
  * $Id$
  *
