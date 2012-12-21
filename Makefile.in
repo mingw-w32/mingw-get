@@ -99,7 +99,7 @@ GUIMAIN_LIBS = -lwtklite -lcomctl32
 script_srcdir = ${srcdir}/scripts/libexec
 
 BIN_PROGRAMS = pkginfo$(EXEEXT) mingw-get$(EXEEXT)
-LIBEXEC_PROGRAMS = gui$(EXEEXT) guimain$(EXEEXT) lastrites$(EXEEXT)
+LIBEXEC_PROGRAMS = guistub$(EXEEXT) guimain$(EXEEXT) lastrites$(EXEEXT)
 LIBEXEC_SCRIPTS = ${script_srcdir}/setup.lua ${script_srcdir}/wsh.lua \
    ${script_srcdir}/shlink.js ${script_srcdir}/unlink.js
 LIBEXEC_DATA = mingw-get-0.dll
@@ -114,7 +114,7 @@ pkginfo$(EXEEXT):  driver.$(OBJEXT) pkginfo.$(OBJEXT)
 mingw-get$(EXEEXT): $(CLI_EXE_OBJECTS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $+
 
-gui$(EXEEXT): guistub.$(OBJEXT) pkgicon.$(OBJEXT)
+guistub$(EXEEXT): guistub.$(OBJEXT) pkgicon.$(OBJEXT)
 	$(CXX) -o $@ $(CXXFLAGS) $(GUI_LDFLAGS) $+
 
 guimain$(EXEEXT): $(GUIMAIN_OBJECTS) $(LIBEXEC_DATA)

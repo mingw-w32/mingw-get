@@ -1,5 +1,19 @@
 2012-12-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Update CLI implementation hooks for GUI integration.
+
+	* Makefile.in (LIBEXEC_PROGRAMS): Replace gui$EXEEXT with
+	guistub$EXEEXT; update make goal references accordingly.
+
+	* src/rites.c (MINGW_GET_GUI): Redefine to be guimain$EXEEXT.
+	(MINGW_GET_GFB): Define new fall-back; let it be guistub$EXEEXT.
+	(RITES_IMPLEMENTATION): Perform rites for MINGW_GET_GUI.
+
+	* src/clistub.c (main) [cannot exec MINGW_GET_GUI]: Try
+	MINGW_GET_GFB instead.
+
+2012-12-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Rename executive core file for GUI implementation.
 
 	* src/guixmld.cpp: File renamed...

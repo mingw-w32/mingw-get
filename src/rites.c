@@ -5,7 +5,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, MinGW Project
+ * Copyright (C) 2009, 2010, 2012, MinGW.org Project
  *
  *
  * Implementation of the main program function for the "lastrites.exe"
@@ -46,7 +46,8 @@
 #define MINGW_GET_EXE	L"bin/mingw-get.exe"
 #define MINGW_GET_LCK	L"var/lib/mingw-get/lock"
 #define MINGW_GET_DLL	L"libexec/mingw-get/mingw-get-0.dll"
-#define MINGW_GET_GUI	L"libexec/mingw-get/gui.exe"
+#define MINGW_GET_GUI	L"libexec/mingw-get/guimain.exe"
+#define MINGW_GET_GFB	L"libexec/mingw-get/guistub.exe"
 
 /* We wish to define a number of helper functions, which we will prefer
  * to always compile to inline code; this convenience macro may be used
@@ -238,6 +239,7 @@ BEGIN_RITES_IMPLEMENTATION
    */
   perform_rites_of_passage( MINGW_GET_EXE );
   perform_rites_of_passage( MINGW_GET_DLL );
+  perform_rites_of_passage( MINGW_GET_GUI );
   END_RITES_IMPLEMENTATION
 }
 

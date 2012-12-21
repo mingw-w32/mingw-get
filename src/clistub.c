@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, 2012, MinGW Project
+ * Copyright (C) 2009, 2010, 2011, 2012, MinGW.org Project
  *
  *
  * Initiation stub for command line invocation of mingw-get
@@ -28,6 +28,7 @@
 #define WIN32_LEAN_AND_MEAN
 
 #include "debug.h"
+#include "pkgopts.h"
 #include "approot.h"
 
 #include <windows.h>
@@ -36,8 +37,6 @@
 #include <libgen.h>
 #include <process.h>
 #include <getopt.h>
-
-#include "pkgopts.h"
 
 #define EXIT_FATAL  EXIT_FAILURE + 1
 
@@ -548,8 +547,15 @@ int main( int argc, char **argv )
     snprintf( gui_program, sizeof( gui_program ), "%S", libexec_path );
     int status = execv( gui_program, (const char* const*)(argv) );
 
-    /* If we get to here, then the GUI could not be started...
-     * Issue a diagnostic message, before abnormal termination.
+    /* If we get to here, then the GUI could not be started;
+     * first, try the fall-back GUI diagnostic stub...
+     */
+    libexec_path = AppPathNameW( MINGW_GET_GFB );
+    snprintf( gui_program, sizeof( gui_program ), "%S", libexec_path );
+    status = execv( gui_program, (const char* const*)(argv) );
+
+    /* ...before  issuing a diagnostic message, and quitting
+     * with an abnormal termination code.
      */
     fprintf( stderr,
 	"%s: %S: unable to start GUI; helper program not installed\n",
