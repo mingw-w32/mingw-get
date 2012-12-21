@@ -219,13 +219,23 @@ install-strip: install
 	  done
 
 # Packaging and distribution...
+# "Native" source files, (i.e. those specific to mingw-get), are...
 #
 LICENCE_FILES = README COPYING
 SRCDIST_FILES = $(LICENCE_FILES) ChangeLog NEWS INSTALL \
-  aclocal.m4 configure.ac configure Makefile.in version.c.in
+  aclocal.m4 configure.ac configure Makefile.in
 
-SRCDIST_SUBDIRS = build-aux build-aux/m4 icons src src/pkginfo \
-  srcdist-doc scripts/libexec tinyxml xml
+# ...plus the entire content of the sub-directories...
+#
+SRCDIST_SUBDIRS = src src/pkginfo srcdist-doc icons \
+  scripts/libexec tinyxml xml
+
+# In addition to the native sources for mingw-get, our source distribution
+# must include a filtered subset of those additional files which we import
+# from the project's global build-aux repository...
+#
+BUILD_AUX_DIRS = build-aux build-aux/m4
+BUILD_AUX_FILES = config.guess config.sub install-sh missing.m4
 
 # The names of distributed package archive files incorporate version
 # information, derived from PACKAGE_VERSION; this is decomposed, so that
@@ -252,15 +262,26 @@ dist: srcdist bindist readme.txt
 TARZIP = xz
 TAREXT = tar.$(TARZIP)
 
+# The following macros facilitate the inclusion of SCM build tags within
+# the generated names for the release tarballs; the GCMTAG macro is used
+# to identify explicitly GUI components, while SCMTAG is used otherwise.
+#
+BLDTAG =  @abs_top_builddir@/build.tag
+SCMTAG = `>> $(BLDTAG); cat $(BLDTAG) | sed 's,.,-$(CLI_RELEASE_CLASS)-&,'`
+GCMTAG = `>> $(BLDTAG); cat $(BLDTAG) | sed 's,.,-$(GUI_RELEASE_CLASS)-&,'`
+
 bindist: all licdist
 	rm -rf staged
 	$(MAKE) --no-print-directory prefix=`pwd`/staged install-strip
 	cd staged; tar chf - bin/pkginfo$(EXEEXT) | $(TARZIP) -c > \
-	  ../pkginfo-$(PACKAGE_DISTVERSION)-bin.$(TAREXT)
+	  ../pkginfo-$(PACKAGE_DISTVERSION)$(SCMTAG)-bin.$(TAREXT)
 	rm staged/bin/pkginfo$(EXEEXT)
+	cd staged; tar chf - libexec/mingw-get/guimain$(EXEEXT) | \
+	  $(TARZIP) -c > ../$(PACKAGE_DISTNAME)$(GCMTAG)-gui.$(TAREXT)
+	rm staged/libexec/mingw-get/guimain$(EXEEXT)
 	cd staged; tar chf - * | $(TARZIP) -c > \
-	  ../$(PACKAGE_DISTNAME)-bin.$(TAREXT)
-	cd staged; zip -r ../$(PACKAGE_DISTNAME)-bin.zip *
+	  ../$(PACKAGE_DISTNAME)$(SCMTAG)-bin.$(TAREXT)
+	cd staged; zip -r ../$(PACKAGE_DISTNAME)$(SCMTAG)-bin.zip *
 	rm -rf staged
 
 licdist:
@@ -271,7 +292,8 @@ licdist:
 	    && $(LN_S) ${abs_top_srcdir}/$$file . \
 	    || $(LN_S) ${CURDIR}/$$file .; \
 	  done
-	tar chf - share | $(TARZIP) -c > $(PACKAGE_DISTNAME)-lic.$(TAREXT)
+	tar chf - share | $(TARZIP) -c > \
+	  $(PACKAGE_DISTNAME)$(SCMTAG)-lic.$(TAREXT)
 	rm -rf share
 
 srcdist: srcdist-doc
@@ -290,9 +312,18 @@ srcdist: srcdist-doc
 	    fi; \
 	  done; \
 	cd ${CURDIR}; done
+	for dir in $(BUILD_AUX_DIRS); do \
+	  $(mkinstalldirs) ${PACKAGE_DISTROOT}/$$dir \
+	  && cd ${PACKAGE_DISTROOT}/$$dir; \
+	  for file in $(BUILD_AUX_FILES); do \
+	    if test -f ${abs_top_srcdir}/$$dir/$$file; then \
+	      $(LN_S) ${abs_top_srcdir}/$$dir/$$file .; \
+	    fi; \
+	  done; \
+	cd ${CURDIR}; done
 	cd ${PACKAGE_DISTROOT}/src/pkginfo; $(LN_S) ${CURDIR}/pkginfo.c .
 	tar chf - ${PACKAGE_DISTROOT} | $(TARZIP) -c > \
-	  ${PACKAGE_DISTNAME}-src.$(TAREXT)
+	  $(PACKAGE_DISTNAME)$(SCMTAG)-src.$(TAREXT)
 	rm -rf ${PACKAGE_DISTROOT}
 
 # README, INSTALL and NEWS files to be included in the source distribution

@@ -1,5 +1,17 @@
 2012-12-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Update distribution build rules.
+
+	* Makefile.in (SRCDIST_FILES): Remove version.c.in; this was moved
+	to src/version.c.in, and is now automatically included via...
+	(SRCDIST_SUBDIRS): ...this; remove build-aux and build-aux/m4; we want
+	only selected files from these, as filtered by specification in...
+	(BUILD_AUX_DIRS, BUILD_AUX_FILES): ...these new macros; define them.
+	(BLDTAG, SCMTAG, GCMTAG): New release class macros; define them.
+	(bindist, licdist, srcdist): Use them.
+
+2012-12-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Update CLI implementation hooks for GUI integration.
 
 	* Makefile.in (LIBEXEC_PROGRAMS): Replace gui$EXEEXT with
