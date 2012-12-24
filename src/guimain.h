@@ -184,11 +184,11 @@ class AppWindowMaker: public WTK::MainWindowMaker
     inline void ExecuteScheduledActions( void );
 
   private:
-    virtual long OnCreate();
+    virtual long OnCreate( void );
     virtual long OnCommand( WPARAM );
     virtual long OnNotify( WPARAM, LPARAM );
     virtual long OnSize( WPARAM, int, int );
-    virtual long OnClose();
+    virtual long OnClose( void );
 
     int LayoutEngine( HWND, LPARAM );
     static int CALLBACK LayoutController( HWND, LPARAM );
@@ -212,7 +212,8 @@ class AppWindowMaker: public WTK::MainWindowMaker
     DataSheetMaker *DataSheet;
     WTK::ChildWindowMaker *TabDataPane;
     HWND PackageTabControl, PackageTabPane;
-    void InitPackageTabControl();
+    void InitPackageTabControl( void );
+    void UpdateDataSheet( void );
 };
 
 inline long AppWindowMaker::DialogueResponse( int id, DLGPROC handler )

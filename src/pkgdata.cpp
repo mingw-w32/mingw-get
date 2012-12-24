@@ -1176,6 +1176,14 @@ void AppWindowMaker::SelectPackageAction( unsigned mode )
   }
 }
 
+void AppWindowMaker::UpdateDataSheet( void )
+{
+  /* Helper method, called when we wish to update the data sheet
+   * panel, to match the current list view and tab selection.
+   */
+  DataSheet->DisplayData( PackageTabControl, PackageListView );
+}
+
 long AppWindowMaker::OnNotify( WPARAM client_id, LPARAM data )
 {
   /* Handler for notifiable events to be processed in the context
@@ -1198,7 +1206,7 @@ long AppWindowMaker::OnNotify( WPARAM client_id, LPARAM data )
 	 * pane to display its associated data sheet, and offers a
 	 * pop-up menu of actions which may be performed on it.
 	 */
-	DataSheet->DisplayData( PackageTabControl, PackageListView );
+	UpdateDataSheet();
 	SelectPackageAction( LVHT_ONITEMICON | LVHT_ONITEMLABEL );
 	break;
       }
@@ -1212,7 +1220,7 @@ long AppWindowMaker::OnNotify( WPARAM client_id, LPARAM data )
 	/* ...each of which may require the data sheet content
 	 * to be updated, (to reflect a changed selection).
 	 */
-	DataSheet->DisplayData( PackageTabControl, PackageListView );
+	UpdateDataSheet();
 
 	/* Additionally, for a left click on the package status
 	 * icon within the list view, we present a pop-up menu
