@@ -3,7 +3,7 @@
 # $Id$
 #
 # Written by Keith Marshall <keithmarshall@users.sourceforge.net>
-# Copyright (C) 2009, 2010, 2011, 2012, MinGW.org Project
+# Copyright (C) 2009-2013, MinGW.org Project
 #
 #
 # Configuration script for mingw-get
@@ -25,7 +25,7 @@
   AC_INIT([mingw-get],[0.6],[http://mingw.org/Reporting_Bugs])
 
   AC_SUBST([COPYRIGHT_HOLDER],["MinGW.org Project"])
-  AC_SUBST([YEARS_OF_ISSUE],["2009, 2010, 2011, 2012"])
+  AC_SUBST([YEARS_OF_ISSUE],["2009-2013"])
 
 # Identify the formal release classes for each of the CLI and the GUI
 # application sub-packages; these may be overriden at configure time,

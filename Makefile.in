@@ -6,7 +6,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 
 # Written by Keith Marshall <keithmarshall@users.sourceforge.net>
-# Copyright (C) 2009, 2010, 2011, 2012, MinGW.org Project
+# Copyright (C) 2009-2013, MinGW.org Project
 #
 #
 # Makefile template for mingw-get
@@ -165,8 +165,8 @@ time-stamp:
 %.c: %.c.in
 	$(VERSION_SCRIPT) $< > $@
 
-version.c: build.time
-guidata.$(OBJEXT): build.time
+version.c: Makefile build.time
+guidata.$(OBJEXT): Makefile build.time
 
 # Installation tools and directory paths...
 #

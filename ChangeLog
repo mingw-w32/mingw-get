@@ -1,3 +1,12 @@
+2013-01-07  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Update copyright notification for development in new year.
+
+	* configure.ac (YEARS_OF_ISSUE): Add year 2013.
+
+	* Makefile.in (version.c, guidata.$OBJEXT): Make them depend on...
+	(Makefile): ...this, so YEARS_OF_ISSUE propagates to built objects.
+
 2012-12-24  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Work around a GUI action scheduling instability.
