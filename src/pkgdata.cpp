@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, MinGW.org Project
+ * Copyright (C) 2012, 2013, MinGW.org Project
  *
  *
  * Implementation of the classes and methods required to support the
@@ -1265,9 +1265,11 @@ unsigned long pkgActionItem::EnumeratePendingActions( int classified )
       int action;
       if( (action = item->flags & ACTION_MASK) != 0 )
       {
-	/* ...and, when one is found...
+	/* ...and, when one is found, (noting that ACTION_UPGRADE may
+	 * also be considered as a special case of ACTION_INSTALL)...
 	 */
-	if( action == classified )
+	if(  (action == classified)
+	||  ((action == ACTION_UPGRADE) && (classified == ACTION_INSTALL))  )
 	{
 	  /* ...and it matches the classification in which
 	   * we are interested, then we retrieve the tarname

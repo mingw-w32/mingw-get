@@ -1,5 +1,13 @@
 2013-01-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Fix enumeration of pending install actions for scheduled upgrades.
+
+	* src/pkgdata.cpp (pkgActionItem::EnumeratePendingActions):
+	[action == ACTION_UPGRADE && classified == ACTION_INSTALL]: Enumerate
+	upgrade as a special case of the install classification.
+
+2013-01-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Implement "Mark All Upgrades" GUI capability.
 
 	* src/guimain.h (IDM_REPO_APPLY): Renumbered; make room for...
