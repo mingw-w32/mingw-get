@@ -1,5 +1,22 @@
 2013-01-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Implement "Mark All Upgrades" GUI capability.
+
+	* src/guimain.h (IDM_REPO_APPLY): Renumbered; make room for...
+	(IDM_REPO_MARK_UPGRADES): ...this new constant; define it.
+
+	* src/guidata.rc (IDM_REPO_MARK_UPGRADES): New option; add it...
+	(ID_MAIN_WINDOW_WINDOW) [Installation]: ...to this drop-down menu.
+
+	* src/pkgbase.h (pkgActionItem::SuppressRedundantUpgrades): New
+	public inline method; declare it.
+
+	* src/guiexec.cpp (AppWindowMaker::OnCommand):
+	[IDM_REPO_MARK_UPGRADES]: Add case handler for this menu selection.
+	(pkgActionItem::SuppressRedundantUpgrades): New method; implement it.
+
+2013-01-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Avoid unnecessary reloading of package list.
 
 	* src/guiexec.cpp (AppWindowMaker::OnCommand) [IDM_REPO_APPLY]:

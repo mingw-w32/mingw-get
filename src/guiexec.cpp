@@ -440,6 +440,41 @@ inline unsigned long AppWindowMaker::EnumerateActions( int classified )
   return pkgData->Schedule()->EnumeratePendingActions( classified );
 }
 
+inline pkgActionItem *pkgActionItem::SuppressRedundantUpgrades( void )
+{
+  /* Helper method to adjust the schedule of upgrades, after marking
+   * all installed packages, to exclude all those which are already at
+   * the most recently available release.
+   */
+  pkgActionItem *head;
+  if( (head = this) != NULL )
+  {
+    /* First, provided the schedule is not empty, we walk the list
+     * of scheduled actions, until we find the true first entry...
+     */
+    while( head->prev != NULL ) head = head->prev;
+    for( pkgActionItem *ref = head; ref != NULL; ref = ref->next )
+    {
+      /* ...and then, we process the list from first entry to last,
+       * selecting those entries which schedule an upgrade action...
+       */
+      if( ((ref->flags & ACTION_MASK) == ACTION_UPGRADE)
+      /*
+       * ...and for which the currently installed release is the
+       * same as that which an upgrade would install...
+       */
+      &&  (ref->selection[ to_install ] == ref->selection[ to_remove ])  )
+	/*
+	 * ...in which case, we mark this entry for "no action".
+	 */
+	ref->flags &= ~ACTION_MASK;
+    }
+  }
+  /* Finally, we return a pointer to the first entry in the schedule.
+   */
+  return head;
+}
+
 static int pkgActionCount( HWND dlg, int id, const char *fmt, int classified )
 {
   /* Helper function to itemise the currently scheduled actions
@@ -618,6 +653,27 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
        * repository, and consolidate them into the local catalogue.
        */
       DispatchDialogueThread( IDD_REPO_UPDATE, pkgInvokeUpdate );
+      break;
+
+    case IDM_REPO_MARK_UPGRADES:
+      /* Initiated when the user selects the "Mark All Upgrades"
+       * option; in this case, we identify all packages which are
+       * already installed, and for which upgrades are available,
+       * and schedule an upgrade action in respect of each.
+       */
+      pkgData->RescheduleInstalledPackages( ACTION_UPGRADE );
+      {
+	/* After scheduling all available upgrades, we must
+	 * update the package list view marker icons...
+	 */
+	pkgListViewMaker pkglist( PackageListView );
+	pkglist.MarkScheduledActions(
+	    pkgData->Schedule()->SuppressRedundantUpgrades()
+	  );
+      }
+      /* ...and also adjust the menu bindings accordingly.
+       */
+      UpdatePackageMenuBindings();
       break;
 
     case IDM_REPO_APPLY:

@@ -5,7 +5,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, 2012, MinGW.org Project
+ * Copyright (C) 2009, 2010, 2011, 2012, 2013, MinGW.org Project
  *
  *
  * Public interface for the package directory management routines;
@@ -299,6 +299,7 @@ class pkgActionItem
     pkgActionItem* GetReference( pkgXmlNode* );
     pkgActionItem* GetReference( pkgActionItem& );
     pkgActionItem* Schedule( unsigned long, pkgActionItem& );
+    inline pkgActionItem* SuppressRedundantUpgrades( void );
     inline unsigned long CancelScheduledAction( void );
     inline void SetPrimary( pkgActionItem* );
 

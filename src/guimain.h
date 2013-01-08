@@ -5,7 +5,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, MinGW.org Project
+ * Copyright (C) 2012, 2013, MinGW.org Project
  *
  *
  * Resource definitions and window management class declarations for
@@ -49,7 +49,8 @@
 
 #define IDM_MAIN_MENU			 300
 #define IDM_REPO_UPDATE 		 301
-#define IDM_REPO_APPLY	 		 302
+#define IDM_REPO_MARK_UPGRADES		 302
+#define IDM_REPO_APPLY	 		 303
 #define IDM_REPO_QUIT			 312
 
 #define IDM_PACKAGE_UNMARK		 400
