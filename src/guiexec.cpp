@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, MinGW.org Project
+ * Copyright (C) 2012, 2013, MinGW.org Project
  *
  *
  * Implementation of XML data loading services for the mingw-get GUI.
@@ -440,54 +440,6 @@ inline unsigned long AppWindowMaker::EnumerateActions( int classified )
   return pkgData->Schedule()->EnumeratePendingActions( classified );
 }
 
-pkgActionItem
-*pkgActionItem::Clear( pkgActionItem *schedule, unsigned long mask )
-#define ACTION_PRESERVE_FAILED (ACTION_DOWNLOAD_FAILED | ACTION_APPLY_FAILED)
-{
-  /* Method to remove those action items which have no attribute flags in common
-   * with the specified mask, from the schedule; return the residual schedule of
-   * items, if any, which were not removed.  (Note that specifying a mask with a
-   * value of 0UL, which is the default, results in removal of all items).
-   */
-  pkgActionItem *residual = NULL;
-
-  /* Starting at the specified item, or the invoking class object item
-   * if no starting point is specified...
-   */
-  if( (schedule != NULL) || ((schedule = this) != NULL) )
-  {
-    /* ...and provided this starting point is not NULL, walk back to
-     * the first item in the associated task schedule...
-     */
-    while( schedule->prev != NULL ) schedule = schedule->prev;
-    while( schedule != NULL )
-    {
-      /* ...then, processing each scheduled task item in sequence, and
-       * keeping track of the next to be processed...
-       */
-      pkgActionItem *nextptr = schedule->next;
-      if( (schedule->flags & mask) == 0 )
-	/*
-	 * ...delete each which doesn't match any masked attribute...
-	 */
-	delete schedule;
-
-      else
-        /* ...otherwise add it to the residual schedule.
-	 */
-	residual = schedule;
-
-      /* In either event, move on to the next item in sequence, if any.
-       */
-      schedule = nextptr;
-    }
-  }
-  /* Ultimately, return a pointer to the last item added to the residual
-   * schedule, or NULL if all items were deleted.
-   */
-  return residual;
-}
-
 static int pkgActionCount( HWND dlg, int id, const char *fmt, int classified )
 {
   /* Helper function to itemise the currently scheduled actions
@@ -609,6 +561,7 @@ int AppWindowMaker::Invoked( void )
 }
 
 long AppWindowMaker::OnCommand( WPARAM cmd )
+#define ACTION_PRESERVE_FAILED (ACTION_DOWNLOAD_FAILED | ACTION_APPLY_FAILED)
 {
   /* Handler for WM_COMMAND messages which are directed to the
    * top level application window.

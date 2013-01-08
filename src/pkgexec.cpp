@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, 2012, MinGW.org Project
+ * Copyright (C) 2009, 2010, 2011, 2012, 2013, MinGW.org Project
  *
  *
  * Implementation of package management task scheduler and executive.
@@ -302,7 +302,27 @@ pkgActionItem::Schedule( unsigned long action, pkgActionItem& item )
      * action, in case it is required to complete the request.
      */
     action |= ACTION_DOWNLOAD;
-  rtn->flags = action | (rtn->flags & ~ACTION_MASK);
+  rtn->flags = action | (item.flags & ~ACTION_MASK);
+
+  /* The min_wanted and max_wanted properties, if defined, refer
+   * to dynamically allocated memory blocks, (on the heap); these
+   * must have only one action item owner; currently, the original
+   * item and the copy we've just made are both effective owners,
+   * and we want only the copy to retain this ownership, we must
+   * detach them from the original item.
+   */
+  item.min_wanted = item.max_wanted = NULL;
+
+  /* Similarly, we must transfer any linkage into the schedule of
+   * actions from the original item to the copy.
+   */
+  if( item.prev != NULL ) (item.prev)->next = rtn;
+  if( item.next != NULL ) (item.next)->prev = rtn;
+  item.prev = item.next = NULL;
+
+  /* Finally, we return the copy, leaving the ultimate disposal
+   * of the original to the caller's discretion.
+   */
   return rtn;
 }
 
@@ -640,6 +660,52 @@ void pkgActionItem::Execute( bool with_download )
       }
     }
   }
+}
+
+pkgActionItem *pkgActionItem::Clear( pkgActionItem *schedule, unsigned long mask )
+{
+  /* Method to remove those action items which have no attribute flags in common
+   * with the specified mask, from the schedule; return the residual schedule of
+   * items, if any, which were not removed.  (Note that specifying a mask with a
+   * value of 0UL, which is the default, results in removal of all items).
+   */
+  pkgActionItem *residual = NULL;
+
+  /* Starting at the specified item, or the invoking class object item
+   * if no starting point is specified...
+   */
+  if( (schedule != NULL) || ((schedule = this) != NULL) )
+  {
+    /* ...and provided this starting point is not NULL, walk back to
+     * the first item in the associated task schedule...
+     */
+    while( schedule->prev != NULL ) schedule = schedule->prev;
+    while( schedule != NULL )
+    {
+      /* ...then, processing each scheduled task item in sequence, and
+       * keeping track of the next to be processed...
+       */
+      pkgActionItem *nextptr = schedule->next;
+      if( (schedule->flags & mask) == 0 )
+	/*
+	 * ...delete each which doesn't match any masked attribute...
+	 */
+	delete schedule;
+
+      else
+        /* ...otherwise add it to the residual schedule.
+	 */
+	residual = schedule;
+
+      /* In either event, move on to the next item in sequence, if any.
+       */
+      schedule = nextptr;
+    }
+  }
+  /* Ultimately, return a pointer to the last item added to the residual
+   * schedule, or NULL if all items were deleted.
+   */
+  return residual;
 }
 
 pkgActionItem::~pkgActionItem()

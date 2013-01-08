@@ -1,3 +1,15 @@
+2013-01-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Avoid potential heap corruption in action scheduler.
+
+	* src/guiexec.cpp (pkgActionItem::Clear): Factor out; relocate to...
+	* src/pkgexec.cpp (pkgActionItem::Clear): ...here; this keeps all use
+	of new and delete operators on the same side of the EXE/DLL boundary
+	as the constructor and destructor for pkgActionItem objects.
+	(pkgActionItem::Schedule): Ensure that all min_wanted and max_wanted
+	references are unique to each allocated pkgActionItem object, so that
+	the destructor may safely release their associated heap memory blocks.
+
 2013-01-07  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Update copyright notification for development in new year.
