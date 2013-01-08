@@ -1,5 +1,12 @@
 2013-01-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Avoid unnecessary reloading of package list.
+
+	* src/guiexec.cpp (AppWindowMaker::OnCommand) [IDM_REPO_APPLY]:
+	Do not reload package list after processing; update it in place.
+
+2013-01-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Avoid potential heap corruption in action scheduler.
 
 	* src/guiexec.cpp (pkgActionItem::Clear): Factor out; relocate to...

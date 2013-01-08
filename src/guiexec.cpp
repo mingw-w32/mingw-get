@@ -650,9 +650,6 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
 	   * actions schedule, remove all marker icons, and refresh
 	   * the package list to reflect current status.
 	   */
-#if 0     /* FIXME: we'd like to just do this in place, but doing
-	   * so seems to cause mingw-get to become unstable...
-	   */
 	  pkgListViewMaker pkglist( PackageListView );
 	  pkglist.UpdateListView();
 	  
@@ -664,17 +661,7 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
 	  pkglist.MarkScheduledActions(
 	      pkgData->ClearScheduledActions( ACTION_PRESERVE_FAILED )
 	    );
-#else
-	  /* ...so, for the time being, we must force a complete
-	   * reload of the package list; (note that this has the
-	   * side effect of clearing any residual action schedule,
-	   * so we lose any potential record of failed actions).
-	   */
-	  ClearPackageList();
-	  LoadPackageData( false );
-	  UpdatePackageList();
-	  UpdateDataSheet();
-#endif
+
 	  /* Clearing the schedule of actions may also affect the
 	   * validity of menu options; update accordingly.
 	   */
