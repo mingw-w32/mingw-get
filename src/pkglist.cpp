@@ -209,15 +209,29 @@ static char *pkgVersionString( char *buf, pkgSpecs *pkg )
    * We begin with the concatenation of package version and build ID
    * fields, retrieved from the pkgSpecs representation...
    */
+  const char *pkg_version_tag;
   char *update = version_string_copy( buf, pkg->GetPackageVersion() );
   update = version_string_copy( update, pkg->GetPackageBuild(), '-' );
-  if( pkg->GetSubSystemVersion() != NULL )
+  if( (pkg_version_tag = pkg->GetSubSystemVersion()) != NULL )
   {
-    /* ...then, we append the sub-system ID, if applicable...
+    /* ...then, we append the sub-system ID, if applicable.
      */
     update = version_string_copy( update, pkg->GetSubSystemName(), '-' );
-    update = version_string_copy( update, pkg->GetSubSystemVersion(), '-' );
+    update = version_string_copy( update, pkg_version_tag, '-' );
     update = version_string_copy( update, pkg->GetSubSystemBuild(), '-' );
+  }
+  if( (pkg_version_tag = pkg->GetReleaseStatus()) != NULL )
+  {
+    /* When the package name also includes a release classification,
+     * then we also append this to the displayed version number (noting
+     * that an initial '$' is special, and should be suppressed)...
+     */
+    if( *pkg_version_tag == '$' ) ++pkg_version_tag;
+    update = version_string_copy( update, pkg_version_tag, '-' );
+    /*
+     * ...followed by any serialisation index for the release...
+     */
+    update = version_string_copy( update, pkg->GetReleaseIndex(), '-' );
   }
   /* ...and finally, we return a pointer to the buffer in which
    * we constructed the fully qualified version string.

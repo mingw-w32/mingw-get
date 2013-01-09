@@ -1,3 +1,10 @@
+2013-01-09  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Include release tags in GUI displayed package versions.
+
+	* src/pkglist.cpp (pkgVersionString) [ReleaseStatus != NULL]:
+	Append ReleaseStatus and ReleaseIndex to generated version string.
+
 2013-01-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Fix enumeration of pending install actions for scheduled upgrades.
