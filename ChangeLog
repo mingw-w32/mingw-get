@@ -1,3 +1,17 @@
+2013-01-10  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement data sheet compiler for list of installed files.
+
+	* src/pkgdata.cpp: #include pkgproc.h; it furnishes...
+	(pkgManifest): ...this class declaration, which is required by...
+	(DataSheetMaker::DisplayFilesManifest): ...this new private inline
+	method; declare and implement it; subsequently, invoke it...
+	(DataSheetMaker::OnPaint) [PKG_DATASHEET_INSTALLED_FILES]: ...here.
+	(pkgTroffLayoutEngine::WriteLn): Correct a defect in handling of
+	excess-length unbreakable "words" outside the viewport; previously
+	they were not dropped from the input queue, resulting in repeated
+	reprocessing in an infinite loop.
+
 2013-01-09  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Include release tags in GUI displayed package versions.

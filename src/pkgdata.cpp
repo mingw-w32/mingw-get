@@ -38,6 +38,7 @@
 #include "pkgkeys.h"
 #include "pkginfo.h"
 #include "pkglist.h"
+#include "pkgproc.h"
 #include "pkgtask.h"
 
 #include <windowsx.h>
@@ -293,6 +294,19 @@ bool pkgTroffLayoutEngine::WriteLn( HDC canvas, RECT *bounds )
        */
       TextOutW( canvas, bounds->left, bounds->top - offset, linebuf, filled );
     }
+    else if( (fold == 0) && (new_width > max_width) )
+      /*
+       * The output line which we've just processed lies outside
+       * the viewport.  We note that it's initial (non-breakable)
+       * "word" would require more display width than the viewport
+       * can accommodate, if it were to be moved into the visible
+       * region; thus, this "word" will continue to be presented
+       * to the formatting engine, as the next input "word" to be
+       * processed.  This would result in an infinite loop, so we
+       * MUST discard this "word" from the input queue.
+       */
+      curr = (pkgTroffLayoutEngine *)(curr->next);
+
     /* Finally, adjust the top boundary of the viewport, to indicate
      * where the NEXT output line, if any, is to be positioned, and
      * return TRUE, to indicate that an output line was processed.
@@ -337,6 +351,7 @@ class DataSheetMaker: public ChildWindowMaker
     static int DisplayLicenceURL( const char * );
     static int DisplayPackageURL( const char * );
     inline void DisplayDescription( pkgXmlNode * );
+    inline void DisplayFilesManifest( pkgXmlNode * );
     void ComposeDescription( pkgXmlNode *, pkgXmlNode * );
     int FormatRecord( int, const char *, const char * );
     inline void FormatText( const char * );
@@ -569,6 +584,81 @@ void DataSheetMaker::ComposeDescription( pkgXmlNode *ref, pkgXmlNode *root )
   }
 }
 
+void DataSheetMaker::DisplayFilesManifest( pkgXmlNode *ref )
+{
+  /* Helper method to compile the list of files installed by a package,
+   * for display on the "Installed Files" tab of the data sheet panel.
+   */
+  pkgActionItem avail;
+  if( (ref = pkgGetStatus( ref, &avail )) == NULL )
+  {
+    /* This represents a package which is available, but has not been
+     * installed; we simply decline to compile the files list.
+     */
+    FormatRecord( 0, "Package",
+	avail.Selection()->GetPropVal( tarname_key, value_unknown )
+      );
+    bounding_box.top += PARAGRAPH_MARGIN;
+    FormatText(
+       	"This package has not been installed; "
+	"the list of installed files is not available for packages "
+	"which have not been installed."
+      );
+  }
+  else
+  { /* This represents a package which has been installed; begin
+     * compilation of the list of installed files.
+     */
+    const char *tarname;
+    FormatRecord( 0, "Package",
+	tarname = ref->GetPropVal( tarname_key, value_unknown )
+      );
+    if( match_if_explicit( ref->ArchiveName(), value_none ) )
+    {
+      /* This is a meta-package; there are no files to list.
+       */
+      bounding_box.top += PARAGRAPH_MARGIN;
+      FormatText(
+	  "This meta-package facilitates the installation of a collection "
+	  "of other logically related packages; it provides no files, and "
+	  "may be safely removed."
+	);
+    }
+    else
+    { /* This is a real package; retrieve the manifest of installed files,
+       * which was created during the installation process.
+       */
+      pkgXmlNode *index;
+      pkgManifest inventory( package_key, tarname );
+      if( (index = inventory.GetRoot()->FindFirstAssociate( manifest_key )) != NULL )
+      {
+	/* We've located a files list within the manifest; process it...
+	 */
+	FormatRecord( 0, "This package provides the following files", "" );
+	bounding_box.left += LEFT_MARGIN; bounding_box.top += PARAGRAPH_MARGIN;
+	do { if( (ref = index->FindFirstAssociate( filename_key )) != NULL )
+	       /*
+		* We found at least one file name within the list; emit it
+		* to the display, followed by any additional names present.
+		*/
+	       do { FormatText( ref->GetPropVal( pathname_key, value_unknown ) );
+		  } while( (ref = ref->FindNextAssociate( filename_key )) != NULL );
+
+	     /* There should be no more than one, but check for, and process
+	      * any additional files lists which may be present.
+	      */
+	   } while( (index = index->FindNextAssociate( manifest_key )) != NULL );
+      }
+      else
+      { /* The manifest appears to be lacking any files list; diagnose.
+	 */
+	bounding_box.top += PARAGRAPH_MARGIN;
+	FormatText( "This package appears to provide no files." );
+      }
+    }
+  }
+}
+
 static pkgXmlNode *pkgListSelection( HWND package_ref, LVITEM *lookup )
 {
   /* Helper function, to retrieve the active selection from the
@@ -666,6 +756,14 @@ long DataSheetMaker::OnPaint()
 	 * the package maintainer, within the XML specification.
 	 */
 	DisplayDescription( pkgListSelection( PackageRef, &lookup ) );
+	break;
+
+      case PKG_DATASHEET_INSTALLED_FILES:
+	/* Available only for packages which have been installed,
+	 * this comprises the files list content from the manifest
+	 * which was created during the installation process.
+	 */
+	DisplayFilesManifest( pkgListSelection( PackageRef, &lookup ) );
 	break;
 
       default:
