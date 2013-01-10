@@ -3,7 +3,7 @@
 # $Id$
 #
 # Written by Keith Marshall <keithmarshall@users.sourceforge.net>
-# Copyright (C) 2009, 2010, 2011, 2012, MinGW Project
+# Copyright (C) 2009-2013, MinGW.org Project
 #
 #
 # Configuration script for mingw-get
@@ -19,13 +19,13 @@
 # hope that it may prove useful, but WITHOUT WARRANTY OF ANY KIND; not
 # even an implied WARRANTY OF MERCHANTABILITY, nor of FITNESS FOR ANY
 # PARTICULAR PURPOSE.  Under no circumstances will the author, or the
-# MinGW Project, accept liability for any damages, however caused,
+# MinGW.org Project, accept liability for any damages, however caused,
 # arising from the use of this software.
 #
   AC_INIT([mingw-get],[0.5-beta-20120426-1],[http://mingw.org/Reporting_Bugs])
 
-  AC_SUBST([COPYRIGHT_HOLDER],["MinGW Project"])
-  AC_SUBST([YEARS_OF_ISSUE],["2009, 2010, 2011, 2012"])
+  AC_SUBST([COPYRIGHT_HOLDER],["MinGW.org Project"])
+  AC_SUBST([YEARS_OF_ISSUE],["2009-2013"])
 
 # Override the normal UNIX-centric autoconf default prefix;
 # substitute the MinGW standard in its place.
