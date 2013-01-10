@@ -58,7 +58,7 @@
   AC_PROG_LEX
 
 # Ensure that (at least the headers for) prerequisite libraries,
-# zlib, libbz2 and liblzma are available
+# zlib, libbz2, liblzma, and liblua are available
 #
   AC_CHECK_HEADER([zlib.h],,MINGW_AC_ASSERT_MISSING([zlib-dev],
     [libz-1.2.3-1-mingw32-dev.tar.gz]))
@@ -66,6 +66,8 @@
     [bzip2-1.0.5-2-mingw32-dev.tar.gz]))
   AC_CHECK_HEADER([lzma.h],,MINGW_AC_ASSERT_MISSING([liblzma-dev],
     [liblzma-4.999.9beta_20091209-3-mingw32-dev.tar.bz2]))
+  AC_CHECK_HEADER([lua.h],,MINGW_AC_ASSERT_MISSING([lua-dev],
+    [lua-5.2.0-1-mingw32-dev.tar.xz]))
 
 # Set up the archive librarian, to match our compiler settings
 #

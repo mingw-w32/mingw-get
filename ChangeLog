@@ -1,5 +1,12 @@
 2013-01-10  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Add configure time check for Lua API availability.
+
+	* configure.ac: Add AC_CHECK_HEADER test for lua.h; diagnose absence
+	via MINGW_AC_ASSERT_MISSING.  (Merge this from gui-dev branch).
+
+2013-01-10  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Update copyright notification for development in new year.
 
 	* configure.ac (YEARS_OF_ISSUE): Add year 2013.
