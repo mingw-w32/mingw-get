@@ -1,5 +1,13 @@
 2013-01-11  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Create release branch for further r0.5 development.
+
+	* configure.ac (AC_INIT): Bump version number to 0.5.1; assign branch
+	label (mercurial bookmark) as "r0-5-1" for all files; (this is not to
+	be released, at this time).
+
+2013-01-11  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Update master distribution build rules to match gui-dev branch.
 
 	* configure.ac (AC_INIT): Remove build classification suffix from
