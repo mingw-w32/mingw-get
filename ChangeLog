@@ -1,3 +1,33 @@
+2013-01-11  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Update master distribution build rules to match gui-dev branch.
+
+	* configure.ac (AC_INIT): Remove build classification suffix from
+	package version field; leave it to be deduced, at make time, from...
+	(CLI_RELEASE_CLASS): ...this new AC_SUBST variable; assign as "beta".
+	(SNAPSHOT_CLASS): Accept as environent override for CLI_RELEASE_CLASS.
+	(GUI_RELEASE_CLASS): New AC_SUBST variable; defined to pre-empt future
+	GUI implementation, with possibly different classification to CLI. Set
+	default to "alpha", supporting override by SNAPSHOT_CLASS.
+	(AC_CONFIG_FILES): Remove version.c
+
+	* version.c.in: Original file removed; relocated to...
+	* src/version.c.in: ...here; update descriptive comments accordingly.
+	(COPYRIGHT_HOLDER, YEARS_OF_ISSUE): Change substitution field markers
+	from "@" to "%", to avoid confusion in makefile references.
+
+	* Makefile.in (CLI_RELEASE_CLASS): Use it, in conjunction with...
+	(BLDTAG, SCMTAG): New macros; use them to classify tarball names.
+	(time-stamp, %.tag, %.tagged.time, %.time): New goals; required by...
+	(BUILD_TAG, TAG_SCRIPT, VERSION_SCRIPT): New macros; copy them from
+	gui-dev branch; use to generate version.c from src/version.c.in
+	(SRCDIST_FILES): Remove version.c.in; it is now captured within...
+	(SRCDIST_SUBDIRS): ...this; remove build-aux and build-aux/m4; we want
+	only selected files from these, as filtered by specification in...
+	(BUILD_AUX_DIRS, BUILD_AUX_FILES): ...these new macros; copy them from
+	gui-dev branch; use them to include selected source files within...
+	(srcdist): ...this distribution target.
+
 2013-01-10  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Add configure time check for Lua API availability.

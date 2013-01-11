@@ -22,10 +22,22 @@
 # MinGW.org Project, accept liability for any damages, however caused,
 # arising from the use of this software.
 #
-  AC_INIT([mingw-get],[0.5-beta-20120426-1],[http://mingw.org/Reporting_Bugs])
+  AC_INIT([mingw-get],[0.5],[http://mingw.org/Reporting_Bugs])
 
   AC_SUBST([COPYRIGHT_HOLDER],["MinGW.org Project"])
   AC_SUBST([YEARS_OF_ISSUE],["2009-2013"])
+
+# Identify the formal release classes for each of the CLI and the GUI
+# application sub-packages; these may be overriden at configure time,
+# by specifying a common SNAPSHOT_CLASS definition, (e.g. by running
+#
+#   SNAPSHOT_CLASS=pre ./config.status --recheck && ./config.status
+#
+# to update the configuration for the "preview" class), when we wish
+# to build snapshots for distribution between formal releases.
+#
+  AC_SUBST([CLI_RELEASE_CLASS],[${SNAPSHOT_CLASS-"beta"}])
+  AC_SUBST([GUI_RELEASE_CLASS],[${SNAPSHOT_CLASS-"alpha"}])
 
 # Override the normal UNIX-centric autoconf default prefix;
 # substitute the MinGW standard in its place.
@@ -93,7 +105,7 @@
 
 # Establish the product version banner, and create a makefile
 #
-  AC_CONFIG_FILES([version.c Makefile])
+  AC_CONFIG_FILES([Makefile])
   MINGW_AC_OUTPUT
 #
 # $RCSfile$: end of file

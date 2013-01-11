@@ -6,7 +6,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 
 # Written by Keith Marshall <keithmarshall@users.sourceforge.net>
-# Copyright (C) 2009, 2010, 2011, 2012, MinGW Project
+# Copyright (C) 2009-2013, MinGW.org Project
 #
 #
 # Makefile template for mingw-get
@@ -22,15 +22,18 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 # hope that it may prove useful, but WITHOUT WARRANTY OF ANY KIND; not
 # even an implied WARRANTY OF MERCHANTABILITY, nor of FITNESS FOR ANY
 # PARTICULAR PURPOSE.  Under no circumstances will the author, or the
-# MinGW Project, accept liability for any damages, however caused,
+# MinGW.org Project, accept liability for any damages, however caused,
 # arising from the use of this software.
 #
 PACKAGE_SUBSYSTEM = @host_os@
 
+CLI_RELEASE_CLASS = @CLI_RELEASE_CLASS@
+
+BUILD_TAG = `>> build.tag; cat build.tag`
+DEBUGLEVEL = @DEBUGLEVEL@
+
 srcdir = @srcdir@
 abs_top_srcdir = @abs_top_srcdir@
-
-DEBUGLEVEL = @DEBUGLEVEL@
 
 vpath %.ico @srcdir@/icons
 VPATH = @top_srcdir@/src:@top_srcdir@/src/pkginfo:@top_srcdir@/tinyxml
@@ -50,6 +53,16 @@ AR = @AR@
 ARFLAGS = @ARFLAGS@
 
 WINDRES = @WINDRES@
+VERSION_SCRIPT = tag=$(BUILD_TAG); \
+  test "x$$tag" != x && tag="-$(CLI_RELEASE_CLASS)-$$tag"; \
+    $(TAG_SCRIPT)
+
+TAG_SCRIPT = sed \
+  -e "s!%PACKAGE_NAME%!$(PACKAGE_TARNAME)!g" \
+  -e "s!%PACKAGE_VERSION%!$(PACKAGE_VERSION)$$tag!g" \
+  -e "s!%COPYRIGHT_HOLDER%!@COPYRIGHT_HOLDER@!g" \
+  -e "s!%YEARS_OF_ISSUE%!@YEARS_OF_ISSUE@!g"
+
 
 OBJEXT = @OBJEXT@
 EXEEXT = @EXEEXT@
@@ -77,6 +90,8 @@ LIBEXEC_SCRIPTS = ${script_srcdir}/setup.lua ${script_srcdir}/wsh.lua \
    ${script_srcdir}/shlink.js ${script_srcdir}/unlink.js
 LIBEXEC_DATA = mingw-get-0.dll
 
+# Primary build goals...
+#
 all: $(BIN_PROGRAMS) $(LIBEXEC_PROGRAMS) $(LIBEXEC_DATA)
 
 pkginfo$(EXEEXT):  driver.$(OBJEXT) pkginfo.$(OBJEXT)
@@ -118,6 +133,27 @@ sinclude *.d
 %.$(OBJEXT): %.cpp
 	$(CXX) $(DEPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $<
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
+
+# Release tagging...
+#
+time-stamp:
+%.tagged.time: time-stamp
+	> $*.time
+
+%.time:
+	> $*.time
+
+%.tag: %.tagged.time
+	>> $@; tag=`date +%Y%m%d`; \
+	  tag=`awk -F- -v today=$$tag ' \
+	    BEGIN { tag = 1 } $$1 == today { tag += $$2 } \
+	    END { print today "-" tag }' $@`; \
+	  echo $$tag > $@
+
+%.c: %.c.in
+	$(VERSION_SCRIPT) $< > $@
+
+version.c: Makefile build.time
 
 # Installation tools and directory paths...
 #
@@ -170,15 +206,25 @@ install-strip: install
 	  done
 
 # Packaging and distribution...
+# "Native" source files, (i.e. those specific to mingw-get), are...
 #
 LICENCE_FILES = README COPYING
 SRCDIST_FILES = $(LICENCE_FILES) ChangeLog NEWS INSTALL \
-  aclocal.m4 configure.ac configure Makefile.in version.c.in
+  aclocal.m4 configure.ac configure Makefile.in
 
-SRCDIST_SUBDIRS = build-aux build-aux/m4 icons src src/pkginfo \
-  srcdist-doc scripts/libexec tinyxml xml
+# ...plus the entire content of the sub-directories...
+#
+SRCDIST_SUBDIRS = src src/pkginfo srcdist-doc icons \
+  scripts/libexec tinyxml xml
 
-# The names of distributed pacakge archive files incorporate version
+# In addition to the native sources for mingw-get, our source distribution
+# must include a filtered subset of those additional files which we import
+# from the project's global build-aux repository...
+#
+BUILD_AUX_DIRS = build-aux build-aux/m4
+BUILD_AUX_FILES = config.guess config.sub install-sh missing.m4
+
+# The names of distributed package archive files incorporate version
 # information, derived from PACKAGE_VERSION; this is decomposed, so that
 # the PACKAGE_SUBSYSTEM may be interposed between the principal version
 # number and any qualifying suffix, which specifies development status.
@@ -203,15 +249,21 @@ dist: srcdist bindist readme.txt
 TARZIP = xz
 TAREXT = tar.$(TARZIP)
 
+# The following macros facilitate the inclusion of SCM build tags within
+# the generated names for the release tarballs.
+#
+BLDTAG =  @abs_top_builddir@/build.tag
+SCMTAG = `>> $(BLDTAG); cat $(BLDTAG) | sed 's,.,-$(CLI_RELEASE_CLASS)-&,'`
+
 bindist: all licdist
 	rm -rf staged
 	$(MAKE) --no-print-directory prefix=`pwd`/staged install-strip
 	cd staged; tar chf - bin/pkginfo$(EXEEXT) | $(TARZIP) -c > \
-	  ../pkginfo-$(PACKAGE_DISTVERSION)-bin.$(TAREXT)
+	  ../pkginfo-$(PACKAGE_DISTVERSION)$(SCMTAG)-bin.$(TAREXT)
 	rm staged/bin/pkginfo$(EXEEXT)
 	cd staged; tar chf - * | $(TARZIP) -c > \
-	  ../$(PACKAGE_DISTNAME)-bin.$(TAREXT)
-	cd staged; zip -r ../$(PACKAGE_DISTNAME)-bin.zip *
+	  ../$(PACKAGE_DISTNAME)$(SCMTAG)-bin.$(TAREXT)
+	cd staged; zip -r ../$(PACKAGE_DISTNAME)$(SCMTAG)-bin.zip *
 	rm -rf staged
 
 licdist:
@@ -222,7 +274,8 @@ licdist:
 	    && $(LN_S) ${abs_top_srcdir}/$$file . \
 	    || $(LN_S) ${CURDIR}/$$file .; \
 	  done
-	tar chf - share | $(TARZIP) -c > $(PACKAGE_DISTNAME)-lic.$(TAREXT)
+	tar chf - share | $(TARZIP) -c > \
+	  $(PACKAGE_DISTNAME)$(SCMTAG)-lic.$(TAREXT)
 	rm -rf share
 
 srcdist: srcdist-doc
@@ -241,9 +294,18 @@ srcdist: srcdist-doc
 	    fi; \
 	  done; \
 	cd ${CURDIR}; done
+	for dir in $(BUILD_AUX_DIRS); do \
+	  $(mkinstalldirs) ${PACKAGE_DISTROOT}/$$dir \
+	  && cd ${PACKAGE_DISTROOT}/$$dir; \
+	  for file in $(BUILD_AUX_FILES); do \
+	    if test -f ${abs_top_srcdir}/$$dir/$$file; then \
+	      $(LN_S) ${abs_top_srcdir}/$$dir/$$file .; \
+	    fi; \
+	  done; \
+	cd ${CURDIR}; done
 	cd ${PACKAGE_DISTROOT}/src/pkginfo; $(LN_S) ${CURDIR}/pkginfo.c .
 	tar chf - ${PACKAGE_DISTROOT} | $(TARZIP) -c > \
-	  ${PACKAGE_DISTNAME}-src.$(TAREXT)
+	  $(PACKAGE_DISTNAME)$(SCMTAG)-src.$(TAREXT)
 	rm -rf ${PACKAGE_DISTROOT}
 
 # README, INSTALL and NEWS files to be included in the source distribution
