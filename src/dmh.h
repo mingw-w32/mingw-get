@@ -5,7 +5,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, MinGW Project
+ * Copyright (C) 2009, 2010, 2011, 2012 MinGW.org Project
  *
  *
  * This header file provides the public API declarations for the
@@ -60,8 +60,16 @@ EXTERN_C void dmh_init( const dmh_class, const char* );
 EXTERN_C int dmh_notify( const dmh_severity, const char *fmt, ... );
 EXTERN_C int dmh_printf( const char *fmt, ... );
 
-#define DMH_BEGIN_DIGEST  (uint16_t)(0x0001U), ~(uint16_t)(0x0001U)
-#define DMH_END_DIGEST    (uint16_t)(0x0100U),  (uint16_t)(0x0000U)
+#define DMH_COMPILE_DIGEST	(uint16_t)(0x0100U)
+#define DMH_DISPATCH_DIGEST	(uint16_t)(0x0200U)
+
+#define DMH_DIGEST_MASK 	(DMH_COMPILE_DIGEST | DMH_DISPATCH_DIGEST)
+#define DMH_BEGIN_DIGEST	(DMH_COMPILE_DIGEST),  ~(DMH_DIGEST_MASK)
+#define DMH_END_DIGEST		(DMH_DISPATCH_DIGEST), ~(DMH_DIGEST_MASK)
+
+#define DMH_GET_CONTROL_STATE	(uint16_t)(0x0000U), (uint16_t)(0xFFFFU)
+
+#define DMH_SEVERITY_MASK	(DMH_INFO | DMH_WARNING | DMH_ERROR | DMH_FATAL)
 
 EXTERN_C uint16_t dmh_control( const uint16_t, const uint16_t );
 

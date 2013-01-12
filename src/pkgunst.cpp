@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2011, 2012, MinGW Project
+ * Copyright (C) 2011, 2012, MinGW.org Project
  *
  *
  * Implementation of the primary package removal methods.
@@ -37,6 +37,7 @@
 #include "pkgkeys.h"
 #include "pkgproc.h"
 #include "pkgtask.h"
+#include "pkgstat.h"
 
 #include "mkpath.h"
 
@@ -286,6 +287,7 @@ int pkg_unlink( const char *sysroot, const char *pathname )
     char filepath[ mkpath( NULL, sysroot, pathname, NULL ) ];
     mkpath( filepath, sysroot, pathname, NULL );
 
+    pkgSpinWait::Report( "Deleting %s", pathname );
     DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_TRANSACTIONS ),
 	dmh_printf( "  %s: unlink file\n", filepath )
       );
@@ -299,9 +301,11 @@ int pkg_unlink( const char *sysroot, const char *pathname )
 
 EXTERN_C void pkgRemove( pkgActionItem *current )
 {
-  /* Common handler for all package removal tasks...
+  /* Common handler for all package removal tasks; note that we
+   * initially assert failure, pending reversion on success...
    */
   pkgXmlNode *pkg;
+  current->Assert( ACTION_REMOVE_FAILED );
   if( ((pkg = current->Selection( to_remove )) != NULL)
   &&  (current->HasAttribute( ACTION_DOWNLOAD_OK ) == ACTION_REMOVE_OK)  )
   {
@@ -397,6 +401,12 @@ EXTERN_C void pkgRemove( pkgActionItem *current )
 	      "%s: unreferenced in %s\n", sysname, id_lookup( manifest, value_unknown )
 	    );
 	}
+	else
+	  /* Removal should be successful: revert our original
+	   * assertion of failure...
+	   */
+	  current->Assert( 0UL, ~ACTION_REMOVE_FAILED );
+
 	/* Now, we've validated the manifest, and confirmed that it
 	 * correctly records its association with the current sysroot,
 	 * (or we've reported the inconsistency; we may proceed with
@@ -524,6 +534,14 @@ EXTERN_C void pkgRemove( pkgActionItem *current )
 	sysroot->SetAttribute( modified_key, value_yes );
       }
     }
+    /* Update the internal record of installed state; although no
+     * running CLI instance will return to any point where it needs
+     * this, we may have been called from the GUI, and it requires
+     * consistency here, if the user revisits this package within
+     * any single active session.
+     */
+    pkg->SetAttribute( installed_key, value_no );
+
     /* After package removal has been completed, we invoke any
      * post-remove script which may be associated with the package.
      */

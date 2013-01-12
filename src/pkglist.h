@@ -46,6 +46,39 @@ class pkgDirectoryViewerEngine
     pkgDirectory *EnumerateComponents( pkgXmlNode * );
 };
 
+#ifdef GUIMAIN_H
+/*
+ * The following class is required only when implementing the
+ * graphical user interface; it is heavily dependent on graphical
+ * elements of the MS-Windows API.  Thus, we expose its declaration
+ * only when the including module expresses an intent to deploy
+ * such graphical elements, (as implied by prior inclusion of
+ * the guimain.h header, which this augments).
+ *
+ */
+class pkgListViewMaker: public pkgDirectoryViewerEngine
+{
+  /* A concrete specialization of the pkgDirectoryViewerEngine
+   * class, used to assemble the content of the records displayed
+   * in the list view pane of the graphical user interface.
+   */
+  public:
+    pkgListViewMaker( HWND );
+    virtual void Dispatch( pkgXmlNode * );
+    virtual void MarkScheduledActions( pkgActionItem * );
+    virtual void UpdateListView( void );
+
+  private:
+    HWND ListView;
+    LVITEM content;
+    inline bool GetItem( void );
+    void InsertItem( pkgXmlNode *, char * );
+    void UpdateItem( char *, bool = false );
+    char *package_name;
+};
+
+#endif /* GUIMAIN_H */
+
 class pkgDirectory
 {
   /* A locally defined class, used to manage a list of package
@@ -64,5 +97,13 @@ class pkgDirectory
     pkgDirectory *prev;
     pkgDirectory *next;
 };
+
+/* The following helper function is used to retrieve release availability
+ * and installation status attributes for any specified package, from the
+ * XML database, returning specifications for the latest available release
+ * and the installed release, if any, in the to_install and the to_remove
+ * selection fields of the passed pkgActionItem structure respectively.
+ */
+EXTERN_C pkgXmlNode *pkgGetStatus( pkgXmlNode *, pkgActionItem * );
 
 #endif /* PKGLIST_H: $RCSfile$: end of file */ 

@@ -1,46 +1,864 @@
+2013-01-12  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Merge gui-dev branch head to master; close gui-dev branch.
+
+	* configure.ac (AC_INIT): Reset version to 0.6; reset all package
+	files to state prevailing at gui-dev branch head.
+
 2013-01-11  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
-	Update master distribution build rules to match gui-dev branch.
+	Create release branch for further r0.5 development.
 
-	* configure.ac (AC_INIT): Remove build classification suffix from
-	package version field; leave it to be deduced, at make time, from...
-	(CLI_RELEASE_CLASS): ...this new AC_SUBST variable; assign as "beta".
-	(SNAPSHOT_CLASS): Accept as environent override for CLI_RELEASE_CLASS.
-	(GUI_RELEASE_CLASS): New AC_SUBST variable; defined to pre-empt future
-	GUI implementation, with possibly different classification to CLI. Set
-	default to "alpha", supporting override by SNAPSHOT_CLASS.
-	(AC_CONFIG_FILES): Remove version.c
-
-	* version.c.in: Original file removed; relocated to...
-	* src/version.c.in: ...here; update descriptive comments accordingly.
-	(COPYRIGHT_HOLDER, YEARS_OF_ISSUE): Change substitution field markers
-	from "@" to "%", to avoid confusion in makefile references.
-
-	* Makefile.in (CLI_RELEASE_CLASS): Use it, in conjunction with...
-	(BLDTAG, SCMTAG): New macros; use them to classify tarball names.
-	(time-stamp, %.tag, %.tagged.time, %.time): New goals; required by...
-	(BUILD_TAG, TAG_SCRIPT, VERSION_SCRIPT): New macros; copy them from
-	gui-dev branch; use to generate version.c from src/version.c.in
-	(SRCDIST_FILES): Remove version.c.in; it is now captured within...
-	(SRCDIST_SUBDIRS): ...this; remove build-aux and build-aux/m4; we want
-	only selected files from these, as filtered by specification in...
-	(BUILD_AUX_DIRS, BUILD_AUX_FILES): ...these new macros; copy them from
-	gui-dev branch; use them to include selected source files within...
-	(srcdist): ...this distribution target.
+	* configure.ac (AC_INIT): Bump version number to 0.5.1; assign branch
+	label (mercurial bookmark) as "r0-5-1" for all files; (this is not to
+	be released, at this time).
 
 2013-01-10  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
-	Add configure time check for Lua API availability.
+	Implement data sheet compiler for list of installed files.
 
-	* configure.ac: Add AC_CHECK_HEADER test for lua.h; diagnose absence
-	via MINGW_AC_ASSERT_MISSING.  (Merge this from gui-dev branch).
+	* src/pkgdata.cpp: #include pkgproc.h; it furnishes...
+	(pkgManifest): ...this class declaration, which is required by...
+	(DataSheetMaker::DisplayFilesManifest): ...this new private inline
+	method; declare and implement it; subsequently, invoke it...
+	(DataSheetMaker::OnPaint) [PKG_DATASHEET_INSTALLED_FILES]: ...here.
+	(pkgTroffLayoutEngine::WriteLn): Correct a defect in handling of
+	excess-length unbreakable "words" outside the viewport; previously
+	they were not dropped from the input queue, resulting in repeated
+	reprocessing in an infinite loop.
 
-2013-01-10  Keith Marshall  <keithmarshall@users.sourceforge.net>
+2013-01-09  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Include release tags in GUI displayed package versions.
+
+	* src/pkglist.cpp (pkgVersionString) [ReleaseStatus != NULL]:
+	Append ReleaseStatus and ReleaseIndex to generated version string.
+
+2013-01-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Fix enumeration of pending install actions for scheduled upgrades.
+
+	* src/pkgdata.cpp (pkgActionItem::EnumeratePendingActions):
+	[action == ACTION_UPGRADE && classified == ACTION_INSTALL]: Enumerate
+	upgrade as a special case of the install classification.
+
+2013-01-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement "Mark All Upgrades" GUI capability.
+
+	* src/guimain.h (IDM_REPO_APPLY): Renumbered; make room for...
+	(IDM_REPO_MARK_UPGRADES): ...this new constant; define it.
+
+	* src/guidata.rc (IDM_REPO_MARK_UPGRADES): New option; add it...
+	(ID_MAIN_WINDOW_WINDOW) [Installation]: ...to this drop-down menu.
+
+	* src/pkgbase.h (pkgActionItem::SuppressRedundantUpgrades): New
+	public inline method; declare it.
+
+	* src/guiexec.cpp (AppWindowMaker::OnCommand):
+	[IDM_REPO_MARK_UPGRADES]: Add case handler for this menu selection.
+	(pkgActionItem::SuppressRedundantUpgrades): New method; implement it.
+
+2013-01-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Avoid unnecessary reloading of package list.
+
+	* src/guiexec.cpp (AppWindowMaker::OnCommand) [IDM_REPO_APPLY]:
+	Do not reload package list after processing; update it in place.
+
+2013-01-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Avoid potential heap corruption in action scheduler.
+
+	* src/guiexec.cpp (pkgActionItem::Clear): Factor out; relocate to...
+	* src/pkgexec.cpp (pkgActionItem::Clear): ...here; this keeps all use
+	of new and delete operators on the same side of the EXE/DLL boundary
+	as the constructor and destructor for pkgActionItem objects.
+	(pkgActionItem::Schedule): Ensure that all min_wanted and max_wanted
+	references are unique to each allocated pkgActionItem object, so that
+	the destructor may safely release their associated heap memory blocks.
+
+2013-01-07  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Update copyright notification for development in new year.
 
 	* configure.ac (YEARS_OF_ISSUE): Add year 2013.
-	(COPYRIGHT_HOLDER): Augment project name; s/MinGW/MinGW.org/
+
+	* Makefile.in (version.c, guidata.$OBJEXT): Make them depend on...
+	(Makefile): ...this, so YEARS_OF_ISSUE propagates to built objects.
+
+2012-12-24  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Work around a GUI action scheduling instability.
+
+	* src/guimain.h (AppWindowMaker::UpdateDataSheet): Declare new method.
+	* src/pkgdata.cpp (AppWindowMaker::UpdateDataSheet): Implement it.
+	(AppWindowMaker::OnNotify): Use it.
+
+	* src/guiexec.cpp (AppWindowMaker::OnCommand) [IDD_REPO_APPLY]:
+	Don't refresh package list view in-place; clear and reload it instead.
+
+2012-12-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Update distribution build rules.
+
+	* Makefile.in (SRCDIST_FILES): Remove version.c.in; this was moved
+	to src/version.c.in, and is now automatically included via...
+	(SRCDIST_SUBDIRS): ...this; remove build-aux and build-aux/m4; we want
+	only selected files from these, as filtered by specification in...
+	(BUILD_AUX_DIRS, BUILD_AUX_FILES): ...these new macros; define them.
+	(BLDTAG, SCMTAG, GCMTAG): New release class macros; define them.
+	(bindist, licdist, srcdist): Use them.
+
+2012-12-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Update CLI implementation hooks for GUI integration.
+
+	* Makefile.in (LIBEXEC_PROGRAMS): Replace gui$EXEEXT with
+	guistub$EXEEXT; update make goal references accordingly.
+
+	* src/rites.c (MINGW_GET_GUI): Redefine to be guimain$EXEEXT.
+	(MINGW_GET_GFB): Define new fall-back; let it be guistub$EXEEXT.
+	(RITES_IMPLEMENTATION): Perform rites for MINGW_GET_GUI.
+
+	* src/clistub.c (main) [cannot exec MINGW_GET_GUI]: Try
+	MINGW_GET_GFB instead.
+
+2012-12-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Rename executive core file for GUI implementation.
+
+	* src/guixmld.cpp: File renamed...
+	* src/guiexec.cpp: ...to this; its function exceeds original intent.
+	* Makefile.in (GUIMAIN_OBJECTS): Update reference accordingly.
+
+2012-12-20  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Create foundation for implementation of package category tree view.
+
+	* Makefile.in (GUIMAIN_OBJECTS): Add pkgtree.$OBJEXT reference to...
+	* src/pkgtree.cpp: ...incorporate this new file; it implements...
+	(AppWindowMaker::InitPackageTreeView): ...this new class method...
+	(pkgInitCategoryTreeGraft): ...and this new extern "C" function.
+
+	* src/guimain.h (pkgInitCategoryTreeGraft): Declare prototype.
+	(AppWindowMaker::InitPackageTreeView): New private method; declare it.
+	(AppWindowMaker::PackageTreeView): New member variable; declare it.
+
+	* src/guixmld.cpp (AppWindowMaker::LoadPackageData): Call
+	pkgInitCategoryTreeGraft(), after loading profile.xml
+	(AppWindowMaker::Invoked): Call InitPackageTreeView()
+
+	* src/pkgview.cpp (AppWindowMaker::LayoutEngine):
+	[ID_PACKAGE_TREEVIEW]: Handle it.
+
+2012-12-19  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Make the "Apply Changes" dialogue "failure-aware".
+
+	* src/pkgtask.h (ACTION_APPLY_FAILED): Redefine, in terms of...
+	(ACTION_INSTALL_FAILED, ACTION_REMOVE_FAILED): New manifest defines.
+	(ACTION_UNSUCCESSFUL): New manifest constant; define it.
+
+	* src/pkgdata.cpp (pkgActionItem::EnumeratePendingActions):
+	[ACTION_UNSUCCESSFUL]: Make it a special case for enumeration.
+
+	* src/guixmld.cpp (pkgApplyChanges): Enumerate...
+	[ACTION_UNSUCCESSFUL > 0]: ...all such cases; when true...
+	[IDD_AUTO_CLOSE_OPTION]: ...this; select alternative close-out
+	messages, as appropriate.
+	(pkgActionItem::Assert): Factor out; relocate to...
+	* src/pkgexec.cpp (pkgActionItem::Assert): ...here; this moves its
+	object code into the mingw-get DLL.
+
+	* src/pkgunst.cpp (pkgRemove) [ACTION_REMOVE_FAILED]:
+	* src/pkginst.cpp (pkgInstall) [ACTION_INSTALL_FAILED]:
+	Assert as appropriate.
+
+2012-12-19  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Improve progress reporting in "Apply Changes" dialogue.
+
+	* src/pkgstat.h: New header file; it declares...
+	(pkgSpinWait): ...this new pure abstract base class; it specifies an
+	infrastructure for posting arbitrary text to dialogue controls.
+
+	* src/pkgexec.cpp (pkgSpinWait): Implement its static elements.
+	(pkgActionItem::Execute): Dispatch progress reports, handled by...
+	(pkgSpinWait::Report, pkgSpinWait::Indicator): ...these.
+
+	* src/guixmld.cpp (pkgDialogueSpinWait): New class; declare it and
+	implement locally.  It is derived from, and provides a listener for...
+	(pkgSpinWait): ...this abstract class.
+	(pkgApplyChanges): Use it.
+
+	* src/tarproc.cpp (pkgTarArchiveInstaller::ProcessDataStream): Call...
+	(pkgSpinWait::Report): ...this, to report extracted files.
+
+	* src/pkgunst.cpp (pkg_unst): Call...
+	(pkgSpinWait::Report): ...this, to report deleted files.
+
+	* src/sysroot.cpp (pkgXmlDocument::UpdateSystemMap): Call...
+	(pkgSpinWait::Report, pkgSpinWait::Indicator): ...these, to confirm
+	continuing database update activity.
+
+2012-12-18  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Update tab display on right-click in package list view.
+
+	* src/pkgdata.cpp (AppWindowMaker::OnNotify) [NM_RCLICK]:
+	Call DataSheetMaker::DisplayData(), before invoking pop-up menu.
+
+2012-12-17  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add more protection against NULL pointer abuse.
+
+	* src/pkgbase.h (pkgActionItem::Reset): Method renamed to...
+	* src/guixmld.cpp (pkgActionItem::Assert): ...this; also renamed here.
+	(AppWindowMaker::OnCommand): When calling...
+	(pkgListViewMaker::MarkScheduledActions): ...this, pass argument as...
+	(pkgXmlDocument::ClearScheduledActions): ...pointer returned by this.
+
+	* src/pkgdata.cpp (AppWindowMaker::MarkSchedule):
+	[pending_actions == NULL]: Do not propagate invocation request to...
+	(pkgListViewMaker::MarkScheduledActions): ...this.
+
+	* src/pkglist.cpp (pkgListViewMaker::MarkScheduledActions):
+	[schedule == NULL]: Do nothing.
+
+2012-12-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement some additional permanent debugging support.
+
+	* src/pkgdeps.cpp (pkgXmlDocument::ResolveDependencies):
+	[DEBUG_TRACE_DEPENDENCIES]: Enable DMH digest mode for messages.
+
+	* src/tarproc.cpp (pkgTarArchiveInstaller::ProcessDataStream):
+	[DEBUG_TRACE_TRANSACTIONS]: Add logging of installed file path names.
+
+2012-12-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Insert a missing snprintf format effector.
+
+	* src/pkgnget.cpp (pkgDownloadMeterGUI::Update): Add omitted '%'
+	format specifier, in "%%", for formatting percentage-complete value.
+	Rename "size_buf" automatic variable as "buf"; this results in shorter
+	source lines, and consequently a tidier source code layout.
+	(pkgDownloadMeterGUI::ResetGUI): Likewise s/size_buf/buf/
+
+2012-12-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add a missing header reference.
+
+	* src/approot.h: Include stdint.h; this ensures that wchar_t is
+	properly typedef'd, before attempting to use it.
+
+2012-12-12  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Make a clone of the package menu available as a pop-up.
+
+	* src/guimain.h (AppWindowMaker::SelectPackageAction): New private
+	method; declare it.
+
+	* src/pkgdata.cpp (AppWindowMaker::SelectPackageAction): Implement it.
+	(AppWindowMaker::OnNotify) [ID_PACKAGE_LISTVIEW]: Use it.
+
+2012-12-12  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Improve conditionally enabled state manipulation for menu items.
+
+	* src/guidata.rc (IDM_REPO_APPLY): Set its initial state as GRAYED.
+
+	* src/pkgdata.cpp (AppWindowMaker::UpdatePackageMenuBindings):
+	[IDM_PACKAGE_REINSTALL]: Always leave it GRAYED; this is a temporary
+	provision, until the GUI is updated to support "reinstall" capability.
+	[IDM_REPO_APPLY && !(EnumeratePendingActions > 0)]: Make it GRAYED.
+	[IDM_REPO_APPLY && (EnumeratePendingActions > 0)]: Enable it.
+
+2012-12-11  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement GUI bindings for processing a schedule of actions.
+
+	* src/guimain.h (IDD_DMH_CONSOLE): New resource ID; define it.
+	(IDD_APPLY_EXECUTE): New dialogue template resource ID; define it.
+	(AppWindowMaker::ExecuteScheduledActions): New method; declare it.
+
+	* src/guidata.rc (IDD_APPLY_EXECUTE): Implement dialogue template.
+
+	* src/guixmld.cpp (pkgApplyChanges): New thread function; implement it.
+	(AppWindowMaker::OnCommand) [IDD_REPO_APPLY]: Use it; it is invoked...
+	(IDD_APPLY_EXECUTE): ...via this dialogue box, subsequently calling...
+	(AppWindowMaker::ExecuteScheduledActions): ...this; implement it.
+
+	* src/pkgexec.cpp (pkgActionItem::Execute): Add argument; use it.
+	(pkgActionItem::~pkgActionItem): Unlink chained references.
+
+	* src/pkgbase.h (pkgActionItem::Execute): Adjust prototype.
+
+2012-12-11  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Do not preserve unnecessary download requests.
+
+	* src/pkginet.cpp (pkgActionItem::DownloadArchiveFiles):
+	[(flags & ACTION_INSTALL) != ACTION_INSTALL]: Actions having no
+	"install" effect do not require a download; cancel any associated
+	download request.
+
+2012-12-10  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement GUI bindings for package download agent.
+
+	* src/guimain.h (IDD_PROGRESS_VAL, IDD_PROGRESS_MAX):
+	(IDD_PROGRESS_PCT): New manifest resource IDs; define them.  They will
+	be used to identify dialogue controls, to be associated with...
+	(IDD_APPLY_DOWNLOAD): ...this new dialogue template ID; define it.
+	(AppWindowMaker::DownloadArchiveFiles): New inline method; declare it.
+
+	* src/guidata.rc (IDD_APPLY_DOWNLOAD): Implement dialogue template.
+
+	* src/pkgbase.h (pkgActionItem::DownloadArchiveFiles): New public
+	inline method; declare it.  It overloads an existing private method of
+	the same name, which it subsequently invokes.
+
+	* src/pkginet.h: New header file; it declares...
+	(pkgInvokeDownload): ...this new extern "C" function prototype, and...
+	(pkgDownloadMeter): ...this abstract class; it is factored from its
+	original implementation in pkginet.cpp, augmented by addition of...
+	(pkgDownloadMeter::primary): New static member variable; declare it.
+	(pkgDownloadMeter::UseGUI): New public method; implement it inline.
+	(pkgDownloadMeter::ResetGUI): New public method; declare it, providing
+	a do-nothing inline default implementation.  Any derived class, which
+	supports GUI capability, should override this.
+
+	* src/pkgnget.cpp: New file; it implements...
+	(pkgDownloadMeterGUI): New class, derived from pkgDownloadMeter.
+	(pkgActionItem::DownloadArchiveFiles): New overloaded inline method.
+	(AppWindowMaker::DownloadArchiveFiles): New inline method.
+	(pkgInvokeDownload): New dialogue box worker thread handler.
+
+	* src/pkginet.cpp: Include pkginet.h; hence...
+	(pkgDownloadMeter): ...remove redundant class declaration.
+	(pkgDownloadMeter::primary): Define and initialise it.
+	(pkgInternetStreamingAgent::Get) [pkgDownloadMeter::UseGUI]: Delegate
+	progress metering to referenced pkgDownloadMeterGUI class instance.
+	[! pkgDownloadMeter::UseGUI]: Continue to use the existing built-in
+	pkgDownloadMeterTTY mechanism.
+	(pkgActionItem::DownloadSingleArchive) [ACTION_DOWLOAD_FAILED]: Assert
+	this initially; subsequently clear it on successful completion.
+	(pkgActionItem::DownloadArchiveFiles): Collect diagnostic messages
+	into a single DMH_BEGIN_DIGEST ... DMH_END_DIGEST group.
+
+	* src/guixmld.cpp: Include pkginet.h; it is required by...
+	(AppWindowMaker::OnCommand) [IDD_REPO_APPLY]: Use pkgInvokeDownload.
+
+	* Makefile.in (GUIMAIN_OBJECTS): Include pkgnget.$OBJEXT
+
+2012-12-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement "Discard" handler for GUI "Apply Changes" dialogue.
+
+	* src/pkgbase.h (pkgActionItem::Reset): New public method; declare it.
+	(pkgActionItem::Clear): New public method; declare two overloaded
+	variants, of which implement one inline.
+	(pkgXmlDocument::ClearScheduledActions): New public method; declare
+	and implement it inline.
+
+	* src/pkgtask.h (ACTION_DOWNLOAD_FAILED, ACTION_APPLY_FAILED): New
+	manifest bit-flag constants; define them.  They provide a mechanism
+	for blocking the discard event in respect of failed actions.
+
+	* src/guixmld.cpp (pkgActionItem::Reset): Implement it.
+	(pkgActionItem::Clear): Implement second, out-of-line variant.
+	(ACTION_PRESERVE_FAILED): New local manifest bit-flag constant; define
+	it as an aggregate of ACTION_DOWNLOAD_FAILED and ACTION_APPLY_FAILED.
+	(AppWindowMaker::OnCommand) [IDD_REPO_APPLY]: Use them.
+
+2012-12-07  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement GUI dialogue for "Apply Changes" action approval.
+
+	* src/guidata.rc (ID_MAIN_WINDOW_MENU): Rename...
+	("&Repository"): ...this drop-down menu entry...
+	("&Installation"): ...this; add...
+	("&Apply Changes"): ...this new selection.
+	(IDD_APPLY_APPROVE): New dialogue box resource template; define it.
+	(SS_CTEXTBOX): New aggregate style convenience macro; define it.
+	(ES_VT100): Likewise.
+
+	* src/guimain.h (IDM_REPO_APPLY): New resource ID; define it.
+	(IDM_REPO_QUIT): Redefined resource ID; was 302; changed to 312.
+	(IDD_APPLY_APPROVE, IDD_PROGRESS_TXT): New resource IDs; define them.
+	(IDD_APPLY_REMOVES_PACKAGES, IDD_APPLY_REMOVES_SUMMARY): Likewise.
+	(IDD_APPLY_INSTALLS_PACKAGES, IDD_APPLY_INSTALLS_SUMMARY): Likewise.
+	(IDD_APPLY_UPGRADES_PACKAGES, IDD_APPLY_UPGRADES_SUMMARY): Likewise.
+	(ID_APPLY, ID_DISCARD, ID_DEFER): New response IDs; define them.
+	(AppWindowMaker::EnumerateActions): New inline method; declare it.
+	(AppWindowMaker::DialogueResponse): New inline method; declare and
+	implement it.
+
+	* src/guixmld.cpp (pkglist.h): #included.
+	(dmh_setpty): Add locally declared prototype.
+	(AppWindowMaker::EnumerateActions): Implement it.
+	(pkgActionCount): New static helper function; implement it.
+	(ACTION_APPLY, APPLIES_TO): New macros; define them.
+	(FMT_APPLY_REMOVES, FMT_APPLY_INSTALLS, FMT_APPLY_UPGRADES): New
+	manifest string constants; define them.
+	(pkgApplyApproved): New static call-back function; implement...
+	(AppWindowMaker::OnCommand) [IDM_REPO_APPLY]: ...and use it.
+
+2012-12-06  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement enhanced action item enumeration capability.
+
+	* src/pkgbase.h (pkgActionItem::EnumeratePendingActions): New public
+	method; declare it.  It provides the capability to enumerate scheduled
+	actions, filtered by action classification; when invoked such that it
+	selects all actions, it may be used as a replacement for...
+	(pkgActionItem::Unapplied): ...this; delete declaration.
+
+	* src/pkgdata.cpp (pkgActionItem::EnumeratePendingActions): Implement
+	it; it is derived, with enhancement, from original implementation...
+	(pkgActionItem::Unapplied): ...of this; delete it, and...
+	(AppWindowMaker::OnClose): ...update calling reference accordingly.
+
+2012-12-05  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement PTY display emulation for GUI mode DMH.
+
+	* src/dmhcore.h (dmhTypeGeneric::set_console_hook): New public virtual
+	method; declare it, providing inline default do-nothing implementation.
+	(dmhTypeGeneric::severity_tag): New protected static method; declare it.
+	(dmhTypeGeneric::notification_format): New protected static property;
+	declare it.
+
+	* src/dmh.cpp (dmhTypeGeneric::severity_tag): Implement it.
+	(dmhTypeGeneric::notification_format): Define and initialise it.
+	(dmhTypeTTY::notify): Use them.
+	(dmh_setpty): New function; declare prototype and implement it.
+
+	* src/guidmh.cpp (dmhTypePTY): New locally implemented class.
+	(dmhTypeGUI::set_console_hook): New virtual method; declare and
+	implement it; it stores a dmhTypePTY reference pointer into...
+	(dmhTypeGUI::console_hook): ...this new private member variable.
+	(dmhTypeGUI::dmhTypeGUI): Initialise it.
+	(dmhTypeGUI::notify) [console_hook != NULL]: Delegate to it.
+	(dmhTypeGUI::printf) [console_hook != NULL]: Likewise.
+
+2012-12-03  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement generalised API for dialogue boxes with worker threads.
+
+	* src/guimain.h (pkgDialogueThread): New typedef; declare it.
+	(AppWindowMaker::DialogueThread): New static property; declare it.
+	(AppWindowMaker::DispatchDialogueThread): New method; declare it.
+
+	* src/guixmld.cpp: Formatting of several comments adjusted.
+	(pkgUpdate, pkgInitDataLoad): Defunct functions; replaced by...
+	(pkgDialogue): ...this new static call-back function; implement it.
+	(AppWindowMaker::DialogueThread): Instantiate and initialise it.
+	(AppWindowMaker::DispatchDialogueThread): Implement it.
+	(AppWindowMaker::Invoked): Use it to invoke pkgInvokeInitDataLoad()...
+	(AppWindowMaker::OnCommand): ...and pkgInvokeUpdate().
+
+2012-12-03  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Consolidate GUI implementation for package list view management.
+
+	* src/pkglist.h (pkgListViewMaker::GetTitle): Disused overloaded
+	method; remove all declarations.
+	(pkgListViewMaker::GetVersionString): Disused method; remove
+	declaration.
+	(pkgListViewMaker::GetItem): New private inline method; declare it.
+	(pkgListViewMaker::UpdateItem): New private method; declare it.
+	(pkgListViewMaker::UpdateListView): New public method; declare it.
+	(pkgListViewMaker::MarkScheduledActions): Likewise.
+
+	* src/guimain.h (AppWindowMaker::MarkSchedule): New public inline
+	method; declare it, but defer implementation to...
+
+	* src/pkgdata.cpp (AppWindowMaker::MarkSchedule): ...here; not used
+	elsewhere, it is derived from, and replaces...
+	(pkgMarkSchedule): ...this function; factor out redundant code, in
+	favour of delegation to pkgListViewMaker::MarkScheduledActions(), with
+	following call to AppWindowMaker::UpdatePackageMenuBindings(); update
+	calling function references...
+	(AppWindowMaker::UnmarkSelectedPackage): ...here, and...
+	(AppWindowMaker::Schedule): ...here.
+
+	* src/pkglist.cpp (pkgVersionString): New static function; implement
+	it as a local replacement for...
+	(pkgListViewMaker::GetVersionString): ...this defunct class method.
+	(pkgGetTitle): New overloaded static function; implement two variants,
+	as local replacements for...
+	(pkgListViewMaker::GetTitle): ...this defunct overloaded class method.
+	(pkgListViewMaker::UpdateItem): Implement it; factor code from...
+	(pkgListViewMaker::InsertItem): ...here, whence use it.
+	(pkgListViewMaker::MarkScheduledActions): Implement it.
+	(pkgListViewMaker::UpdateListView): Implement it.
+	(pkgListViewMaker::pkgListViewMaker): Remove references to...
+	(LVIF_TEXT): ...this.
+
+2012-11-30  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Increase width of window sash bars by 50%.
+
+	* src/guimain.h (SASH_BAR_THICKNESS): Increase from 4 to 6; this makes
+	it easier to grab the sash bars, so they may be dragged; IMO, it also
+	results in a better appearance.
+
+2012-11-29  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Maintain consistent internal vs. external installation records.
+
+	* src/pkginst.cpp (pkgInstall): Set "installed" attribute on internal
+	package reference, to "yes", after installation; CLI didn't need this,
+	but GUI will do so, for any package revisited in a single session.
+
+	* src/pkgunst.cpp (pkgRemove): Similarly, negate "installed" attribute
+	after package removal.
+
+2012-11-17  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Refactor to consolidate three instances of duplicate code.
+
+	* src/pkglist.h (pkgGetStatus): New function; declare it.
+	* src/pkglist.cpp (pkgGetStatus): Implement it; factor out from...
+	(pkgListViewMaker::InsertItem): ...here, whence use it.
+	* src/pkgdata.cpp (pkgMarkSchedule): Likewise here...
+	(DataSheetMaker::DisplayGeneralData): ...and here.
+
+2012-11-16  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add GUI support for install, upgrade, and remove action scheduling.
+
+	* src/guimain.h (EXTERN_C): Ensure it is defined.
+	(pkgActionItem): Add forward declaration of class name.
+	(pkgMarkSchedule): New EXTERN_C function; declare and prototype it.
+	(AppWindowMaker::OnClose): New virtual method; declare it.
+	(AppWindowMaker::Schedule): New public method; declare it.
+	(AppWindowMaker::UnmarkSelectedPackage): Likewise.
+
+	* src/pkgbase.h (pkgActionItem::HasAttribute) [this == NULL]: Add
+	protective logic; ignore attempts to access non-existent objects.
+	(pkgActionItem::SelectPackage) [this == NULL]: Likewise.
+	(pkgActionItem::Selection) [this == NULL]: Likewise.
+	(pkgActionItem::GetReference): New overloaded public method; declare
+	prototype variant with argument type of pkgXmlNode*.
+	(pkgActionItem::Unapplied): New public method; declare it.
+	(pkgActionItem::CancelScheduledAction): Likewise.
+	(pkgXmlDocument::Schedule): Change return type from void to
+	pkgActionItem*; add default argument values.
+
+	* src/guixmld.cpp (AppWindowMaker::OnCommand): Add menu case hooks...
+	[IDM_PACKAGE_INSTALL]: ...to schedule package 'install' action...
+	[IDM_PACKAGE_UPGRADE]: ...package 'upgrade' action...
+	[IDM_PACKAGE_REMOVE]: ...package 'remove' action, or...
+	[IDM_PACKAGE_UNMARK]: ...to cancel any of these scheduling requests.
+	[IDM_REPO_QUIT]: Correct typo; s/WM_QUIT/WM_CLOSE/ in comment.
+
+	* src/pkgdata.cpp (pkgMarkSchedule): Implement it.
+	(pkgActionItem::CancelScheduledAction): Implement it.
+	(pkgActionItem::Unapplied): Implement it.
+	(AppWindowMaker::UpdatePackageMenuBindings): Improve comments.
+	(AppWindowMaker::UnmarkSelectedPackage): Implement it.
+	(AppWindowMaker::Schedule): Implement it.
+	(AppWindowMaker::OnClose): Implement it.
+
+	* src/pkgdeps.cpp (pkgActionItem::GetReference): Implement overload.
+	(pkgXmlDocument::Schedule): Change return type, and return value.
+	[this == NULL]: Add protective logic; ignore non-existent objects.
+	[name == NULL]: Do not schedule; just return existing action list.
+
+2012-11-02  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add dynamically enabled state control for package menu items.
+
+	* src/guimain.h (AppWindowMaker::UpdatePackageMenuBindings): New
+	private method; declare it.
+
+	* src/pkgdata.cpp (AppWindowMaker::UpdatePackageMenuBindings):
+	Implement it, and...
+	(AppWindowMaker::OnNotify): ...use it.
+
+2012-11-01  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Avoid excessive inter-word spaces in adjusted text.
+
+	* src/pkgdata.cpp (pkgTroffLayoutEngine::WriteLn): Check extent of
+	padding to be added at each inter-word space, when adjusting text; do
+	not adjust, if it exceeds 5% of available display pane width.
+
+2012-11-01  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Elide unbreakable text which will not fit within display width.
+
+	* src/pkgdata.cpp (pkgTroffLayoutEngine::WriteLn): Add logic to detect
+	over-width unbreakable text; elide characters from the right, to make
+	it fit within the display width, with trailing ellipsis.
+
+2012-11-01  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add content compiler for package data sheet "general" tab.
+
+	* src/pkgbase.h (pkgActionItem::PrintURI): Make it public.  Add a
+	call-back reference argument, for output function; assign puts() as
+	default, where previously had hard coded printf() emulating puts()
+
+	* src/pkginet.cpp (pkgActionItem::PrintURI): Use call-back hook.
+
+	* src/pkgdata.cpp (DataSheetMaker::Display): New static property; it
+	stores a reference to the active class instance, so static call-back
+	methods may delegate processing requests to non-static methods.
+	(DataSheetMaker::Advance): New static property; it is used to instruct
+	call-back methods to interpose paragraph leading it the output stream.
+	(DataSheetMaker::FormatRecord): New private method; implement it.
+	(DataSheetMaker::FormatText): Don't pass "canvas" as an argument; we
+	can access it directly as a class property.  Update all callers as
+	necessary, to conform to modified function prototype.
+	(pkgListSelection): New static function; implement it, and...
+	(DataSheetMaker::OnPaint): ...use it in switch cases, when calling...
+	[PKG_DATASHEET_GENERAL]: DataSheetMaker::DisplayGeneralData(), and...
+	[PKG_DATASHEET_DESCRIPTION]: DataSheetMaker::DisplayDescription().
+	(DataSheetMaker::DisplayGeneralData): New public method; implement it.
+	(DataSheetMaker::DisplayPackageURL): New static method; implement it.
+	(DataSheetMaker::DisplayLicenceURL): Likewise.
+	(DataSheetMaker::DisplaySourceURL): Likewise.
+
+2012-10-30  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Fix error in counting of catalogue files during loading.
+
+	* src/pkgbind.cpp (pkgRepository::GetPackageList): Increment count
+	variable once only, at start of each cycle of the catalogue loading
+	loop; previous strategy of counting in discrete logic paths could
+	miss several required increments, particularly in CLI mode.
+
+2012-10-27  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Avoid DMH message digest fragmentation when downloading.
+
+	* src/dmh.h (DMH_GET_CONTROL_STATE): New macro; define it.
+	* src/pkginet.cpp (pkgInternetAgent::OpenURL): Use it; do not close
+	locally opened message digest, when called with one already open.
+
+2012-10-27  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Initiate progress metering for catalogue load and update operations.
+
+	* src/guidata.rc (IDD_REPO_UPDATE): New dialogue template; define it.
+	(IDM_REPO_UPDATE): Enable selection from "Repository" drop-down menu.
+
+	* src/guimain.h (IDD_REPO_UPDATE, IDD_CLOSE_OPTIONS):
+	(IDD_AUTO_CLOSE_OPTION, IDD_PROGRESS_BAR, IDD_PROGRESS_MSG): New
+	resource identification manifest constants; define them.
+	(pkgXmlNode, pkgProgressMeter): Add forward class declarations.
+	(AppWindowMaker::AttachedProgressMeter): New private data; define...
+	(AppWindowMaker::AppWindowMaker): ...and initialise it.
+	(AppWindowMaker::AttachProgressMeter): New public method; declare it.
+	(AppWindowMaker::DetachProgressMeter): Likewise.
+	(AppWindowMaker::LoadPackageData, AppWindowMaker::ClearPackageList):
+	(AppWindowMaker::UpdatePackageList): Make them public.
+
+	* src/pkgbase.h (pkgProgressMeter): New abstract class; declare it.
+	(AppWindowMaker) [GUIMAIN_H undefined]: Add forward class declaration.
+	(pkgXmlDocument::progress_meter): New private data member; declare...
+	(pkgXmlDocument::pkgXmlDocument): ...and initialise it.
+	(pkgXmlDocument::ProgressMeter, pkgXmlDocument::AttachProgressMeter):
+	(pkgXmlDocument::DetachProgressMeter): New public inline methods;
+	implement them.
+
+	* src/pkgview.cpp (WTK::GenericDialogue): Delete disused reference.
+	(AppWindowMaker::OnCommand): Factor out implementation; relocate it...
+	* src/guixmld.cpp: ...to here; thus it may utilise dependants of...
+	(ProgressMeterMaker): ...this new locally implemented class.
+	(AppWindowMaker::AttachProgressMeter): Implement it.
+	(AppWindowMaker::AttachProgressMeter): Likewise.
+	(pkgProgressMeter::~pkgProgressMeter): Likewise.
+	(pkgUpdate, pkgInvokeUpdate): New static functions; implement them.
+	(AppWindowMaker::Invoked): Replace direct call to LoadPackageData by
+	an indirect invocation, via a progress metering dialogue box using...
+	(pkgInitDataLoad): ...this new static callback function, invoking...
+	(pkgInvokeInitDataLoad): ...this new static thread function, whence...
+	(AppWindowMaker::LoadPackageData): ...this; add hook-up call to...
+	(pkgXmlDocument::AttachProgressMeter): ...incorporate this.
+
+	* src/pkgbind.cpp (pkgRepository::total, pkgRepository::count): New
+	private static properties; declare and instantiate them; provide...
+	(pkgRepository::Reset, pkgRepository::IncrementTotal): ...new public
+	static methods to manipulate them; declare and implement them inline.
+	(pkgRepository::GetPackageList): Use them to manage updates to the
+	pkgProgressMeter class instance, if any, which has been bound to
+	the controlling pkgXmlDocument class instance, when invoking...
+	(pkgXmlXmlDocument::BindRepositories): ...this.
+
+2012-10-18  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Associate DMH message boxes with active dialogues.
+
+	* src/guidmh.cpp (last_active_popup): New static inline function.
+	(dmhTypeGUI::dispatch_message): Use it.
+
+2012-10-18  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Fix Diagnostic Message Handler initialisation logic.
+
+	* src/dmh.cpp (dmh_init) [DMH_SUBSYSTEM_GUI]: Correct a logic error;
+	it previously fell through after any successful initialisation of the
+	DMH_SUBSYSTEM_GUI handler, replacing it with a DMH_SUBSYSTEM_TTY type
+	handler.  Also, assign a heap copy of the passed "progname" string
+	resource, which is volatile, to ensure that the handler retains a
+	valid reference.
+
+2012-10-11  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement preliminary GUI mode data sheet compiler.
+
+	* src/guimain.h (DataSheetMaker): New class; forward declare it.
+	(AppWindowMaker::InitPackageTabControl): New private method; declare it.
+	(AppWindowMaker::DataSheet, AppWindowMaker::PackageTabControl):
+	(AppWindowMaker::TabDataPane, AppWindowMaker::PackageTabPane): New
+	private data members; declare them.
+	(ID_SASH_WINDOW_PANE_CLASS): New string resource identifier; define it.
+	(ID_PACKAGE_DATASHEET, ID_PACKAGE_TABPANE): New window identifiers;
+	define them.
+
+	* src/guidata.rc (ID_SASH_WINDOW_PANE_CLASS): Specify string resource.
+
+	* src/pkgview.cpp (AppWindowMaker::OnSize): Add handler for...
+	(ID_PACKAGE_TABPANE, ID_PACKAGE_TABCONTROL, ID_PACKAGE_DATASHHET):
+	...this group of sash pane child window entities.
+	(AppWindowMaker::OnNotify): Comment out disused stub implementation.
+
+	* src/pkgshow.cpp (pkgUTF8Parser): Factor out class declaration...
+	(UTF32_MAX, UTF32_OVERFLOW, UTF32_INVALID): ...these definitions...
+	(utf32_t): ...and this typedef; relocate to, and #include...
+	* src/pkgdata.h: ...this new header file.
+
+	* src/pkgdata.cpp (DataSheetMaker): New class; declare and implement it.
+	(AppWindowMaker::InitPackageTabControl): Implement it.
+	(AppWindowMaker::OnNotify): Reimplement it.
+
+	* Makefile.in (GUIMAIN_OBJECTS): Add pkgdata.OBJEXT
+
+	* src/guixmld.cpp (AppWindowMaker::Invoked): Add call to invoke
+	AppWindowMaker::InitPackageTabControl()
+
+2012-10-09  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Remove a grossly heuristic list view hack.
+
+	* src/pkglist.cpp (pkgListViewMaker::GetTitle): Remove code for the
+	heuristic deletion of any redundant package name prefixes from package
+	title attributes; by now, all such prefixes should have been removed
+	from the catalogue, explicitly, at source.
+
+2012-10-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement GUI list view compiler for XML catalogue.
+
+	* src/pkgview.cpp (AppWindowMaker::LayoutEngine): Add case handler...
+	[pane_id == ID_PACKAGE_LISTVIEW]: ...for this window pane class.
+
+	* src/guimain.h (ID_PKGLIST_TABLE_HEADINGS):
+	(ID_PKGNAME_COLUMN_HEADING, ID_PKGTYPE_COLUMN_HEADING):
+	(ID_INSTVER_COLUMN_HEADING, ID_REPOVER_COLUMN_HEADING):
+	(ID_PKGDESC_COLUMN_HEADING): New resource identifiers; define them.
+	(ID_PKGSTATE_AVAILABLE, ID_PKGSTATE_AVAILABLE_NEW):
+	(ID_PKGSTATE_AVAILABLE_LOCKED, ID_PKGSTATE_AVAILABLE_INSTALL):
+	(ID_PKGSTATE_INSTALLED_CURRENT, ID_PKGSTATE_INSTALLED_LOCKED):
+	(ID_PKGSTATE_INSTALLED_OLD, ID_PKGSTATE_UPGRADE, ID_PKGSTATE_REMOVE):
+	(ID_PKGSTATE_REINSTALL, ID_PKGSTATE_DOWNGRADE, ID_PKGSTATE_BROKEN):
+	(ID_PKGSTATE_PURGE): New icon resource identifiers; define them.
+	(AppWindowMaker::InitPackageListView): New private method; declare it.
+	(AppWindowMaker::UpdatePackageList): New private method; declare it.
+	(AppWindowMaker::ClearPackageList): New private method; declare and
+	implement it inline.
+
+	* src/guidata.rc (ID_PKGSTATE_AVAILABLE, ID_PKGSTATE_AVAILABLE_NEW):
+	(ID_PKGSTATE_AVAILABLE_LOCKED, ID_PKGSTATE_AVAILABLE_INSTALL):
+	(ID_PKGSTATE_INSTALLED_CURRENT, ID_PKGSTATE_INSTALLED_LOCKED):
+	(ID_PKGSTATE_INSTALLED_OLD, ID_PKGSTATE_UPGRADE, ID_PKGSTATE_REMOVE):
+	(ID_PKGSTATE_REINSTALL, ID_PKGSTATE_DOWNGRADE, ID_PKGSTATE_BROKEN):
+	(ID_PKGSTATE_PURGE): New icon resources; implement them.
+
+	* icons/state01.ico icons/state02.ico icons/state03.ico:
+	* icons/state04.ico icons/state05.ico icons/state06.ico:
+	* icons/state07.ico icons/state08.ico icons/state09.ico:
+	* icons/state10.ico icons/state11.ico icons/state12.ico:
+	* icons/state13.ico: New files.  All are cloned from synaptic icons;
+	see src/guimain.rc for symbolic/functional reference names.
+
+	* src/pkglist.h [GUIMAIN_H defined] (pkgListViewMaker): New class;
+	declare it for use in modules which #include guimain.h
+
+	* src/pkglist.cpp: New file; it implements...
+	(pkgListViewMaker): ...this new class, and its clients...
+	(AppWindowMaker::InitPackageListView): New method.
+	(AppWindowMaker::UpdatePackageList): Likewise.
+
+	* Makefile.in (GUIMAIN_OBJECTS): Add pkglist.OBJEXT
+
+	* src/guixmld.cpp (AppWindowMaker::Invoke): Call InitCommonControls(),
+	as prerequisite to AppWindowMaker::InitPackageListView(); follow up by
+	calling AppWindowMaker::AdjustLayout().
+
+2012-10-07  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add GUI initialiser hook for XML catalogue interface.
+
+	* src/guimain.h (AppWindowMaker::Invoke): New public method; declare
+	it; it overrides the generic WTK::MainWindowMaker::Invoke() method, so
+	providing the initialiser hook which will invoke this...
+	(AppWindowMaker::LoadPackageData): ...new private method; declare it.
+
+	* src/guixmld.cpp: New file.
+	(AppWindowMaker::Invoke): Implement it.
+	(AppWindowMaker::LoadPackageData): Likewise.
+
+	* Makefile.in (GUIMAIN_OBJECTS): Add guixmld.OBJEXT
+
+2012-09-29  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add initial working GUI mode DMH class implementation.
+
+	* src/dmh.h (DMH_SEVERITY_MASK): New manifest constant; define it.
+	(DMH_DIGEST_MASK, DMH_COMPILE_DIGEST, DMH_DISPATCH_DIGEST): Likewise.
+	(DMH_BEGIN_DIGEST, DMH_END_DIGEST): Redefine in terms of above.
+
+	* src/dmhcore.h: New header file; it declares...
+	(dmhTypeGeneric): ...this abstract base class, factored from...
+
+	* src/dmh.cpp (dmhTypeGeneric): ...here, whence remove it; it is
+	still required, thus include dmhcore.h so that it remains visible.
+	(dmh_exception): Remove errant namespace qualifier from constructor.
+	(dmhTypeGUI): Delete class declaration and original constructor.
+	(dmh_init): Delete reference to dmhTypeGUI; replace by call to...
+	(dmh_init_gui): ...this new static function; it is a stub which
+	invokes a DLL import of the same name, to instantiate a dmhTypeGUI.
+	(dmhTypeGUI::control, dmhTypeGUI::notify, dmhTypeGUI::printf): Delete
+	original method stubs.
+
+	* src/guidmh.cpp: New file; it reimplements...
+	(dmhTypeGUI): ...this class; declare it and implement its constructor.
+	(dmh_init_gui): Provide its DLL exported implementation.
+	(dmhTypeGUI::dispatch_message): New private method; add it to the
+	class declaration and implement it; it is a helper method for...
+	(dmhTypeGUI::control, dmhTypeGUI::notify): ...these; implement them.
+	(dmhTypeGUI::printf): Provide a replacement stub.
+
+	* Makefile.in (GUIMAIN_OBJECTS): Add guidmh.OBJEXT
+
+	* src/guimain.h (AppWindowMaker::Create): New method; add it to the
+	class declaration; it overrides the default Create() method inherited
+	from WTK::MainWindowMaker
+
+	* src/pkgview.cpp (AppWindowMaker::Create): Implement it; it handles
+	window class registration and dmhTypeGUI initialisation, in addition
+	to the inherited CreateWindow() behaviour.
+
+	* src/guimain.cpp: Include dmh.h
+	(WinMain): Add catch block for dmh_exception.  Remove window class
+	registration request; it is now delegated to AppWindowMaker::Create()
 
 2012-09-26  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
@@ -48,11 +866,94 @@
 
 	* .hgignore: New file.
 
+2012-09-25  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Defer generation of version.c until "make" time.
+
+	* version.c.in: Move it...
+	* src/version.c.in: ...to here.
+	(PACKAGE_NAME, PACKAGE_VERSION, COPYRIGHT_HOLDER, YEARS_OF_ISSUE):
+	Change substitution field marker character from "@" to "%".
+
+	* configure.ac (AC_CONFIG_FILES): Remove version.c
+
+	* Makefile.in (TAG_SCRIPT): New macro, factored out from...
+	(RC_SCRIPT): ...here, whence use it; also use it to implement...
+	(VERSION_SCRIPT): ...this further new macro; use it in...
+	(%.c): ...this generic template rule for version.c
+	(time-stamp, %.time, %.tagged.time, %.tag): New generic build
+	goals; use them to track package release progression via...
+	(build.tag): ...this new intermediate; make it a pre-requisite...
+	(guidata.OBJEXT, version.c): ...of these.
+
+2012-09-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement framework for GUI sash window layout controller.
+
+	* configure.ac (AC_INIT): Bump version number to 0.6
+	(CLI_RELEASE_CLASS): New AC_SUBST variable; default to "beta".
+	(GUI_RELEASE_CLASS): New AC_SUBST variable; default to "alpha".
+	(SNAPSHOT_CLASS): Recognise as user specified environent variable
+	override for both CLI_RELEASE_CLASS and GUI_RELEASE_CLASS.
+	(RC): New AC_CHECK_TOOL substitution variable name; it replaces...
+	(WINDRES): ...this, as reference name for the resource compiler.
+	(MINGW_AC_ASSERT_MISSING): Add AC_CHECK_HEADER traps for missing
+	"lua-dev" and "wtklite-dev" support.
+
+	* Makefile.in (CLI_RELEASE_CLASS, GUI_RELEASE_CLASS): Use them.
+	(BUILD_TAG, RC_SCRIPT, RC_INCLUDES): New macros; define and use...
+	(RC): ...with this, to implement new target rule for compiling...
+	(%.rc): ...resource definition files to %.OBJEXT objects.
+	(GUIMAIN_OBJECTS, GUIMAIN_LIBS): New macros; define and use...
+	(guimain.EXEEXT): ...to implement build rule for this.
+	(LIBEXEC_PROGRAMS): Add guimain.EXEEXT
+	(lastrites.EXEEXT): Use GUI_LDFLAGS.
+	
+	* src/guimain.h src/guimain.cpp src/guidata.rc: New files.
+	* src/pkgview.cpp: New file.
+
+2012-09-20  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Adjust incorrectly resolved 2012-09-14 merge from master.
+
+	* src/Makefile.in: Restore lost reference to guistub.cpp
+
+2012-09-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement GUI hooks in "rites of passage" internal API.
+
+	* src/pkglock.h: New file; it adds the pkgLock() and pkgRelease()
+	inline wrapper functions, through which the GUI application acquires
+	and manages an exclusive access lock for the XML catalogue.
+
+	* src/rites.c (lockfile_name): Explicitly cast memory allocated for
+	the returned name to (char *), so this may be embedded in C++ code.
+	(pkgInitRites): Factor out lock acquisition failure diagnostics...
+	(pkgLockFail): ...to this inline helper function; conditionally...
+	[ifdef GUIMAIN_H]: ...provide one implementation for GUI use...
+	[ifndef GUIMAIN_H]: ...and an alternative for CLI use.
+
+2012-09-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Be case agnostic when matching shortcut targets.
+
+	* scripts/libexec/unlink.js [ref.TargetPath == chklink]: Apply
+	toLowerCase() on both sides of the comparison.
+
 2012-09-12  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Note relocation of m4 when packaging source distribution.
 
 	* Makefile.in (SRCDIST_SUBDIRS): Refer to build-aux/m4, not m4.
+
+2012-09-10  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Move guimain.cpp out of the way.
+
+	* src/guimain.cpp: Rename file as...
+	* src/guistub.cpp: ...this; we want to keep current features for now,
+	but to use the guimain.cpp name for main GUI application development.
+	* Makefile.in: Adjust references accordingly.
 
 2012-09-09  Keith Marshall  <keithmarshall@users.sourceforge.net>
 

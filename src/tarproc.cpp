@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, MinGW Project
+ * Copyright (C) 2009, 2010, 2011, 2012, MinGW.org Project
  *
  *
  * Implementation of package archive processing methods, for reading
@@ -43,6 +43,7 @@
 #include "pkginfo.h"
 #include "pkgkeys.h"
 #include "pkgproc.h"
+#include "pkgstat.h"
 
 /*******************
  *
@@ -664,6 +665,7 @@ int pkgTarArchiveInstaller::ProcessDataStream( const char *pathname )
   /* Extract file data from the archive, and copy it to the
    * associated target file stream, if any.
    */
+  pkgSpinWait::Report( "Extracting %s", pathname + sysroot_len );
   if( DEBUG_REQUEST( DEBUG_SUPPRESS_INSTALLATION ) )
   {
     /* Debugging stub...
@@ -697,6 +699,17 @@ int pkgTarArchiveInstaller::ProcessDataStream( const char *pathname )
 	 */
 	commit_saved_entity( pathname, octval( header.field.mtime ) );
 	installed->AddEntry( filename_key, pathname + sysroot_len );
+
+	/* Additionally, when the appropriate level of debug
+	 * tracing has been enabled, report the installation of
+	 * this file to the diagnostic log.
+	 *
+	 * FIXME: this would be a good place to add reporting
+	 * of installation, in verbose execution mode.
+	 */
+	DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_TRANSACTIONS ),
+	    dmh_printf( "  %s\n", pathname )
+	  );
     }
     return status;
   }

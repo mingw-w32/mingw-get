@@ -281,6 +281,13 @@ pkgXmlDocument::ResolveDependencies( pkgXmlNode* package, pkgActionItem* rank )
 
   while( package != NULL )
   {
+    /* Collect any debugging messages, relating to this dependency,
+     * into a single message digest.
+     */
+    DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_DEPENDENCIES ),
+	dmh_control( DMH_BEGIN_DIGEST )
+      );
+
     /* We have a valid XML entity, which may identify dependencies;
      * check if it includes any "requires" specification...
      */
@@ -527,6 +534,14 @@ pkgXmlDocument::ResolveDependencies( pkgXmlNode* package, pkgActionItem* rank )
        */
       dep = dep->FindNextAssociate( requires_key );
     }
+
+    /* Flush out any digest of debugging messages, which may
+     * have been collected, in respect of this dependency.
+     */
+    DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_DEPENDENCIES ),
+	dmh_control( DMH_END_DIGEST )
+      );
+
     /* Also consider any dependencies which may be common to
      * all releases, or all components, of the current package;
      * we do this by walking back through the XML hierarchy,
@@ -837,6 +852,56 @@ void pkgActionItem::ApplyBounds( pkgXmlNode *release, const char *bounds )
   }
 }
 
+pkgActionItem *pkgActionItem::GetReference( pkgXmlNode *package )
+{
+  /* Method to locate a scheduled action, if any, which relates
+   * to a specified package.
+   */
+  if( this != NULL )
+  {
+    /* The schedule of actions is not empty.  Assume that the
+     * initial 'this' pointer is closer to the end, than to the
+     * beginning of the list of scheduled actions, and...
+     */
+    pkgActionItem *item = this;
+    while( item->next != NULL )
+      /*
+       * ...advance, to locate the very last entry in the list.
+       */
+      item = item->next;
+
+    /* Now, working backward toward the beginning of the list...
+     */
+    while( item != NULL )
+    {
+      /* ...identify a "release" specification associated with
+       * each action item in turn...
+       */
+      pkgXmlNode *ref = item->Selection();
+      if( (ref != NULL) || ((ref = item->Selection( to_remove )) != NULL) )
+      {
+	/* ...convert this to an actual component package, or
+	 * full package, reference...
+	 */
+	while( ref->IsElementOfType( release_key ) )
+	  ref = ref->GetParent();
+
+	/* ...and, if it matches the search target, return it.
+	 */
+	if( ref == package ) return item;
+      }
+      /* ...or, when we haven't yet found a matching package,
+       * try the preceding scheduled action item, if any.
+       */
+      item = item->prev;
+    }
+  }
+  /* If we fall through to here, then we found no action to be
+   * performed on the specified package; report accordingly.
+   */
+  return NULL;
+}
+
 static void dmh_notify_no_match
 ( const char *name, pkgXmlNode *package, const char *bounds )
 {
@@ -869,251 +934,272 @@ static void dmh_notify_no_match
   dmh_control( DMH_END_DIGEST );
 }
 
-void pkgXmlDocument::Schedule( unsigned long action, const char* name )
+pkgActionItem* pkgXmlDocument::Schedule( unsigned long action, const char* name )
 {
   /* Task scheduler interface; schedules actions to process all
    * dependencies for the package specified by "name", honouring
    * any appended version bounds specified for the parent.
    */
-  char scratch_pad[strlen( name )];
-  const char *bounds_specification = get_version_bounds( name );
-  if( bounds_specification != NULL )
-  {
-    /* Separate any version bounds specification from
-     * the original package name specification.
+  if( this == NULL )
+    /*
+     * An unassigned XML database document cannot have any
+     * assigned action; bail out, with appropriate status.
      */
-    size_t scratch_pad_len = bounds_specification - name;
-    name = (const char *)(memcpy( scratch_pad, name, scratch_pad_len ));
-    scratch_pad[scratch_pad_len] = '\0';
-  }
+    return NULL;
 
-  pkgXmlNode *release;
-  if( (release = FindPackageByName( name )) != NULL )
+  /* We may call this method without any assigned package name,
+   * in which case, we interpret it as a request to return the
+   * list of previously scheduled actions...
+   */
+  if( name != NULL )
   {
-    /* We found the specification for the named package...
+    /* ...but when a package name is specified, then we
+     * proceed to schedule the specified action on it.
      */
-    pkgXmlNode *component = release->FindFirstAssociate( component_key );
-    if( component != NULL )
-      /*
-       * When it is subdivided into component-packages,
-       * we need to consider each as a possible candidate
-       * for task scheduling.
-       */
-      release = component;
-
-    while( release != NULL )
+    char scratch_pad[strlen( name )];
+    const char *bounds_specification = get_version_bounds( name );
+    if( bounds_specification != NULL )
     {
-      /* Within each candidate package or component-package...
+      /* Separate any version bounds specification from
+       * the original package name specification.
        */
-      pkgXmlNode *package = release;
-      if( (release = release->FindFirstAssociate( release_key )) != NULL )
+      size_t scratch_pad_len = bounds_specification - name;
+      name = (const char *)(memcpy( scratch_pad, name, scratch_pad_len ));
+      scratch_pad[scratch_pad_len] = '\0';
+    }
+
+    pkgXmlNode *release;
+    if( (release = FindPackageByName( name )) != NULL )
+    {
+      /* We found the specification for the named package...
+       */
+      pkgXmlNode *component = release->FindFirstAssociate( component_key );
+      if( component != NULL )
+	/*
+	 * When it is subdivided into component-packages,
+	 * we need to consider each as a possible candidate
+	 * for task scheduling.
+	 */
+	release = component;
+
+      while( release != NULL )
       {
-	/* ...initially assume it is not installed, and that
-	 * no installable upgrade is available.
+	/* Within each candidate package or component-package...
 	 */
-	pkgActionItem latest;
-	pkgXmlNode *installed = NULL, *upgrade = NULL;
-
-	/* Establish the action for which dependency resolution is
-	 * to be performed; note that this may be promoted to a more
-	 * inclusive class, during resolution, so we need to reset
-	 * it for each new dependency which may be encountered.
-	 */
-	request = action;
-
-	/* Any action request processed here is, by definition,
-	 * a request for a primary action; mark it as such.
-	 */
-	action |= ACTION_PRIMARY;
-
-	/* When the user has given a version bounds specification,
-	 * then we must assign appropriate action item requirements.
-	 */
-	if( bounds_specification != NULL )
-	  latest.ApplyBounds( release, bounds_specification );
-
-	/* For each candidate release in turn...
-	 */
-	while( release != NULL )
+	pkgXmlNode *package = release;
+	if( (release = release->FindFirstAssociate( release_key )) != NULL )
 	{
-	  /* ...inspect it to identify any which is already installed,
-	   * and also the latest available...
+	  /* ...initially assume it is not installed, and that
+	   * no installable upgrade is available.
 	   */
-	  if( is_installed( release ) )
-	    /*
-	     * ...i.e. here we have identified a release
-	     * which is currently installed...
-	     */
-	    latest.SelectPackage( installed = release, to_remove );
+	  pkgActionItem latest;
+	  pkgXmlNode *installed = NULL, *upgrade = NULL;
 
-	  if( latest.SelectIfMostRecentFit( release ) == release )
-	    /*
-	     * ...while this is the most recent we have
-	     * encountered so far.
-	     */
-	    upgrade = release;
-
-	  /* Continue with the next specified release, if any.
+	  /* Establish the action for which dependency resolution is
+	   * to be performed; note that this may be promoted to a more
+	   * inclusive class, during resolution, so we need to reset
+	   * it for each new dependency which may be encountered.
 	   */
-	  release = release->FindNextAssociate( release_key );
-	}
+	  request = action;
 
-	if( (installed = assert_installed( upgrade, installed )) == NULL )
-	{
-	  /* There is no installed version...
-	   * therefore, there is nothing to do for any action
-	   * other than ACTION_INSTALL...
+	  /* Any action request processed here is, by definition,
+	   * a request for a primary action; mark it as such.
 	   */
-	  if( (action & ACTION_MASK) == ACTION_INSTALL )
+	  action |= ACTION_PRIMARY;
+
+	  /* When the user has given a version bounds specification,
+	   * then we must assign appropriate action item requirements.
+	   */
+	  if( bounds_specification != NULL )
+	    latest.ApplyBounds( release, bounds_specification );
+
+	  /* For each candidate release in turn...
+	   */
+	  while( release != NULL )
 	  {
-	    /*
-	     * ...in which case, we must recursively resolve
-	     * any dependencies for the scheduled "upgrade".
+	    /* ...inspect it to identify any which is already installed,
+	     * and also the latest available...
+	     */
+	    if( is_installed( release ) )
+	      /*
+	       * ...i.e. here we have identified a release
+	       * which is currently installed...
+	       */
+	      latest.SelectPackage( installed = release, to_remove );
+
+	    if( latest.SelectIfMostRecentFit( release ) == release )
+	      /*
+	       * ...while this is the most recent we have
+	       * encountered so far.
+	       */
+	      upgrade = release;
+
+	    /* Continue with the next specified release, if any.
+	     */
+	    release = release->FindNextAssociate( release_key );
+	  }
+
+	  if( (installed = assert_installed( upgrade, installed )) == NULL )
+	  {
+	    /* There is no installed version...
+	     * therefore, there is nothing to do for any action
+	     * other than ACTION_INSTALL...
+	     */
+	    if( (action & ACTION_MASK) == ACTION_INSTALL )
+	    {
+	      /*
+	       * ...in which case, we must recursively resolve
+	       * any dependencies for the scheduled "upgrade".
+	       */
+	      if( latest.Selection() == NULL )
+		dmh_notify_no_match( name, package, bounds_specification );
+	      else
+		ResolveDependencies(
+		    upgrade, Schedule( with_download( action ), latest )
+		  );
+	    }
+	    else
+	    { /* attempting ACTION_UPGRADE or ACTION_REMOVE
+	       * is an error; diagnose it.
+	       */
+	      if( component == NULL )
+		/*
+		 * In this case, the user explicitly specified a single
+		 * package component, so it's a simple error...
+		 */
+		dmh_notify( DMH_ERROR, "%s %s: package is not installed\n",
+		    action_name( action & ACTION_MASK ), name
+		  );
+	      else
+	      {
+		/* ...but here, the user specified only the package name,
+		 * which implicitly applies to all associated components;
+		 * since some may be installed, prefer to issue a warning
+		 * in respect of any which aren't.
+		 */
+		const char *extname = component->GetPropVal( class_key, "" );
+		char full_package_name[2 + strlen( name ) + strlen( extname )];
+		sprintf( full_package_name, *extname ? "%s-%s" : "%s", name, extname );
+
+		dmh_control( DMH_BEGIN_DIGEST );
+		dmh_notify( DMH_WARNING, "%s %s: request ignored...\n",
+		    extname = action_name( action & ACTION_MASK ), full_package_name
+		  );
+		dmh_notify( DMH_WARNING, "%s: package was not previously installed\n",
+		    full_package_name
+		  );
+		dmh_notify( DMH_WARNING, "%s: it will remain this way until you...\n",
+		    full_package_name
+		  );
+		dmh_notify( DMH_WARNING, "use 'mingw-get install %s' to install it\n",
+		    full_package_name
+		  );
+		dmh_control( DMH_END_DIGEST );
+	      }
+	    }
+	  }
+	  else if( upgrade && (upgrade != installed) )
+	  {
+	    /* There is an installed version, but an upgrade to a newer
+	     * version is available; when performing ACTION_UPGRADE...
+	     */
+	    if( (action & ACTION_MASK) == ACTION_UPGRADE )
+	      /*
+	       * ...we must recursively resolve any dependencies...
+	       */
+	      ResolveDependencies( upgrade,
+		  Schedule( with_download( action ), latest )
+		);
+
+	    else if( (action & ACTION_MASK) == ACTION_REMOVE )
+	    {
+	      /* ...while for ACTION_REMOVE, we have little to do,
+	       * beyond scheduling the removal; (we don't extend the
+	       * scope of a remove request to prerequisite packages,
+	       * so there is no need to resolve dependencies)...
+	       */
+	      latest.SelectPackage( installed );
+	      Schedule( action, latest );
+	    }
+	    else
+	    { /* ...but, we decline to proceed with ACTION_INSTALL
+	       * unless the --reinstall option is enabled...
+	       */
+	      if( pkgOptions()->Test( OPTION_REINSTALL ) )
+	      {
+		/* ...in which case, we resolve dependencies for,
+		 * and reschedule a reinstallation of the currently
+		 * installed version...
+		 */
+		latest.SelectPackage( installed );
+		ResolveDependencies( installed,
+		    Schedule( with_download( action | ACTION_REMOVE ), latest )
+		  );
+	      }
+	      else
+	      { /* ...otherwise, we reformulate the appropriate
+		 * fully qualified package name...
+		 */
+		const char *extname = ( component != NULL )
+		  ? component->GetPropVal( class_key, "" )
+		  : "";
+		char full_package_name[2 + strlen( name ) + strlen( extname )];
+		sprintf( full_package_name, *extname ? "%s-%s" : "%s", name, extname );
+		/*
+		 * ...which we then incorporate into an advisory
+		 * diagnostic message, which serves both to inform
+		 * the user of this error condition, and also to
+		 * suggest appropriate corrective action.
+		 */
+		dmh_control( DMH_BEGIN_DIGEST );
+		dmh_notify( DMH_ERROR, "%s: package is already installed\n",
+		    full_package_name
+		  );
+		dmh_notify( DMH_ERROR, "use 'mingw-get upgrade %s' to upgrade it\n",
+		    full_package_name
+		  );
+		dmh_notify( DMH_ERROR, "or 'mingw-get install --reinstall %s'\n",
+		    full_package_name
+		  );
+		dmh_notify( DMH_ERROR, "to reinstall the currently installed version\n" 
+		  );
+		dmh_control( DMH_END_DIGEST );
+	      }
+	    }
+	  }
+	  else
+	  { /* In this case, the package is already installed,
+	     * and no more recent release is available; we still
+	     * recursively resolve its dependencies, to capture
+	     * any potential upgrades for them.
 	     */
 	    if( latest.Selection() == NULL )
 	      dmh_notify_no_match( name, package, bounds_specification );
 	    else
-	      ResolveDependencies(
-		  upgrade, Schedule( with_download( action ), latest )
-		);
+	      ResolveDependencies( upgrade, Schedule( action, latest ));
 	  }
-	  else
-	  { /* attempting ACTION_UPGRADE or ACTION_REMOVE
-	     * is an error; diagnose it.
-	     */
-	    if( component == NULL )
-	      /*
-	       * In this case, the user explicitly specified a single
-	       * package component, so it's a simple error...
-	       */
-	      dmh_notify( DMH_ERROR, "%s %s: package is not installed\n",
-		  action_name( action & ACTION_MASK ), name
-		);
-	    else
-	    {
-	      /* ...but here, the user specified only the package name,
-	       * which implicitly applies to all associated components;
-	       * since some may be installed, prefer to issue a warning
-	       * in respect of any which aren't.
-	       */
-	      const char *extname = component->GetPropVal( class_key, "" );
-	      char full_package_name[2 + strlen( name ) + strlen( extname )];
-	      sprintf( full_package_name, *extname ? "%s-%s" : "%s", name, extname );
+	}
 
-	      dmh_control( DMH_BEGIN_DIGEST );
-	      dmh_notify( DMH_WARNING, "%s %s: request ignored...\n",
-		  extname = action_name( action & ACTION_MASK ), full_package_name
-		);
-	      dmh_notify( DMH_WARNING, "%s: package was not previously installed\n",
-		  full_package_name
-		);
-	      dmh_notify( DMH_WARNING, "%s: it will remain this way until you...\n",
-		  full_package_name
-		);
-	      dmh_notify( DMH_WARNING, "use 'mingw-get install %s' to install it\n",
-		  full_package_name
-		);
-	      dmh_control( DMH_END_DIGEST );
-	    }
-	  }
-	}
-	else if( upgrade && (upgrade != installed) )
-	{
-	  /* There is an installed version, but an upgrade to a newer
-	   * version is available; when performing ACTION_UPGRADE...
+	if( (component = component->FindNextAssociate( component_key )) != NULL )
+	  /*
+	   * When evaluating a component-package, we extend our
+	   * evaluation, to consider for any further components of
+	   * the current package.
 	   */
-	  if( (action & ACTION_MASK) == ACTION_UPGRADE )
-	    /*
-	     * ...we must recursively resolve any dependencies...
-	     */
-	    ResolveDependencies( upgrade,
-		Schedule( with_download( action ), latest )
-	      );
-
-	  else if( (action & ACTION_MASK) == ACTION_REMOVE )
-	  {
-	    /* ...while for ACTION_REMOVE, we have little to do,
-	     * beyond scheduling the removal; (we don't extend the
-	     * scope of a remove request to prerequisite packages,
-	     * so there is no need to resolve dependencies)...
-	     */
-	    latest.SelectPackage( installed );
-	    Schedule( action, latest );
-	  }
-	  else
-	  { /* ...but, we decline to proceed with ACTION_INSTALL
-	     * unless the --reinstall option is enabled...
-	     */
-	    if( pkgOptions()->Test( OPTION_REINSTALL ) )
-	    {
-	      /* ...in which case, we resolve dependencies for,
-	       * and reschedule a reinstallation of the currently
-	       * installed version...
-	       */
-	      latest.SelectPackage( installed );
-	      ResolveDependencies( installed,
-		  Schedule( with_download( action | ACTION_REMOVE ), latest )
-		);
-	    }
-	    else
-	    { /* ...otherwise, we reformulate the appropriate
-	       * fully qualified package name...
-	       */
-	      const char *extname = ( component != NULL )
-		? component->GetPropVal( class_key, "" )
-		: "";
-	      char full_package_name[2 + strlen( name ) + strlen( extname )];
-	      sprintf( full_package_name, *extname ? "%s-%s" : "%s", name, extname );
-	      /*
-	       * ...which we then incorporate into an advisory
-	       * diagnostic message, which serves both to inform
-	       * the user of this error condition, and also to
-	       * suggest appropriate corrective action.
-	       */
-	      dmh_control( DMH_BEGIN_DIGEST );
-	      dmh_notify( DMH_ERROR, "%s: package is already installed\n",
-		  full_package_name
-		);
-	      dmh_notify( DMH_ERROR, "use 'mingw-get upgrade %s' to upgrade it\n",
-		  full_package_name
-		);
-	      dmh_notify( DMH_ERROR, "or 'mingw-get install --reinstall %s'\n",
-		  full_package_name
-		);
-	      dmh_notify( DMH_ERROR, "to reinstall the currently installed version\n" 
-		);
-	      dmh_control( DMH_END_DIGEST );
-	    }
-	  }
-	}
-	else
-	{ /* In this case, the package is already installed,
-	   * and no more recent release is available; we still
-	   * recursively resolve its dependencies, to capture
-	   * any potential upgrades for them.
-	   */
-	  if( latest.Selection() == NULL )
-	    dmh_notify_no_match( name, package, bounds_specification );
-	  else
-	    ResolveDependencies( upgrade, Schedule( action, latest ));
-	}
+	  release = component;
       }
-
-      if( (component = component->FindNextAssociate( component_key )) != NULL )
-	/*
-	 * When evaluating a component-package, we extend our
-	 * evaluation, to consider for any further components of
-	 * the current package.
-	 */
-	release = component;
     }
-  }
 
-  else
-    /* We found no information on the requested package;
-     * diagnose as a non-fatal error.
-     */
-    dmh_notify( DMH_ERROR, pkgMsgUnknownPackage(), name );
+    else
+      /* We found no information on the requested package;
+       * diagnose as a non-fatal error.
+       */
+      dmh_notify( DMH_ERROR, pkgMsgUnknownPackage(), name );
+  }
+  /* Finally, we return a pointer to the currently scheduled
+   * actions list, if any.
+   */
+  return actions;
 }
 
 void pkgXmlDocument::RescheduleInstalledPackages( unsigned long action )

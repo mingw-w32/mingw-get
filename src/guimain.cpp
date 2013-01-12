@@ -4,15 +4,11 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Derived from stub by Sze Howe Koh <axfangli@users.sourceforge.net>
- * Copyright (C) 2011, MinGW Project
+ * Copyright (C) 2012, MinGW Project
  *
  *
- * Implementation of the GUI main program function, which is invoked
- * by the command line start-up stub when invoked without arguments.
- * Alternatively, it may be invoked directly from a desktop shortcut,
- * a launch bar shortcut or a menu entry.  In any of these cases, it
- * causes mingw-get to run as a GUI process.
+ * Implementation of the WinMain() function, providing the program
+ * entry point for the GUI variant of mingw-get.
  *
  *
  * This is free software.  Permission is granted to copy, modify and
@@ -29,30 +25,99 @@
  * arising from the use of this software.
  *
  */
-#include <windows.h>
+#include "guimain.h"
+#include "pkglock.h"
+#include "dmh.h"
+
+using WTK::StringResource;
+using WTK::WindowClassMaker;
+using WTK::MainWindowMaker;
+using WTK::runtime_error;
 
 int APIENTRY WinMain
-( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
+( HINSTANCE Instance, HINSTANCE PrevInstance, char *CmdLine, int ShowMode )
 {
-  /* FIXME: this implementation is a stub, adapted from sample code
-   * provided by Sze Howe Koh <axfangli@users.sourceforge.net>.  It
-   * does no more than display a message box indicating that GUI mode
-   * is not yet supported, and directing users to use the CLI version
-   * instead.  Ultimately, this will be replaced by a functional GUI
-   * implementation.
-   */
-  MessageBox( NULL,
-      "The GUI for mingw-get is not yet available.\n"
-      "Please use the command line version; for instructions,\n"
-      "invoke\n\n"
+  try
+  { /* We allow only one instance of mingw-get to run at any time,
+     * so first, we check to ensure that there is no other instance
+     * already running...
+     */
+    HWND AppWindow = FindWindow(
+	StringResource( Instance, ID_MAIN_WINDOW_CLASS ), NULL
+      );
+    if( (AppWindow != NULL) && IsWindow( AppWindow ) )
+    {
+      /* ...and when one is, we identify its active window...
+       */
+      HWND AppPopup = GetLastActivePopup( AppWindow );
+      if( IsWindow( AppPopup ) )
+	AppWindow = AppPopup;
 
-      "  mingw-get --help\n\n"
+      /* ...bring it to the foreground...
+       */
+      SetForegroundWindow( AppWindow );
+      /*
+       * ...restore it from minimised state, if necessary...
+       */
+      if( IsIconic( AppWindow ) )
+	ShowWindow( AppWindow, SW_RESTORE );
 
-      "at your preferred CLI prompt.",
-      "Feature Unavailable",
-      MB_ICONWARNING
-    );
-  return 0;
+      /* ...and defer execution to it.
+       */
+      return EXIT_SUCCESS;
+    }
+
+    /* There is no running instance of mingw-get; before we create one,
+     * ensure we can acquire an exclusive lock for the XML catalogue.
+     */
+    int lock;
+    StringResource MainWindowCaption( Instance, ID_MAIN_WINDOW_CAPTION );
+    if( (lock = pkgLock( MainWindowCaption )) >= 0 )
+    {
+      /* We've acquired the lock; we may now proceed to create an
+       * instance of the mingw-get GUI application window.
+       */
+      AppWindowMaker MainWindow( Instance );
+      AppWindow = MainWindow.Create(
+	  StringResource( Instance, ID_MAIN_WINDOW_CLASS ), MainWindowCaption
+	);
+
+      /* Show the window and paint its initial contents...
+       */
+      MainWindow.Show( ShowMode );
+      MainWindow.Update();
+
+      /* ...then invoke its message loop, ultimately release our
+       * lock, and return the status code which prevails when the
+       * main window application terminates.
+       */
+      return pkgRelease( lock, MainWindowCaption, MainWindow.Invoked() );
+    }
+  }
+  catch( dmh_exception &e )
+  {
+    /* Here, we handle any fatal exception which has been raised
+     * and identified by the diagnostic message handler...
+     */
+    MessageBox( NULL, e.what(), "WinMain", MB_ICONERROR );
+    return EXIT_FAILURE;
+  }
+  catch( runtime_error &e )
+  {
+    /* ...while here, we diagnose any other error which was captured
+     * during the creation of the application's window hierarchy, or
+     * processing of its message loop...
+     */
+    MessageBox( NULL, e.what(), "WinMain", MB_ICONERROR );
+    return EXIT_FAILURE;
+  }
+  catch(...)
+  { /* ...and here, we diagnose any other error which we weren't
+     * able to explicitly identify.
+     */
+    MessageBox( NULL, "Unknown exception", "WinMain", MB_ICONERROR );
+    return EXIT_FAILURE;
+  }
 }
 
 /* $RCSfile$: end of file */

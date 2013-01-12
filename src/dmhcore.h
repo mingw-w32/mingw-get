@@ -1,14 +1,15 @@
-#ifndef APPROOT_H
+#ifndef DMHCORE_H
 /*
- * approot.h
+ * dmhcore.h
  *
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, MinGW Project
+ * Copyright (C) 2009, 2012, MinGW.org Project
  *
  *
- * Declaration of the AppPathNameW() function.
+ * Declaration of the classes on which the implementation of the
+ * diagnostic message handling subsystem is based.
  *
  *
  * This is free software.  Permission is granted to copy, modify and
@@ -25,21 +26,25 @@
  * arising from the use of this software.
  *
  */
-#define APPROOT_H  1
+#define DMHCORE_H  1
 
-#ifndef EXTERN_C
-# ifdef __cplusplus
-#  define EXTERN_C  extern "C"
-# else
-#  define EXTERN_C  extern
-# endif
-#endif
+#include "dmh.h"
 
-/* We must ensure that wchar_t is typedef'd; (it isn't automatically,
- * but including stdint.h will do the trick).
- */
-#include <stdint.h>
+class dmhTypeGeneric
+{
+  /* Abstract base class, from which message handlers are derived.
+   */
+  public:
+    dmhTypeGeneric( const char* );
+    virtual void set_console_hook( void * ){}
+    virtual uint16_t control( const uint16_t, const uint16_t ) = 0;
+    virtual int notify( const dmh_severity, const char*, va_list ) = 0;
+    virtual int printf( const char*, va_list ) = 0;
 
-EXTERN_C wchar_t *AppPathNameW( const wchar_t * );
+  protected:
+    const char *progname;
+    static const char *severity_tag( dmh_severity );
+    static const char *notification_format;
+};
 
-#endif /* APPROOT_H: $RCSfile$: end of file */
+#endif /* DMHCORE_H: $RCSfile$: end of file */

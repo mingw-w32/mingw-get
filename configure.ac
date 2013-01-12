@@ -22,7 +22,7 @@
 # MinGW.org Project, accept liability for any damages, however caused,
 # arising from the use of this software.
 #
-  AC_INIT([mingw-get],[0.5],[http://mingw.org/Reporting_Bugs])
+  AC_INIT([mingw-get],[0.6],[http://mingw.org/Reporting_Bugs])
 
   AC_SUBST([COPYRIGHT_HOLDER],["MinGW.org Project"])
   AC_SUBST([YEARS_OF_ISSUE],["2009-2013"])
@@ -66,11 +66,11 @@
 # We also need a Windows resource compiler,
 # and a lexical analyser generator
 #
-  AC_CHECK_TOOL([WINDRES],[windres],[windres])
+  AC_CHECK_TOOL([RC],[windres],[windres])
   AC_PROG_LEX
 
 # Ensure that (at least the headers for) prerequisite libraries,
-# zlib, libbz2, liblzma, and liblua are available
+# zlib, libbz2, liblzma, liblua, and libwtklite are available
 #
   AC_CHECK_HEADER([zlib.h],,MINGW_AC_ASSERT_MISSING([zlib-dev],
     [libz-1.2.3-1-mingw32-dev.tar.gz]))
@@ -80,6 +80,8 @@
     [liblzma-4.999.9beta_20091209-3-mingw32-dev.tar.bz2]))
   AC_CHECK_HEADER([lua.h],,MINGW_AC_ASSERT_MISSING([lua-dev],
     [lua-5.2.0-1-mingw32-dev.tar.xz]))
+  AC_CHECK_HEADER([wtklite.h],,MINGW_AC_ASSERT_MISSING([wtklite-dev],
+    [wtklite-0.1.0-1-mingw32-dev.tar.xz]))
 
 # Set up the archive librarian, to match our compiler settings
 #

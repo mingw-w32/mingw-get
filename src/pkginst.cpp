@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2010, 2011, 2012, MinGW Project
+ * Copyright (C) 2010, 2011, 2012, MinGW.org Project
  *
  *
  * Implementation of the primary package installation and package
@@ -378,9 +378,12 @@ EXTERN_C void pkgRegister
 
 EXTERN_C void pkgInstall( pkgActionItem *current )
 {
-  /* Common handler for all package installation tasks...
+  /* Common handler for all package installation tasks; note that we
+   * initially assert failure, and will revert this assertion in the
+   * event of subsequent successful installation...
    */
   pkgXmlNode *pkg;
+  current->Assert( ACTION_INSTALL_FAILED );
   if( (pkg = current->Selection()) != NULL )
   {
     /* The current action item has a valid package association...
@@ -431,8 +434,7 @@ EXTERN_C void pkgInstall( pkgActionItem *current )
 	    pkgRegister( sysroot, pkg, tarname, pkgfile );
 	}
 	else
-	{
-	  /* Here we have a "real" (physical) package to install;
+	{ /* Here we have a "real" (physical) package to install;
 	   * for the time being, we assume it is packaged in our
 	   * standard "tar" archive format.
 	   */
@@ -440,10 +442,23 @@ EXTERN_C void pkgInstall( pkgActionItem *current )
 	  if( install.IsOk() )
 	    install.Process();
 	}
+	/* Update the internal record of installed state; although no
+	 * running CLI instance will return to any point where it needs
+	 * this, we may have been called from the GUI, and it requires
+	 * consistency here, if the user revisits this package within
+	 * any single active session.
+	 */
+	pkg->SetAttribute( installed_key, value_yes );
+
 	/* Whether we just installed a virtual package or a real package,
 	 * we may now run its post-install script, (if any).
 	 */
 	pkg->InvokeScript( "post-install" );
+
+	/* When we get to here, the package should have been installed
+	 * successfully; revert our original assertion of failure.
+	 */
+	current->Assert( 0UL, ~ACTION_INSTALL_FAILED );
       }
       else
 	/* There is a prior installation of the selected package, which

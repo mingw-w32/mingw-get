@@ -5,7 +5,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, 2012, MinGW Project
+ * Copyright (C) 2009, 2010, 2011, 2012, 2013, MinGW.org Project
  *
  *
  * Public interface for the package directory management routines;
@@ -86,6 +86,26 @@ EXTERN_C int pkgPutEnv( int, char* );
  */
 class pkgSpecs;
 class pkgDirectory;
+
+#ifndef GUIMAIN_H
+class AppWindowMaker;
+#endif
+
+class pkgProgressMeter
+{
+  /* An abstract base class, from which the controller class
+   * for a progress meter dialogue window may be derived.
+   */
+  public:
+    virtual void SetValue( int ) = 0;
+    virtual void SetRange( int, int ) = 0;
+    virtual int Annotate( const char *, ... ) = 0;
+
+  protected:
+    AppWindowMaker *referrer;
+    pkgProgressMeter( AppWindowMaker *ref = NULL ): referrer( ref ){}
+    ~pkgProgressMeter();
+};
 
 class pkgXmlNode : public TiXmlElement
 {
@@ -254,10 +274,6 @@ class pkgActionItem
      */
     pkgXmlNode* selection[ selection_types ];
 
-    /* Method to display the URI whence a package may be downloaded.
-     */
-    void PrintURI( const char* );
-
     /* Methods for retrieving packages from a distribution server.
      */
     void DownloadArchiveFiles( pkgActionItem* );
@@ -278,11 +294,19 @@ class pkgActionItem
     unsigned long SetAuthorities( pkgActionItem* );
     inline unsigned long HasAttribute( unsigned long required )
     {
-      return flags & required;
+      return (this != NULL) ? flags & required : 0UL;
     }
+    pkgActionItem* GetReference( pkgXmlNode* );
     pkgActionItem* GetReference( pkgActionItem& );
     pkgActionItem* Schedule( unsigned long, pkgActionItem& );
+    inline pkgActionItem* SuppressRedundantUpgrades( void );
+    inline unsigned long CancelScheduledAction( void );
     inline void SetPrimary( pkgActionItem* );
+
+    /* Method to enumerate and identify pending changes,
+     * and/or check for residual unapplied changes.
+     */
+    unsigned long EnumeratePendingActions( int = 0 );
 
     /* Methods for defining the selection criteria for
      * packages to be processed.
@@ -294,24 +318,41 @@ class pkgActionItem
     {
       /* Mark a package as the selection for a specified action.
        */
-      selection[ opt ] = pkg;
+      if (this != NULL) selection[ opt ] = pkg;
     }
     inline pkgXmlNode* Selection( int mode = to_install )
     {
       /* Retrieve the package selection for a specified action.
        */
-      return selection[ mode ];
+      return (this != NULL) ? selection[ mode ] : NULL;
     }
     void ConfirmInstallationStatus();
+
+    /* Method to display the URI whence a package may be downloaded.
+     */
+    void PrintURI( const char*, int (*)( const char* ) = puts );
 
     /* Methods to download and unpack one or more source archives.
      */
     void GetSourceArchive( pkgXmlNode*, unsigned long );
     void GetScheduledSourceArchives( unsigned long );
 
-    /* Method for processing all scheduled actions.
+    /* Methods for processing all scheduled actions.
      */
-    void Execute();
+    void Execute( bool = true );
+    inline void DownloadArchiveFiles( void );
+
+    /* Method to manipulate error trapping, control, and state
+     * flags for the schedule of actions.
+     */
+    void Assert( unsigned long, unsigned long = ~0UL, pkgActionItem* = NULL );
+
+    /* Method to filter actions from an action list: the default is to
+     * clear ALL entries; specify a value of ACTION_MASK for the second
+     * argument, to filter out entries with no assigned action.
+     */
+    pkgActionItem *Clear( pkgActionItem* = NULL, unsigned long = 0UL );
+    pkgActionItem *Clear( unsigned long mask ){ return Clear( this, mask ); }
 
     /* Destructor...
      */
@@ -326,8 +367,8 @@ class pkgXmlDocument : public TiXmlDocument
   public:
     /* Constructors...
      */
-    inline pkgXmlDocument(){}
-    inline pkgXmlDocument( const char* name )
+    inline pkgXmlDocument(): progress_meter( NULL ){}
+    inline pkgXmlDocument( const char* name ): progress_meter( NULL )
     {
       /* tinyxml has a similar constructor, but unlike wxXmlDocument,
        * it DOES NOT automatically load the document; force it.
@@ -432,13 +473,20 @@ class pkgXmlDocument : public TiXmlDocument
 
     /* Methods for compiling a schedule of actions.
      */
-    void Schedule( unsigned long, const char* );
+    pkgActionItem* Schedule( unsigned long = 0UL, const char* = NULL );
     pkgActionItem* Schedule( unsigned long, pkgActionItem&, pkgActionItem* = NULL );
     void RescheduleInstalledPackages( unsigned long );
 
     /* Method to execute a sequence of scheduled actions.
      */
     inline void ExecuteActions(){ actions->Execute(); }
+
+    /* Method to clear the list of scheduled actions.
+     */
+    inline pkgActionItem* ClearScheduledActions( unsigned long mask = 0UL )
+    {
+      return actions = actions->Clear( mask );
+    }
 
     /* Methods to retrieve and optionally extract source archives
      * for a collection of dependent packages.
@@ -447,6 +495,28 @@ class pkgXmlDocument : public TiXmlDocument
     inline void GetScheduledSourceArchives( unsigned long category )
     {
       actions->GetScheduledSourceArchives( category );
+    }
+
+  /* Facility for monitoring of XML document processing operations.
+   */
+  private:
+    pkgProgressMeter* progress_meter;
+
+  public:
+    inline pkgProgressMeter *ProgressMeter( void )
+    {
+      return progress_meter;
+    }
+    inline pkgProgressMeter *AttachProgressMeter( pkgProgressMeter *attachment )
+    {
+      if( progress_meter == NULL )
+	progress_meter = attachment;
+      return progress_meter;
+    }
+    inline void DetachProgressMeter( pkgProgressMeter *attachment )
+    {
+      if( attachment == progress_meter )
+	progress_meter = NULL;
     }
 };
 

@@ -82,6 +82,16 @@ enum
  */
 #define ACTION_MAY_SELECT	(ACTION_PRIMARY << 4)
 
+/* Flags which may be set to indicate that a scheduled action
+ * could not be completed successfully.
+ */
+#define ACTION_DOWNLOAD_FAILED	(ACTION_PRIMARY << 5)
+#define ACTION_INSTALL_FAILED	(ACTION_PRIMARY << 6)
+#define ACTION_REMOVE_FAILED	(ACTION_PRIMARY << 7)
+
+#define ACTION_APPLY_FAILED	(ACTION_INSTALL_FAILED | ACTION_REMOVE_FAILED)
+#define ACTION_UNSUCCESSFUL	(ACTION_DOWNLOAD_FAILED | ACTION_APPLY_FAILED)
+
 #ifndef EXTERN_C
 /* A convenience macro, to facilitate declaration of functions
  * which must exhibit extern "C" bindings, in a manner which is

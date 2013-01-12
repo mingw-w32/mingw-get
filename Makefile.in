@@ -28,6 +28,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PACKAGE_SUBSYSTEM = @host_os@
 
 CLI_RELEASE_CLASS = @CLI_RELEASE_CLASS@
+GUI_RELEASE_CLASS = @GUI_RELEASE_CLASS@
 
 BUILD_TAG = `>> build.tag; cat build.tag`
 DEBUGLEVEL = @DEBUGLEVEL@
@@ -52,7 +53,11 @@ LEX = @LEX@
 AR = @AR@
 ARFLAGS = @ARFLAGS@
 
-WINDRES = @WINDRES@
+RC = @RC@
+RC_SCRIPT = tag=$(BUILD_TAG); \
+  test "x$$tag" != x && tag="-$(GUI_RELEASE_CLASS)-$$tag"; \
+    $(TAG_SCRIPT)
+
 VERSION_SCRIPT = tag=$(BUILD_TAG); \
   test "x$$tag" != x && tag="-$(CLI_RELEASE_CLASS)-$$tag"; \
     $(TAG_SCRIPT)
@@ -63,11 +68,13 @@ TAG_SCRIPT = sed \
   -e "s!%COPYRIGHT_HOLDER%!@COPYRIGHT_HOLDER@!g" \
   -e "s!%YEARS_OF_ISSUE%!@YEARS_OF_ISSUE@!g"
 
+RC_INCLUDES = -I ${srcdir}/src -I ${srcdir}/icons
 
 OBJEXT = @OBJEXT@
 EXEEXT = @EXEEXT@
 
 LDFLAGS = @LDFLAGS@
+GUI_LDFLAGS = -mwindows $(LDFLAGS)
 LIBS = -Wl,-Bstatic -llua -lz -lbz2 -llzma -Wl,-Bdynamic -lwininet
 
 CORE_DLL_OBJECTS  =  climain.$(OBJEXT) pkgshow.$(OBJEXT) dmh.$(OBJEXT) \
@@ -82,10 +89,17 @@ CORE_DLL_OBJECTS  =  climain.$(OBJEXT) pkgshow.$(OBJEXT) dmh.$(OBJEXT) \
 CLI_EXE_OBJECTS  =   \
    clistub.$(OBJEXT) version.$(OBJEXT) approot.$(OBJEXT) getopt.$(OBJEXT)
 
+GUIMAIN_OBJECTS  =   \
+   guimain.$(OBJEXT) guidata.$(OBJEXT) guiexec.$(OBJEXT) guidmh.$(OBJEXT) \
+   approot.$(OBJEXT) pkgview.$(OBJEXT) pkgtree.$(OBJEXT) pkglist.$(OBJEXT) \
+   pkgdata.$(OBJEXT) pkgnget.$(OBJEXT)
+
+GUIMAIN_LIBS = -lwtklite -lcomctl32
+
 script_srcdir = ${srcdir}/scripts/libexec
 
 BIN_PROGRAMS = pkginfo$(EXEEXT) mingw-get$(EXEEXT)
-LIBEXEC_PROGRAMS = gui$(EXEEXT) lastrites$(EXEEXT)
+LIBEXEC_PROGRAMS = guistub$(EXEEXT) guimain$(EXEEXT) lastrites$(EXEEXT)
 LIBEXEC_SCRIPTS = ${script_srcdir}/setup.lua ${script_srcdir}/wsh.lua \
    ${script_srcdir}/shlink.js ${script_srcdir}/unlink.js
 LIBEXEC_DATA = mingw-get-0.dll
@@ -100,23 +114,14 @@ pkginfo$(EXEEXT):  driver.$(OBJEXT) pkginfo.$(OBJEXT)
 mingw-get$(EXEEXT): $(CLI_EXE_OBJECTS)
 	$(CXX) -o $@ $(CXXFLAGS) $(LDFLAGS) $+
 
-GUI_LDFLAGS = -mwindows $(LDFLAGS)
-
-# FIXME: the following is a Q&D kludge, to assign my choice of icon
-# to the GUI mode executable stub.  Eventually, this will need to be
-# assigned within a resource definition file, but for the time being,
-# besides providing a notification that the GUI is not yet available,
-# the stub serves only to illustrate mingw-get's shortcut creation
-# capability; thus, this simple hack will suffice.
-#
-%.$(OBJEXT): %.ico
-	echo $* ICON $*.ico | $(WINDRES) -I ${srcdir}/icons -o $@
-#
-gui$(EXEEXT): guimain.$(OBJEXT) pkgicon.$(OBJEXT)
+guistub$(EXEEXT): guistub.$(OBJEXT) pkgicon.$(OBJEXT)
 	$(CXX) -o $@ $(CXXFLAGS) $(GUI_LDFLAGS) $+
 
+guimain$(EXEEXT): $(GUIMAIN_OBJECTS) $(LIBEXEC_DATA)
+	$(CXX) -o $@ $(CXXFLAGS) $(GUI_LDFLAGS) $+ $(GUIMAIN_LIBS)
+
 lastrites$(EXEEXT): rites.$(OBJEXT)
-	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) $+
+	$(CC) -o $@ $(CFLAGS) $(GUI_LDFLAGS) $+
 
 mingw-get-0.dll: $(CORE_DLL_OBJECTS)
 	$(CXX) -shared -o $@ $(CXXFLAGS) $(LDFLAGS) $+ $(LIBS)
@@ -133,6 +138,13 @@ sinclude *.d
 %.$(OBJEXT): %.cpp
 	$(CXX) $(DEPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $<
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
+
+%.$(OBJEXT): %.rc
+	$(CC) $(DEPFLAGS) $(RC_INCLUDES) -DRC_INVOKED -xc-header $<
+	$(RC_SCRIPT) $< | $(RC) $(RC_INCLUDES) -o $@
+
+%.$(OBJEXT): %.ico
+	echo $* ICON $*.ico | $(RC) -I ${srcdir}/icons -o $@
 
 # Release tagging...
 #
@@ -154,6 +166,7 @@ time-stamp:
 	$(VERSION_SCRIPT) $< > $@
 
 version.c: Makefile build.time
+guidata.$(OBJEXT): Makefile build.time
 
 # Installation tools and directory paths...
 #
@@ -250,10 +263,12 @@ TARZIP = xz
 TAREXT = tar.$(TARZIP)
 
 # The following macros facilitate the inclusion of SCM build tags within
-# the generated names for the release tarballs.
+# the generated names for the release tarballs; the GCMTAG macro is used
+# to identify explicitly GUI components, while SCMTAG is used otherwise.
 #
 BLDTAG =  @abs_top_builddir@/build.tag
 SCMTAG = `>> $(BLDTAG); cat $(BLDTAG) | sed 's,.,-$(CLI_RELEASE_CLASS)-&,'`
+GCMTAG = `>> $(BLDTAG); cat $(BLDTAG) | sed 's,.,-$(GUI_RELEASE_CLASS)-&,'`
 
 bindist: all licdist
 	rm -rf staged
@@ -261,6 +276,9 @@ bindist: all licdist
 	cd staged; tar chf - bin/pkginfo$(EXEEXT) | $(TARZIP) -c > \
 	  ../pkginfo-$(PACKAGE_DISTVERSION)$(SCMTAG)-bin.$(TAREXT)
 	rm staged/bin/pkginfo$(EXEEXT)
+	cd staged; tar chf - libexec/mingw-get/guimain$(EXEEXT) | \
+	  $(TARZIP) -c > ../$(PACKAGE_DISTNAME)$(GCMTAG)-gui.$(TAREXT)
+	rm staged/libexec/mingw-get/guimain$(EXEEXT)
 	cd staged; tar chf - * | $(TARZIP) -c > \
 	  ../$(PACKAGE_DISTNAME)$(SCMTAG)-bin.$(TAREXT)
 	cd staged; zip -r ../$(PACKAGE_DISTNAME)$(SCMTAG)-bin.zip *
