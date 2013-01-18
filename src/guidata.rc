@@ -36,7 +36,7 @@ ID_MAIN_WINDOW	ICON	DISCARDABLE	"pkgicon.ico"
  * which is called out by the "Help --> About mingw-get" menu pick.
  */
 IDD_HELP_ABOUT	DIALOG	DISCARDABLE	80, 50, 250, 185
-CAPTION					"about mingw-get"
+CAPTION					"About mingw-get"
 STYLE					DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_DLGFRAME
 FONT					9, "Verdana"
 BEGIN
@@ -51,6 +51,31 @@ BEGIN
 This is free software; see the product documentation or source code, for copying and redistribution \
 conditions.  There is NO WARRANTY; not even an implied WARRANTY OF MERCHANTABILITY, nor of FITNESS FOR \
 ANY PARTICULAR PURPOSE.", -1, 10, 108, 230, 40
+END
+
+/* Include a manifest resource, to support visual style attributes
+ * and unprivileged UAC, when running on current MS-Windows variants.
+ */
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST MOVEABLE PURE
+BEGIN
+  "<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes""?> \
+  <assembly xmlns=""urn:schemas-microsoft-com:asm.v1"" manifestVersion=""1.0""> \
+    <trustInfo xmlns=""urn:schemas-microsoft-com:asm.v2""> \
+      <security> \
+	<requestedPrivileges> \
+	  <requestedExecutionLevel level=""asInvoker"" uiAccess=""false"" /> \
+	</requestedPrivileges> \
+      </security> \
+    </trustInfo> \
+    <dependency> \
+      <dependentAssembly> \
+	<assemblyIdentity \
+	  type=""Win32"" name=""Microsoft.Windows.Common-Controls"" version=""6.0.0.0"" \
+	  processorArchitecture=""x86"" publicKeyToken=""6595b64144ccf1df"" language=""*"" \
+	/> \
+      </dependentAssembly> \
+    </dependency> \
+  </assembly>"
 END
 
 /* Miscellaneous string constants.

@@ -1,3 +1,17 @@
+2013-01-18  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Make GUI support visual styles in current Windows versions.
+
+	* src/guidata.rc: Add an appropriate inline manifest resource.
+
+	* src/guiexec.cpp (AppWindowMaker::Invoked): Ensure UpdateWindow() is
+	called after the initial call to AdjustLayout(); this is required to
+	ensure that all child windows are properly displayed from the outset.
+
+	* src/pkgview.cpp (AppWindowMaker::LayoutEngine):
+	[ID_PACKAGE_DATASHEET]: Adjust the top position of the frame, to make
+	the border coincide with the bottom border of the tab strip above.
+
 2013-01-12  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Merge gui-dev branch head to master; close gui-dev branch.

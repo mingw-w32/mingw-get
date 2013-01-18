@@ -588,6 +588,8 @@ int AppWindowMaker::Invoked( void )
    * data controls are correctly populated.
    */
   AdjustLayout();
+  InvalidateRect( AppWindow, NULL, FALSE );
+  UpdateWindow( AppWindow );
 
   /* Finally, we may delegate all further processing to the main
    * window's message loop.

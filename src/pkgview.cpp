@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, MinGW.org Project
+ * Copyright (C) 2012, 2013, MinGW.org Project
  *
  *
  * Implementation of the layout controller for the main mingw-get
@@ -233,7 +233,7 @@ int AppWindowMaker::LayoutEngine( HWND pane, LPARAM region )
 	frame.right = pane_left + pane_width;
 	frame.bottom = pane_top + pane_height;
 	TabCtrl_AdjustRect( PackageTabControl, FALSE, &frame );
-	pane_top = frame.top;
+	pane_top = frame.top - 1;
       }
       /* Adjust height and width to fill the space below and to the right
        * of the two sash bars.
