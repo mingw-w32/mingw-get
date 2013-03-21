@@ -1,5 +1,13 @@
 2013-03-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Add a missing distribution dependency.
+
+	* Makefile.in (srcdist): Explicitly require...
+	(pkginfo.c): ...this; previously, it was only an implicit build time
+	requirement, and may not have persisted until distribution time.
+
+2013-03-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Implement by-name association of resource scripts with programs.
 
 	* src/guidata.rc: Renamed as...

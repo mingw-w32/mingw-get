@@ -298,7 +298,7 @@ licdist:
 	  $(PACKAGE_DISTNAME)$(SCMTAG)-lic.$(TAREXT)
 	rm -rf share
 
-srcdist: srcdist-doc
+srcdist: srcdist-doc pkginfo.c
 	rm -rf ${PACKAGE_DISTROOT} && mkdir ${PACKAGE_DISTROOT}
 	cd ${PACKAGE_DISTROOT}; for file in $(SRCDIST_FILES); do \
 	  test -f ${abs_top_srcdir}/$$file \
