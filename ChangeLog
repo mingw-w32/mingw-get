@@ -1,3 +1,15 @@
+2013-03-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement by-name association of resource scripts with programs.
+
+	* src/guidata.rc: Renamed as...
+	* src/guimain.rc: ...this, reflecting its association with...
+	* src/guimain.cpp: ...this program source.
+
+	* Makefile.in (GUIMAIN_OBJECTS): Update dependency...
+	(%.$OBJEXT:%.rc): ...replacing use of this pattern rule...
+	(%.res.$OBJEXT:%.rc): ...with this.
+
 2013-01-18  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Make GUI support visual styles in current Windows versions.

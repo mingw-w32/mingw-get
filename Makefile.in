@@ -90,9 +90,9 @@ CLI_EXE_OBJECTS  =   \
    clistub.$(OBJEXT) version.$(OBJEXT) approot.$(OBJEXT) getopt.$(OBJEXT)
 
 GUIMAIN_OBJECTS  =   \
-   guimain.$(OBJEXT) guidata.$(OBJEXT) guiexec.$(OBJEXT) guidmh.$(OBJEXT) \
+   guimain.$(OBJEXT) guiexec.$(OBJEXT) guidmh.$(OBJEXT) \
    approot.$(OBJEXT) pkgview.$(OBJEXT) pkgtree.$(OBJEXT) pkglist.$(OBJEXT) \
-   pkgdata.$(OBJEXT) pkgnget.$(OBJEXT)
+   pkgdata.$(OBJEXT) pkgnget.$(OBJEXT) guimain.res.$(OBJEXT)
 
 GUIMAIN_LIBS = -lwtklite -lcomctl32
 
@@ -139,9 +139,12 @@ sinclude *.d
 	$(CXX) $(DEPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $<
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
 
-%.$(OBJEXT): %.rc
+%.res.$(OBJEXT): %.rc
+	test ! -f $*.d || mv $*.d $*.d.bak
 	$(CC) $(DEPFLAGS) $(RC_INCLUDES) -DRC_INVOKED -xc-header $<
+	sed 's,$*\.$(OBJEXT):,$@:,' $*.d > $*.res.d; rm -f $*.d
 	$(RC_SCRIPT) $< | $(RC) $(RC_INCLUDES) -o $@
+	test ! -f $*.d.bak || mv $*.d.bak $*.d
 
 %.$(OBJEXT): %.ico
 	echo $* ICON $*.ico | $(RC) -I ${srcdir}/icons -o $@
@@ -165,8 +168,7 @@ time-stamp:
 %.c: %.c.in
 	$(VERSION_SCRIPT) $< > $@
 
-version.c: Makefile build.time
-guidata.$(OBJEXT): Makefile build.time
+version.c guimain.res.$(OBJEXT): Makefile build.time
 
 # Installation tools and directory paths...
 #
