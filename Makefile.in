@@ -393,7 +393,7 @@ clean:
 	rm -f *.$(OBJEXT) *.d *.dll $(BIN_PROGRAMS) $(LIBEXEC_PROGRAMS)
 
 distclean: clean
-	rm -f config.* version.c
+	rm -f config.* version.c build.tag build.time
 
 maintainer-clean: distclean
 	rm -f README NEWS INSTALL readme.txt Makefile pkginfo.c

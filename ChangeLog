@@ -1,5 +1,12 @@
 2013-03-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Specify additional files for clean-up.
+
+	* Makefile.in (distclean): Additionally specify...
+	(build.tag, build.time): ...these, as removable files.
+
+2013-03-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Add a missing distribution dependency.
 
 	* Makefile.in (srcdist): Explicitly require...
