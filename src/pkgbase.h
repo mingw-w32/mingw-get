@@ -27,6 +27,8 @@
  * arising from the use of this software.
  *
  */
+#include "pkgimpl.h"
+#if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
 #define PKGBASE_H  1
 
 #include <tinyxml.h>
@@ -560,4 +562,5 @@ bool safe_strcmp( strcmp_function strcmp, const char *value, const char *proto )
 # define pkg_strcmp( A, B )  safe_strcmp( strcmp, (A), (B) )
 #endif
 
+#endif /* PACKAGE_BASE_COMPONENT */
 #endif /* PKGBASE_H: $RCSfile$: end of file */

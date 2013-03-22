@@ -1,3 +1,15 @@
+2013-03-22  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Enable context hooks for build time code filtering.
+
+	* src/pkgimpl.h: New file; it defines...
+	(PACKAGE_BASE_COMPONENT, SETUP_TOOL_COMPONENT): ...these contexts;
+	either of these may be selected, by defining as manifest value for...
+	(IMPLEMENTATION_LEVEL): ...this; default is PACKAGE_BASE_COMPONENT.
+
+	* src/pkgbase.h: Include pkgimpl.h
+	[IMPLEMENTATION_LEVEL != PACKAGE_BASE_COMPONENT]: Occlude content.
+
 2013-03-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Specify additional files for clean-up.
