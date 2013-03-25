@@ -1,14 +1,14 @@
 /*
- * guidmh.cpp
+ * dmhguix.cpp
  *
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, 2012, MinGW.org Project
+ * Copyright (C) 2009-2013, MinGW.org Project
  *
  *
- * Implementation of the GUI specific API for the DMH_SUBSYSTEM_GUI
- * diagnostic message handling subsystem.
+ * Implementation of GUI specific API extensions, providing support
+ * for the DMH_SUBSYSTEM_GUI diagnostic message handling subsystem.
  *
  *
  * This is free software.  Permission is granted to copy, modify and
@@ -30,6 +30,7 @@
 #include <stdarg.h>
 
 #include "dmhcore.h"
+#include "pkgimpl.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -166,8 +167,13 @@ int dmhTypePTY::printf( const char *fmt, va_list argv )
    * terminate and flush it to the EDITTEXT control.
    */
   *caret = '\0';
-  SendMessage( console_hook, EM_SETSEL, 0, (LPARAM)(-1) );
-  SendMessage( console_hook, EM_REPLACESEL, FALSE, (LPARAM)(console_buffer) );
+  SendMessage( console_hook, WM_SETTEXT, 0, (LPARAM)(console_buffer) );
+
+  /* As we write it, ensure that the last line written remains visible,
+   * with the caret positioned after it.
+   */
+  SendMessage( console_hook, EM_SETSEL, caret - console_buffer, (LPARAM)(-1) );
+  SendMessage( console_hook, EM_SCROLLCARET, (WPARAM)(0), (LPARAM)(0) );
 
   /* Finally, we repaint the display window, and return the output
    * character count.
@@ -263,6 +269,8 @@ class dmhTypeGUI: public dmhTypeGeneric
     dmhTypePTY *console_hook;
 };
 
+#if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
+
 EXTERN_C
 dmhTypeGeneric *dmh_init_gui( const char * ) __declspec(dllexport);
 dmhTypeGeneric *dmh_init_gui( const char *progname )
@@ -272,6 +280,8 @@ dmhTypeGeneric *dmh_init_gui( const char *progname )
    */
   return new dmhTypeGUI( progname );
 }
+
+#endif /* IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT */
 
 /* Constructor serves to initialise the message handler,
  * creating the class instance, and storing the specified

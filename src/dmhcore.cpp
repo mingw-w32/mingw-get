@@ -1,10 +1,10 @@
 /*
- * dmh.cpp
+ * dmhcore.cpp
  *
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, 2012, MinGW.org Project
+ * Copyright (C) 2009-2013, MinGW.org Project
  *
  *
  * Implementation of the core components of, and the CLI specific
@@ -30,6 +30,7 @@
 #include <stdarg.h>
 
 #include "dmhcore.h"
+#include "pkgimpl.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -39,6 +40,15 @@
  * any DMH client.
  */
 EXTERN_C void dmh_setpty( HWND );
+
+/* This pointer stores the address of the message handler
+ * class instance, after initialisation.
+ */
+static dmhTypeGeneric *dmh = NULL;
+
+/* Initialisation requires this constructor.
+ */
+dmhTypeGeneric::dmhTypeGeneric( const char* name ):progname( name ){}
 
 /* Implementation of the dmh_exception class.
  */
@@ -61,6 +71,29 @@ const char* dmh_exception::what() const throw()
   return message;
 }
 
+/* Establish the format to be used for the prefix string, which is
+ * attached to TTY and PTY notifications.
+ */
+const char *dmhTypeGeneric::notification_format = "%s: *** %s *** ";
+
+const char *dmhTypeGeneric::severity_tag( dmh_severity code )
+{
+  /* Helper function to assign labels to the known severity codes.
+   */
+  static const char *severity[] =
+  {
+    /* Labels to identify message severity...
+     */
+    "INFO",		/* DMH_INFO */
+    "WARNING",		/* DMH_WARNING */
+    "ERROR",		/* DMH_ERROR */
+    "FATAL"		/* DMH_FATAL */
+  };
+  return severity[code];
+}
+
+#if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
+
 class dmhTypeTTY: public dmhTypeGeneric
 {
   /* Diagnostic message handler for use in console applications.
@@ -75,17 +108,11 @@ class dmhTypeTTY: public dmhTypeGeneric
     inline int emit_and_flush( int );
 };
 
-/* Constructors serve to initialise the message handler,
+/* Constructor serves to initialise the message handler,
  * simply creating the class instance, and storing the specified
- * program name within it.
+ * program name within its dmhTypeGeneric component.
  */
-dmhTypeGeneric::dmhTypeGeneric( const char* name ):progname( name ){}
 dmhTypeTTY::dmhTypeTTY( const char* name ):dmhTypeGeneric( name ){}
-
-/* This pointer stores the address of the message handler
- * class instance, after initialisation.
- */
-static dmhTypeGeneric *dmh = NULL;
 
 #define client GetModuleHandle( NULL )
 static inline dmhTypeGeneric *dmh_init_gui( const char *progname )
@@ -167,27 +194,6 @@ inline int dmhTypeTTY::emit_and_flush( int status )
   return status;
 }
 
-const char *dmhTypeGeneric::severity_tag( dmh_severity code )
-{
-  /* Helper function to assign labels to the known severity codes.
-   */
-  static const char *severity[] =
-  {
-    /* Labels to identify message severity...
-     */
-    "INFO",		/* DMH_INFO */
-    "WARNING",		/* DMH_WARNING */
-    "ERROR",		/* DMH_ERROR */
-    "FATAL"		/* DMH_FATAL */
-  };
-  return severity[code];
-}
-
-/* Establish the format to be used for the prefix string, which is
- * attached to TTY and PTY notifications.
- */
-const char *dmhTypeGeneric::notification_format = "%s: *** %s *** ";
-
 int dmhTypeTTY::notify( const dmh_severity code, const char *fmt, va_list argv )
 {
   /* Message dispatcher for console class applications.
@@ -210,6 +216,8 @@ int dmhTypeTTY::printf( const char *fmt, va_list argv )
    */
   return emit_and_flush( vfprintf( stderr, fmt, argv ) );
 }
+
+#endif /* IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT */
 
 EXTERN_C uint16_t dmh_control( const uint16_t request, const uint16_t mask )
 {

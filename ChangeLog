@@ -1,3 +1,22 @@
+2013-03-25  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Adapt DMH for use in setup tool.
+
+	* src/dmh.cpp: File renamed to...
+	* src/dmhcore.cpp: ...this; some code rearranged, to facilitate...
+	[IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT]: ...marking of code
+	sections which are required in the base package build, but which may
+	be filtered out of the build context for the setup tool.
+	
+	* src/guidmh.cpp: File renamed to this...
+	* src/dmhguix.cpp: ...this; also add marking for...
+	[IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT]: ...sections which
+	may be filtered out of the build context for the setup tool.
+	(dmhTypePTY::printf): Improve stratagem for output.
+
+	* Makefile.in (CORE_DLL_OBJECTS, GUIMAIN_OBJECTS): Adjust references
+	to renamed source files.
+
 2013-03-22  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Enable context hooks for build time code filtering.
