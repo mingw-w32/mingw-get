@@ -33,12 +33,23 @@ GUI_RELEASE_CLASS = @GUI_RELEASE_CLASS@
 BUILD_TAG = `>> build.tag; cat build.tag`
 DEBUGLEVEL = @DEBUGLEVEL@
 
+# Establish the appropriate mechanism for invoking 'make' recursively,
+# WITHOUT incurring the noise of its "Entering directory..." messages.
+#
+@SET_MAKE@
+QUIET_MAKE = $(MAKE)@NO_PRINT_DIRECTORY@
+
+# Establish source code directory organisation, and set reference
+# paths for access to source files.
+#
 srcdir = @srcdir@
 abs_top_srcdir = @abs_top_srcdir@
 
 vpath %.ico @srcdir@/icons
 VPATH = @top_srcdir@/src:@top_srcdir@/src/pkginfo:@top_srcdir@/tinyxml
 
+# Identify common build tools, and set their default options.
+#
 CC = @CC@
 CFLAGS = @CFLAGS@
 CPPFLAGS = @CPPFLAGS@ -D DEBUGLEVEL=$(DEBUGLEVEL) $(INCLUDES)
@@ -48,11 +59,65 @@ CXXFLAGS = $(CFLAGS)
 
 INCLUDES = -I ${srcdir}/src -I ${srcdir}/src/pkginfo -I ${srcdir}/tinyxml
 
-LEX = @LEX@
-
 AR = @AR@
 ARFLAGS = @ARFLAGS@
 
+# A 'lex' compatible LALR(1) scanner is required for SCM sourced builds,
+# or if the user modifies any 'lex' source.  This AC_PROG_LEX compatible
+# macro set facilitates the handling of any situation where 'lex' is not
+# available, but is required to complete the build.
+#
+LEX = @LEX@
+LEX_COMMAND = $(LEX) $(LFLAGS) -t $< > $(LEX_OUTPUT)
+LEX_COMMAND_ABORT = { $(LEX_MISSING); rm -f $(LEX_OUTPUT); exit 2; }
+LEX_MISSING = (echo; echo $(LEX_MISSING_MESSAGE); echo) | $(FORMAT_MESSAGE)
+LEX_MISSING_MESSAGE = "I cannot find the program 'lex' on your system; \
+it is required because you either do not have the file '$@', or you appear \
+to have modified the file '$<'.  If neither of these is the case, then you \
+may wish to update the time stamp of '$@', so that it appears to be newer \
+than '$<', before you run make again."
+LEX_OUTPUT = @LEX_OUTPUT_ROOT@.c
+
+# The following macro uses 'awk' to emulate a rudimentary 'nroff' filter,
+# for formatting notification messages, such as those which are emitted to
+# report the above "missing 'lex'" condition.
+# 
+FORMAT_MESSAGE = awk '\
+  BEGIN	      { $(AWK_CLEAR_LINE_BUFFER) }\
+  /^\. *br$$/ { $(AWK_PRINT_AND_CLEAR_BUFFER) }\
+  NF == 0     { $(AWK_COLLECT_BLANK_LINE) }\
+  /^[^.]/     { $(AWK_COLLECT_MESSAGE) }\
+  END	      { $(AWK_FLUSH_LINE_BUFFER) }'
+
+# Establish a default line length for formatting messages.
+#
+MESSAGE_FOLD_WIDTH = 68
+
+# The following macros implement the internals of the message formatter.
+#
+AWK_CLEAR_LINE_BUFFER = linebuf = "";
+AWK_FLUSH_LINE_BUFFER = if( linebuf != "" ){ $(AWK_PRINT_AND_CLEAR_BUFFER) }
+AWK_PRINT_AND_CLEAR_BUFFER = $(AWK_PRINT_LINE_BUFFER) $(AWK_CLEAR_LINE_BUFFER)
+AWK_COLLECT_MESSAGE = \
+  for( i = 0; i < NF; ) \
+  { if( linebuf == "" ) newbuf = $$++i; else \
+    { newbuf = linebuf; \
+      if( match( linebuf, "[.!?]$$" ) ) newbuf = newbuf " "; \
+      newbuf = newbuf " " $$++i; \
+    } \
+    if( length( newbuf ) > $(MESSAGE_FOLD_WIDTH) ) \
+    { print linebuf; \
+      linebuf = $$i; \
+    } \
+    else linebuf = newbuf; \
+  }
+AWK_COLLECT_BLANK_LINE = $(AWK_FLUSH_LINE_BUFFER) $(AWK_PRINT_LINE_BUFFER)
+AWK_PRINT_LINE_BUFFER = print linebuf; 
+
+# Identify an appropriate resource compiler, for GUI builds,
+# and define a set of script macros to propagate the build-time
+# specific package meta-data into the compile resource modules.
+#
 RC = @RC@
 RC_SCRIPT = tag=$(BUILD_TAG); \
   test "x$$tag" != x && tag="-$(GUI_RELEASE_CLASS)-$$tag"; \
@@ -70,6 +135,9 @@ TAG_SCRIPT = sed \
 
 RC_INCLUDES = -I ${srcdir}/src -I ${srcdir}/icons
 
+# Specify extensions, and link-time requirements, for binary
+# package deliverables.
+#
 OBJEXT = @OBJEXT@
 EXEEXT = @EXEEXT@
 
@@ -77,6 +145,8 @@ LDFLAGS = @LDFLAGS@
 GUI_LDFLAGS = -mwindows $(LDFLAGS)
 LIBS = -Wl,-Bstatic -llua -lz -lbz2 -llzma -Wl,-Bdynamic -lwininet
 
+# Define the content of package deliverables.
+#
 CORE_DLL_OBJECTS  =  climain.$(OBJEXT) pkgshow.$(OBJEXT) dmhcore.$(OBJEXT) \
    pkgbind.$(OBJEXT) pkginet.$(OBJEXT) pkgstrm.$(OBJEXT) pkgname.$(OBJEXT) \
    pkgexec.$(OBJEXT) pkgfind.$(OBJEXT) pkginfo.$(OBJEXT) pkgspec.$(OBJEXT) \
@@ -126,10 +196,32 @@ lastrites$(EXEEXT): rites.$(OBJEXT)
 mingw-get-0.dll: $(CORE_DLL_OBJECTS)
 	$(CXX) -shared -o $@ $(CXXFLAGS) $(LDFLAGS) $+ $(LIBS)
 
+# The following recursive invocation hook provides a mechanism for
+# accessing make's facility for reporting what it is doing, even when
+# the command to be invoked is encapsulated within a more complex block,
+# which has been marked for explicit silent execution; usage is:
+#
+#   $(WITH_REQUEST)='command to be executed' execute-command
+#
+# (with no intervening white space around the assignment operator, and
+#  ensuring that the command to be executed is appropriately quoted).
+#
+WITH_REQUEST = $(QUIET_MAKE) COMMAND
+execute-command:
+	$(COMMAND)
+
 # Compilation and dependency tracking...
 #
 DEPFLAGS = -MM -MP -MD
 sinclude *.d
+
+%.c: %.l
+	@test x$(LEX) = x: \
+	  && { $(QUIET_MAKE) LEX=lex $(@F) || $(LEX_COMMAND_ABORT); } \
+	  || $(WITH_REQUEST)='$(LEX_COMMAND)' execute-command
+	@test -f $(LEX_OUTPUT) && test -n "`cat $(LEX_OUTPUT)`" \
+	  && $(WITH_REQUEST)='mv $(LEX_OUTPUT) $(@F)' execute-command \
+	  || $(WITH_REQUEST)='rm -f $(LEX_OUTPUT)' execute-command
 
 %.$(OBJEXT): %.c
 	$(CC) $(DEPFLAGS) $(CPPFLAGS) $(CFLAGS) $<

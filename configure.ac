@@ -22,7 +22,7 @@
 # MinGW.org Project, accept liability for any damages, however caused,
 # arising from the use of this software.
 #
-  AC_INIT([mingw-get],[0.6],[http://mingw.org/Reporting_Bugs])
+  AC_INIT([mingw-get],[0.6.0],[http://mingw.org/Reporting_Bugs])
 
   AC_SUBST([COPYRIGHT_HOLDER],["MinGW.org Project"])
   AC_SUBST([YEARS_OF_ISSUE],["2009-2013"])
@@ -58,6 +58,11 @@
   build_alias=`${srcdir}/build-aux/config.guess`
   AC_CANONICAL_HOST
 
+# Establish the appropriate mechanism for invoking 'make' recursively,
+# WITHOUT incurring the noise of its "Entering directory..." messages.
+#
+  MINGW_AC_MAKE_NO_PRINT_DIRECTORY
+
 # We need both C and C++ compilers; check how to invoke them
 #
   AC_PROG_CC
@@ -67,7 +72,7 @@
 # and a lexical analyser generator
 #
   AC_CHECK_TOOL([RC],[windres],[windres])
-  AC_PROG_LEX
+  MINGW_AC_PROG_LEX
 
 # Ensure that (at least the headers for) prerequisite libraries,
 # zlib, libbz2, liblzma, liblua, and libwtklite are available

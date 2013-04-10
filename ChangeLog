@@ -1,3 +1,28 @@
+2013-04-10  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Fix MinGW-Bug #1601 (on new issues tracker).
+
+	* aclocal.m4 (makeopts.m4): New build-aux module; include it.
+	(MINGW_AC_PROG_LEX): New macro; implement it.
+	
+	* configure.ac (AC_INIT): Make version number tripartite.
+	(MINGW_AC_MAKE_NO_PRINT_DIRECTORY): Use this new makeopts.m4 macro.
+	(MINGW_AC_PROG_LEX): Use it, in place of...
+	(AC_PROG_LEX): ...this.
+
+	* Makefile.in (MAKE): New macro; assign using autoconf's SET_MAKE.
+	(QUIET_MAKE): New macro; derive it from $(MAKE) --no-print-directory.
+	(LEX_COMMAND, LEX_COMMAND_ABORT): New macros; define them.
+	(LEX_MISSING, LEX_MISSING_MESSAGE, LEX_OUTPUT): Likewise.
+	(FORMAT_MESSAGE, MESSAGE_FOLD_WIDTH): Likewise; implemented from...
+	(AWK_CLEAR_LINE_BUFFER, AWK_FLUSH_BUFFER, AWK_PRINT_AND_CLEAR_BUFFER):
+	(AWK_COLLECT_MESSAGE, AWK_COLLECT_BLANK_LINE, AWK_PRINT_LINE_BUFFER):
+	...this collection of internal helper macros; define them.
+	(%.c: %.l): Replacement for built-in rule; it handles "missing lex" in
+	a manner consistent with expectations of autoconf's AC_PROG_LEX.
+	(execute-command): New phoney build goal; it is used with...
+	(WITH_REQUEST): ...this new macro, to invoke commands recursively.
+
 2013-03-25  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Adapt DMH for use in setup tool.

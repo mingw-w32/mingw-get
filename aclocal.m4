@@ -23,6 +23,7 @@
 # arising from the use of this software.
 #
 m4_include([build-aux/m4/missing.m4])
+m4_include([build-aux/m4/makeopts.m4])
 
 # MINGW_AC_OUTPUT
 # ---------------
@@ -33,5 +34,22 @@ AC_DEFUN([MINGW_AC_OUTPUT],
 [AC_REQUIRE([_MINGW_AC_ABORT_IF_MISSING_PREREQ])dnl
  AC_OUTPUT($@)dnl
 ])# MINGW_AC_OUTPUT
+
+# MINGW_AC_PROG_LEX
+# -----------------
+# A wrapper for AC_PROG_LEX; it causes configure to abort, issuing a
+# missing lex diagnostic, when building from SCM sources, (as indicated
+# by absence of ${srcdir}/src/pkginfo/pkginfo.c), when no lex processor
+# appears to be available.  Furthermore, if AC_PROG_LEX fails to assign
+# a sane value to LEX_OUTPUT_ROOT, this provides lex.yy as default.
+#
+AC_DEFUN([MINGW_AC_PROG_LEX],
+[AC_REQUIRE([AC_PROG_LEX])dnl
+ AS_IF([test x${LEX_OUTPUT_ROOT} = x],[LEX_OUTPUT_ROOT=lex.yy])
+ AS_IF([test x${LEX} != x:],,[test -f ${srcdir}/src/pkginfo/pkginfo.c],,
+ [MINGW_AC_ASSERT_MISSING([lex (or for preference, flex)],
+  [flex-2.5.35-2-msys-1.0.13-bin.tar.lzma (or equivalent)])dnl
+ ])dnl
+])# MINGW_AC_PROG_LEX
 #
 # $RCSfile$: end of file
