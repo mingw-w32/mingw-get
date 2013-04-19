@@ -53,6 +53,7 @@ class pkgRepository
     pkgXmlNode *dbase;
     pkgXmlNode *repository;
     pkgXmlDocument *owner;
+    const char *expected_issue;
     static int count, total;
     bool force_update;
 };
@@ -63,12 +64,24 @@ class pkgRepository
 int pkgRepository::count;
 int pkgRepository::total;
 
+/* The relative age of catalogue files is determined by alpha-numeric
+ * lexical comparison of a ten digit "issue number" string; internally,
+ * we use a "pseudo issue number" represented as "XXXXXXXXXX", when we
+ * wish to pre-emptively assume that the repository may serve a newer
+ * version of any catalogue which is already present locally; (users
+ * may specify "ZZZZZZZZZZ" to override such assumptions).
+ *
+ * Here, we define the string representing assumed newness.
+ */
+static const char *value_assumed_new = "XXXXXXXXXX";
+
 pkgRepository::pkgRepository
 /*
  * Constructor...
  */
 ( pkgXmlDocument *client, pkgXmlNode *db, pkgXmlNode *ref, bool mode ):
-owner( client ), dbase( db ), repository( ref ), force_update( mode ){}
+owner( client ), dbase( db ), repository( ref ), force_update( mode ),
+expected_issue( value_assumed_new ){}
 
 void pkgRepository::GetPackageList( const char *dname )
 {
@@ -89,12 +102,27 @@ void pkgRepository::GetPackageList( const char *dname )
        */
       ++count;
 
+      /* Set up diagnostics for reporting catalogue loading progress.
+       */
+      const char *mode = force_update ? "Retaining" : "Loading";
+      const char *fmt = "%s catalogue: %s.xml; (item %d of %d)\n";
+
       /* Check for a locally cached copy of the "package-list" file...
        */
-      const char *mode = "Loading";
-      const char *fmt = "%s catalogue: %s.xml; (item %d of %d)\n";
-      if( force_update || (access( dfile, F_OK ) != 0) )
+      const char *current_issue;
+      if(  ((current_issue = serial_number( dfile )) == NULL)
+      /*
+       * ...and, when present, make a pre-emptive assessment of any
+       * necessity to download and update to a newer version.
+       */
+      ||  (force_update && (strcmp( current_issue, expected_issue ) < 0))  )
       {
+	/* Once we've tested it, for possible availability of a more
+	 * recent issue, we have no further need to refer to the issue
+	 * number of the currently cached catalogue.
+	 */
+	free( (void *)(current_issue) );
+
 	/* When performing an "update", or if no local copy is available...
 	 * Force a "sync", to fetch a copy from the public host.
 	 */
@@ -127,12 +155,13 @@ void pkgRepository::GetPackageList( const char *dname )
 	 */
 	owner->ProgressMeter()->Annotate( fmt, mode, dname, count, total );
 
-      else if( pkgOptions()->Test( OPTION_VERBOSE ) > 1 )
+      else if( force_update || (pkgOptions()->Test( OPTION_VERBOSE ) > 1) )
 	/*
 	 * Similarly, this is a request to load a local copy of
 	 * the catalogue; progress metering is not in effect, but
-	 * the user has requested verbose diagnostics, so issue
-	 * a diagnostic progress report.
+	 * the user has requested either an update when there was
+	 * none available, or verbose diagnostics but no update,
+	 * so issue a diagnostic progress report.
 	 */
 	dmh_printf( fmt, mode, dname, count, total );
 
@@ -231,6 +260,7 @@ void pkgRepository::GetPackageList( pkgXmlNode *catalogue )
   {
     /* Evaluate each identified "package-list" catalogue in turn...
      */
+    expected_issue = catalogue->GetPropVal( issue_key, value_assumed_new );
     GetPackageList( catalogue->GetPropVal( catalogue_key, NULL ) );
 
     /* A repository may comprise an arbitrary collection of software

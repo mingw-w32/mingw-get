@@ -874,11 +874,11 @@ int pkgInternetLzmaStreamingAgent::TransferData( int fd )
   return dl_status;
 }
 
-static const char *serial_number( const char *catalogue )
+EXTERN_C const char *serial_number( const char *catalogue )
 {
-  /* Local helper function to retrieve issue numbers from any repository
-   * package catalogue; returns the result as a duplicate of the internal
-   * string, allocated on the heap (courtesy of the strdup() function).
+  /* Helper function to retrieve the issue serial number from any package
+   * catalogue; returns the result as a duplicate of the internal string,
+   * allocated on the heap (courtesy of the strdup() function).
    */
   const char *issue;
   pkgXmlDocument src( catalogue );

@@ -1,3 +1,20 @@
+2013-04-19  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement pre-emptive update issue number identification.
+
+	* src/pkgkeys.h (serial_number): Declare function prototype.
+	* src/pkginet.cpp (serial_number): Implementation remains here;
+	promote from static to extern "C".
+
+	* src/pkgbind.cpp (value_assumed_new): New char constant; define it.
+	(pkgRepository::expected_issue): New private member var; declare and...
+	(pkgRepository::pkgRepository): ...initialise it, assuming new.
+	(pkgRepository::GetPackageList): Assign pre-emptively declared issue
+	number, (from package-list references), to 'expected_issue'; compare it
+	with 'current_issue' number recorded within locally stored catalogue.
+	[current_issue >= expected_issue]: Suppress redundant download; adjust
+	diagnostic messages as appropriate.
+
 2013-04-10  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Fix MinGW-Bug #1601 (on new issues tracker).

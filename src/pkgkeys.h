@@ -89,4 +89,13 @@ EXTERN_C_DECL const char *value_unknown;
 EXTERN_C_DECL const char *value_virtual;
 EXTERN_C_DECL const char *value_yes;
 
+/* Helper function to retrieve the serial number associated with
+ * the "issue_key" attribute in any package catalogue.  This was
+ * originally implemented as a static function within pkginet.cpp
+ * Now exposed publicly, its implementation remains there; since
+ * it must be compiled as C++, it is convenient to keep it there;
+ * (e.g. it could not be conveniently relocated to pkgkeys.c).
+ */
+EXTERN_C const char *serial_number( const char * );
+
 #endif /* PKGKEYS_H: $RCSfile$: end of file */
