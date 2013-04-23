@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, 2012, MinGW.org Project
+ * Copyright (C) 2009-2013, MinGW.org Project
  *
  *
  * Implementation of the package download machinery for mingw-get.
@@ -24,6 +24,7 @@
  * arising from the use of this software.
  *
  */
+#define USES_SAFE_STRCMP  1
 #define WIN32_LEAN_AND_MEAN
 
 #define _WIN32_WINNT 0x0500	/* for GetConsoleWindow() kludge */
@@ -38,6 +39,8 @@
  * implementation of mingw-get, (when it becomes available).
  */
 #define dmh_dialogue_context()	GetConsoleWindow()
+
+#include <sys/stat.h>
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -65,11 +68,23 @@
  */
 pkgDownloadMeter *pkgDownloadMeter::primary = NULL;
 
-class pkgDownloadMeterTTY : public pkgDownloadMeter
+inline void pkgDownloadMeter::SpinWait( int mode, const char *uri )
 {
-  /* Implementation of a download meter class, displaying download
-   * statistics within a CLI application context.
+  /* Wrapper to invoke the overridable derived class specific
+   * SpinWait() method, with protection against any attempt to
+   * access a virtual method of a primary class object which
+   * does not exist; (thus, there is no vtable reference).
    */
+  if( primary != NULL ) primary->SpinWaitAction( mode, uri );
+}
+
+#if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
+
+/* Implementation of a download meter class, displaying download
+ * statistics within a CLI application context.
+ */
+class pkgDownloadMeterTTY: public pkgDownloadMeter
+{
   public:
     pkgDownloadMeterTTY( const char*, unsigned long );
     virtual ~pkgDownloadMeterTTY();
@@ -84,17 +99,37 @@ class pkgDownloadMeterTTY : public pkgDownloadMeter
     char status_report[80];
 };
 
-pkgDownloadMeterTTY::pkgDownloadMeterTTY( const char *url, unsigned long length )
-{
-  source_url = url;
-  content_length = length;
-}
+/* Constructor...
+ */
+pkgDownloadMeterTTY::pkgDownloadMeterTTY( const char *url, unsigned long length ):
+  source_url( url ){ content_length = length; }
 
+/* ...and destructor.
+ */
 pkgDownloadMeterTTY::~pkgDownloadMeterTTY()
 {
   if( source_url == NULL )
     dmh_printf( "\n" );
 }
+
+#elif IMPLEMENTATION_LEVEL == SETUP_TOOL_COMPONENT
+
+/* The setup tool will always use GUI style download metering;
+ * however the download agent remains CLI capable, so we need a
+ * minimal "do nothing" implementation of a TTY style metering
+ * class, to satisfy the linker.
+ */
+class pkgDownloadMeterTTY: public pkgDownloadMeter
+{
+  /* Implementation of a dummy download meter class, sufficient
+   * to promote an illusion of TTY metering capability.
+   */
+  public:
+    pkgDownloadMeterTTY( const char*, unsigned long ){}
+    virtual int Update( unsigned long ){ return 0; }
+};
+
+#endif
 
 static inline __attribute__((__always_inline__))
 unsigned long pow10mul( register unsigned long x, unsigned power )
@@ -123,6 +158,8 @@ unsigned long percentage( unsigned long x, unsigned long q )
    */
   return pow10mul( x, 2 ) / q;
 }
+
+#if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
 
 int pkgDownloadMeterTTY::Update( unsigned long count )
 {
@@ -158,6 +195,8 @@ int pkgDownloadMeterTTY::Update( unsigned long count )
   }
   return dmh_printf( "\r%s%%", status_report );
 }
+
+#endif
 
 int pkgDownloadMeter::SizeFormat( char *buf, unsigned long filesize )
 {
@@ -340,7 +379,8 @@ HINTERNET pkgInternetAgent::OpenURL( const char *URL )
    * to access the specified URL; (schedule a maximum of five attempts).
    */
   int retries = 5;
-  do { ResourceHandle = InternetOpenUrl
+  do { pkgDownloadMeter::SpinWait( 1, URL );
+       ResourceHandle = InternetOpenUrl
 	 (
 	   /* Here, we attempt to assign a URL specific resource handle,
 	    * within the scope of the SessionHandle obtained above, to
@@ -491,6 +531,7 @@ HINTERNET pkgInternetAgent::OpenURL( const char *URL )
 	* yet exhausted our retry limit, go back and try again.
 	*/
      } while( retries > 0 );
+    pkgDownloadMeter::SpinWait( 0 );
 
   /* Ultimately, we return the resource handle for the opened URL,
    * or NULL if the open request failed.
@@ -516,6 +557,8 @@ int pkgInternetStreamingAgent::TransferData( int fd )
     );
   return dl_status;
 }
+
+#if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
 
 static const char *get_host_info
 ( pkgXmlNode *ref, const char *property, const char *fallback = NULL )
@@ -557,6 +600,22 @@ static const char *get_host_info
   return fallback;
 }
 
+#elif IMPLEMENTATION_LEVEL == SETUP_TOOL_COMPONENT
+
+static const char *get_host_info
+( void *ref, const char *property, const char *fallback = NULL )
+{
+  /* Customised helper to load the download host URI template
+   * directly from the setup tool's resource data section.
+   */
+  static const char *uri_template = NULL;
+  if( uri_template == NULL )
+    uri_template = strdup( WTK::StringResource( NULL, ID_DOWNLOAD_HOST_URI ) );
+  return (strcmp( property, uri_key ) == 0) ? uri_template : fallback;
+}
+
+#endif
+
 static inline
 int set_transit_path( const char *path, const char *file, char *buf = NULL )
 {
@@ -580,14 +639,18 @@ int pkgInternetStreamingAgent::Get( const char *from_url )
   char transit_file[set_transit_path( dest_template, filename )];
   int fd; set_transit_path( dest_template, filename, transit_file );
 
+//dmh_printf( "Get: initialise transfer file %s ... ", transit_file );
+  chmod( transit_file, S_IWRITE ); unlink( transit_file );
   if( (fd = set_output_stream( transit_file, 0644 )) >= 0 )
   {
+//dmh_printf( "success\nGet: open URL %s ... ", from_url );
     /* The "transit-file" is ready to receive incoming data...
      * Configure and invoke the download handler to copy the data
      * from the appropriate host URL, to this "transit-file".
      */
     if( (dl_host = pkgDownloadAgent.OpenURL( from_url )) != NULL )
     {
+//dmh_printf( "success\n" );
       if( pkgDownloadAgent.QueryStatus( dl_host ) == HTTP_STATUS_OK )
       {
 	/* With the download transaction fully specified, we may
@@ -629,6 +692,7 @@ int pkgInternetStreamingAgent::Get( const char *from_url )
        */
       pkgDownloadAgent.Close( dl_host );
     }
+//else dmh_printf( "failed\n" );
 
     /* Always close the "transit-file", whether the download
      * was successful, or not...
@@ -646,11 +710,14 @@ int pkgInternetStreamingAgent::Get( const char *from_url )
        */
       unlink( transit_file );
   }
+//else dmh_printf( "failed\n" );
 
   /* Report success or failure to the caller...
    */
   return dl_status;
 }
+
+#if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
 
 void pkgActionItem::PrintURI
 ( const char *package_name, int (*output)( const char * ) )
@@ -683,6 +750,8 @@ void pkgActionItem::PrintURI
     }
   }
 }
+
+#endif /* PACKAGE_BASE_COMPONENT */
 
 void pkgActionItem::DownloadSingleArchive
 ( const char *package_name, const char *archive_cache_path )
@@ -786,7 +855,9 @@ void pkgActionItem::DownloadArchiveFiles( pkgActionItem *current )
   }
 }
 
-#define DATA_CACHE_PATH		"%R" "var/cache/mingw-get/data"
+#if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
+
+#define DATA_CACHE_PATH  	"%R" "var/cache/mingw-get/data"
 #define WORKING_DATA_PATH	"%R" "var/lib/mingw-get/data"
 
 /* Internet servers host package catalogues in lzma compressed format;
@@ -804,7 +875,7 @@ void pkgActionItem::DownloadArchiveFiles( pkgActionItem *current )
 #define  PKGSTRM_H_SPECIAL  1
 #include "pkgstrm.h"
 
-class pkgInternetLzmaStreamingAgent :
+class pkgInternetLzmaStreamingAgent:
 public pkgInternetStreamingAgent, public pkgLzmaArchiveStream
 {
   /* Specialisation of the pkgInternetStreamingAgent base class,
@@ -876,9 +947,9 @@ int pkgInternetLzmaStreamingAgent::TransferData( int fd )
 
 EXTERN_C const char *serial_number( const char *catalogue )
 {
-  /* Helper function to retrieve the issue serial number from any package
-   * catalogue; returns the result as a duplicate of the internal string,
-   * allocated on the heap (courtesy of the strdup() function).
+  /* Local helper function to retrieve issue numbers from any repository
+   * package catalogue; returns the result as a duplicate of the internal
+   * string, allocated on the heap (courtesy of the strdup() function).
    */
   const char *issue;
   pkgXmlDocument src( catalogue );
@@ -921,10 +992,12 @@ void pkgXmlDocument::SyncRepository( const char *name, pkgXmlNode *repository )
       const char *mirror = repository->GetPropVal( mirror_key, NULL );
       char catalogue_url[mkpath( NULL, url_template, name, mirror )];
       mkpath( catalogue_url, url_template, name, mirror );
+//dmh_printf( "SyncRepository: get %s ...\n", catalogue_url );
       if( download.Get( catalogue_url ) <= 0 )
 	dmh_notify( DMH_ERROR,
 	    "Sync Repository: %s: download failed\n", catalogue_url
 	  );
+//dmh_printf( "SyncRepository: get %s completed\n", catalogue_url );
     }
 
     /* We will only replace our current working copy of this catalogue,
@@ -983,5 +1056,7 @@ void pkgXmlDocument::SyncRepository( const char *name, pkgXmlNode *repository )
     unlink( download.DestFile() );
   }
 }
+
+#endif /* PACKAGE_BASE_COMPONENT */
 
 /* $RCSfile$: end of file */

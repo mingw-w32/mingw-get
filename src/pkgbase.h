@@ -34,45 +34,6 @@
 #include <tinyxml.h>
 #include <tinystr.h>
 
-#ifndef EXTERN_C
-# ifdef __cplusplus
-#  define EXTERN_C extern "C"
-# else
-#  define EXTERN_C
-# endif
-#endif
-
-/* Adopt sensible defaults for matching subsystem and file names...
- */
-#ifdef _WIN32
-  /*
-   * The MS-Windows file system is intrinsically case insensitive,
-   * so we prefer to match both subsystem and file names in a case
-   * insensitive manner...
-   */
-# ifndef CASE_INSENSITIVE_SUBSYSTEMS
-#  define CASE_INSENSITIVE_SUBSYSTEMS  1
-# endif
-# ifndef CASE_INSENSITIVE_FILESYSTEM
-#  define CASE_INSENSITIVE_FILESYSTEM  1
-# endif
-  /*
-   * The preferred name for MS-Windows' case insensitive string
-   * matching function, equivalent to POSIX strcasecmp().
-   */
-# define strcasecmp  stricmp
-#else
-  /* On other systems, we prefer to adopt case sensitive matching
-   * strategies for subsystem and file names.
-   */
-# ifndef CASE_INSENSITIVE_SUBSYSTEMS
-#  define CASE_INSENSITIVE_SUBSYSTEMS  0
-# endif
-# ifndef CASE_INSENSITIVE_FILESYSTEM
-#  define CASE_INSENSITIVE_FILESYSTEM  0
-# endif
-#endif
-
 /* Define an API for registering environment variables.
  */
 EXTERN_C int pkgPutEnv( int, char* );
@@ -525,6 +486,13 @@ class pkgXmlDocument : public TiXmlDocument
 EXTERN_C const char *xmlfile( const char*, const char* = NULL );
 EXTERN_C int has_keyword( const char*, const char* );
 
+#undef  USES_SAFE_STRCMP
+#define USES_SAFE_STRCMP  1
+
+#endif /* PACKAGE_BASE_COMPONENT */
+
+#if USES_SAFE_STRCMP && ! HAVE_SAFE_STRCMP
+
 typedef int (*strcmp_function)( const char *, const char * );
 
 static inline
@@ -548,6 +516,33 @@ bool safe_strcmp( strcmp_function strcmp, const char *value, const char *proto )
 /* Further safe_strcmp() aliases provide for matching subsystem names,
  * with implementation dependent case sensitivity...
  */
+#ifdef _WIN32
+  /* The MS-Windows file system is intrinsically case insensitive,
+   * so we prefer to match both subsystem and file names in a case
+   * insensitive manner...
+   */
+# ifndef CASE_INSENSITIVE_SUBSYSTEMS
+#  define CASE_INSENSITIVE_SUBSYSTEMS  1
+# endif
+# ifndef CASE_INSENSITIVE_FILESYSTEM
+#  define CASE_INSENSITIVE_FILESYSTEM  1
+# endif
+  /* The preferred name for MS-Windows' case insensitive string
+   * matching function, equivalent to POSIX strcasecmp().
+   */
+# define strcasecmp  stricmp
+#else
+  /* On other systems, we prefer to adopt case sensitive matching
+   * strategies for subsystem and file names.
+   */
+# ifndef CASE_INSENSITIVE_SUBSYSTEMS
+#  define CASE_INSENSITIVE_SUBSYSTEMS  0
+# endif
+# ifndef CASE_INSENSITIVE_FILESYSTEM
+#  define CASE_INSENSITIVE_FILESYSTEM  0
+# endif
+#endif
+
 #if CASE_INSENSITIVE_SUBSYSTEMS
 # define subsystem_strcmp( A, B )  safe_strcmp( strcasecmp, (A), (B) )
 #else
@@ -562,5 +557,9 @@ bool safe_strcmp( strcmp_function strcmp, const char *value, const char *proto )
 # define pkg_strcmp( A, B )  safe_strcmp( strcmp, (A), (B) )
 #endif
 
-#endif /* PACKAGE_BASE_COMPONENT */
+#undef  HAVE_SAFE_STRCMP
+#define HAVE_SAFE_STRCMP  1
+#endif
+
+
 #endif /* PKGBASE_H: $RCSfile$: end of file */

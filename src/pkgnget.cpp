@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, MinGW.org Project
+ * Copyright (C) 2012, 2013, MinGW.org Project
  *
  *
  * Implementation of the network download agent interface, through
@@ -30,6 +30,8 @@
 #include "pkgbase.h"
 #include "pkginet.h"
 
+#include <process.h>
+
 class pkgDownloadMeterGUI: public pkgDownloadMeter
 {
   /* A locally defined class, through which the download agent
@@ -45,8 +47,19 @@ class pkgDownloadMeterGUI: public pkgDownloadMeter
     inline ~pkgDownloadMeterGUI();
 
   private:
+    static int spin_index, spin_active;
     HWND file_name, file_size, copy_size, copy_frac, progress_bar;
+    virtual void SpinWaitAction( int, const char * );
+    static const char *host; static HWND status_hook;
+    static void SpinWait( void * );
 };
+
+/* pkgDownloadMeterGUI needs a prototype for the dmh_setpty() function;
+ * this isn't declared in any DMH specific header, since it requires a
+ * declaration of HWND, but DMH prefers to avoid namespace pollution by
+ * such windows specific type definitions, so declare it here.
+ */
+EXTERN_C void dmh_setpty( HWND );
 
 /* Constructor...
  */
@@ -64,6 +77,106 @@ pkgDownloadMeterGUI::pkgDownloadMeterGUI( HWND dialogue )
   copy_size = GetDlgItem( dialogue, IDD_PROGRESS_VAL );
   copy_frac = GetDlgItem( dialogue, IDD_PROGRESS_PCT );
   progress_bar = GetDlgItem( dialogue, IDD_PROGRESS_BAR );
+
+  /* Attach a pseudo-terminal emulating window, for capture
+   * of download specific diagnostic messages.
+   */
+  dmh_setpty( GetDlgItem( dialogue, IDD_DMH_CONSOLE ) );
+}
+
+/* Initialise static variables, used to maintain status for
+ * the SpinWait() method.
+ */
+int pkgDownloadMeterGUI::spin_index = 0;
+int pkgDownloadMeterGUI::spin_active = 0;
+
+/* Likewise, its static reference pointers.
+ */
+const char *pkgDownloadMeterGUI::host = NULL;
+HWND pkgDownloadMeterGUI::status_hook = NULL;
+
+void pkgDownloadMeterGUI::SpinWait( void * )
+{
+  /* Static method; this provides the thread procedure,
+   * through which the spin wait status notification is
+   * written to the dialogue box.
+   */
+  static const char *marker = "|/-\\";
+  static const char *msg = "Connecting to %s ... %c";
+
+  /* Provide a local buffer, in which the spin wait status
+   * notification message may be formatted.
+   */
+  char status_text[1 + snprintf( NULL, 0, msg, host, marker[ spin_index ])];
+
+  /* Prepare and display the notification message...
+   */
+  spin_active = 1; spin_index = 0;
+  do { sprintf( status_text, msg, host, marker[ spin_index ] );
+       SendMessage( status_hook, WM_SETTEXT, 0, (LPARAM)(status_text) );
+       /*
+	* ...then refresh it at one second intervals, using
+	* a different marker character for each cycle...
+	*/
+       Sleep( 1000 ); spin_index = (1 + spin_index) % 4;
+       /*
+	* ...until requested to terminate the thread.
+	*/
+     } while( spin_active );
+
+  /* When done, release the buffer used to pass the download
+   * host domain identification.
+   */
+  free( (void *)(host) ); host = NULL;
+}
+
+void pkgDownloadMeterGUI::SpinWaitAction( int run, const char *uri )
+{
+  /* Dispatcher method, used to start and stop the preceding
+   * thread procedure.
+   */
+  if( run == 0 )
+    /*
+     * This is a "stop" request; we simply pass it on to the
+     * thread procedure, by clearing its activation flag.
+     */
+    spin_active = 0;
+
+  else if( spin_active == 0 )
+  {
+    /* This is a "start" request; before we dispatch it, we
+     * must identify the domain name for the download host, so
+     * that it may be displayed in the notification message.
+     */
+    for( int i = 5; i > 3; i-- )
+      /*
+       * First, we identify any prefixed protocol designator...
+       */
+      if( strncasecmp( "https", uri, i ) == 0 ) { uri += i; i = 1; }
+    if( *uri == ':' ) while( *++uri == '/' )
+      /*
+       * ...removing it, and all following field delimiter
+       * characters, from the start of the URI string...
+       */
+      ;
+    /* Then, we allocate a local buffer, of sufficient size to
+     * accommodate the remainder of the URI...
+     */
+    char buf[1 + strlen( uri )]; char *p = buf;
+
+    /* ...into which we copy just the domain name fragment...
+     */
+    while( *uri && (*uri != '/') ) *p++ = *uri++;
+
+    /* ...before terminating it, and copying to heap memory.
+     */
+    *p = '\0'; host = strdup( buf );
+
+    /* Finally, we assign the file name to be displayed, when the
+     * connection is complete, and invoke the spin wait.
+     */
+    status_hook = file_name; _beginthread( SpinWait, 0, NULL );
+  }
 }
 
 void pkgDownloadMeterGUI::ResetGUI( const char *filename, unsigned long size )
@@ -73,7 +186,7 @@ void pkgDownloadMeterGUI::ResetGUI( const char *filename, unsigned long size )
    * download of a new archive file; the name of this file, and its
    * anticipated size are preset, as specified by the arguments.
    */
-  char buf[12]; SizeFormat( buf, 0 );
+  char buf[12]; SizeFormat( buf, 0 ); spin_index = 0;
   SendMessage( file_name, WM_SETTEXT, 0, (LPARAM)(filename) );
   SendMessage( copy_size, WM_SETTEXT, 0, (LPARAM)(buf) );
   SizeFormat( buf, content_length = size );
@@ -112,7 +225,12 @@ int pkgDownloadMeterGUI::Update( unsigned long count )
  */
 inline pkgDownloadMeterGUI::~pkgDownloadMeterGUI()
 {
-  /* This must reset the global reference pointer, so the download
+  /* This must close the pseudo-terminal attachment, if any, which
+   * was established for use by the diagnostic message handler...
+   */
+  dmh_setpty( NULL );
+  
+  /* ...and reset the global reference pointer, so the download
    * agent will not attempt to access a dialogue box which has been
    * closed by the GUI application.
    */
@@ -138,6 +256,8 @@ inline void pkgActionItem::DownloadArchiveFiles( void )
   }
 }
 
+#if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
+
 inline void AppWindowMaker::DownloadArchiveFiles( void )
 {
   /* Helper method to redirect a request to initiate package
@@ -157,5 +277,7 @@ EXTERN_C void pkgInvokeDownload( void *window )
   GetAppWindow( GetParent( (HWND)(window) ))->DownloadArchiveFiles();
   SendMessage( (HWND)(window), WM_COMMAND, (WPARAM)(IDOK), 0 );
 }
+
+#endif
 
 /* $RCSfile$: end of file */

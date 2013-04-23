@@ -36,4 +36,23 @@
 #define PACKAGE_BASE_COMPONENT	0x0100
 #define SETUP_TOOL_COMPONENT	0x0101
 
+/* Although it is not strictly a requirement for implementation context
+ * filtering, it is convenient to also establish filters for identifying
+ * C specific code in a C++ vs. C language context agnostic manner.
+ */
+#ifdef __cplusplus
+  /* When compiling C++, public declarations with C binding semantics
+   * must be explicitly identified...
+   */
+# define EXTERN_C		extern "C"
+# define BEGIN_C_DECLS		extern "C" {
+# define END_C_DECLS		}
+#else
+  /* ...while the C compiler never wants to see any such decorations.
+   */
+# define EXTERN_C
+# define BEGIN_C_DECLS
+# define END_C_DECLS
+#endif
+
 #endif /* !defined PKGIMPL_H: $RCSfile$: end of file */

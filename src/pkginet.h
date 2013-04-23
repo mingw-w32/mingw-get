@@ -39,6 +39,7 @@ class pkgDownloadMeter
      * become no-ops.
      */
     static pkgDownloadMeter *UseGUI(){ return primary; }
+    static inline void SpinWait( int, const char * = NULL );
     virtual void ResetGUI( const char *, unsigned long ){}
 
     /* The working method to refresh the download progress display;
@@ -51,6 +52,10 @@ class pkgDownloadMeter
      * meter in the GUI; always set to NULL, in a CLI context.
      */
     static pkgDownloadMeter *primary;
+
+    /* Handler which may be invoked by the SpinWait() hook.
+     */
+    virtual void SpinWaitAction( int, const char * ){}
 
     /* Storage for the expected size of the active download...
      */
