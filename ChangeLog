@@ -1,5 +1,14 @@
 2013-04-23  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Select compressed data streaming filters for use by setup tool.
+
+	* src/pkgstrm.cpp [IMPLEMENTATION_LEVEL != PACKAGE_BASE_COMPONENT]:
+	Exclude the implementations of all decompression filters, except...
+	(pkgXzArchiveStream): ...this, together with its requisite methods...
+	(pkgArchiveStream, pkgLzmaArchiveStream): ...from these.
+
+2013-04-23  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Adapt internet download agent for use by setup tool.
 
 	* src/pkgbase.h: More code rearrangement, exposing...

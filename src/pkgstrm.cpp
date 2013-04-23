@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, MinGW Project
+ * Copyright (C) 2009, 2010, 2013, MinGW.org Project
  *
  *
  * Implementation of the streaming data filters, which will be used
@@ -32,6 +32,8 @@
  * arising from the use of this software.
  *
  */
+#include "pkgimpl.h"
+
 #include <unistd.h>
 #include <fcntl.h>
 
@@ -79,6 +81,8 @@ int pkgArchiveStream::GetRawData( int fd, uint8_t *buf, size_t max )
    */
   return read( fd, buf, max );
 }
+
+#if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
 
 /*****
  *
@@ -185,6 +189,8 @@ int pkgBzipArchiveStream::Read( char *buf, size_t max )
   return BZ2_bzRead( &bzerror, stream, buf, max );
 }
 
+#endif /* PACKAGE_BASE_COMPONENT */
+
 /*****
  *
  * Class Implementation: pkgLzmaArchiveStream
@@ -221,6 +227,8 @@ void lzma_stream_initialise( lzma_stream *stream )
    */
   stream->avail_in = 0;
 }
+
+#if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
 
 pkgLzmaArchiveStream::pkgLzmaArchiveStream( const char *filename )
 {
@@ -317,6 +325,8 @@ int pkgLzmaArchiveStream::Read( char *buf, size_t max )
    */
   return max - stream.avail_out;
 }
+
+#endif /* PACKAGE_BASE_COMPONENT */
 
 /*****
  *
@@ -441,6 +451,8 @@ int pkgXzArchiveStream::Read( char *buf, size_t max )
   return max - stream.avail_out;
 }
 
+#if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
+
 /*****
  *
  * Auxiliary function: pkgOpenArchiveStream()
@@ -502,5 +514,7 @@ extern "C" pkgArchiveStream* pkgOpenArchiveStream( const char* filename )
    */
   return new pkgRawArchiveStream( filename );
 }
+
+#endif /* PACKAGE_BASE_COMPONENT */
 
 /* $RCSfile$: end of file */
