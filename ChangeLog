@@ -1,3 +1,12 @@
+2013-05-02  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Correct a spin wait thread synchronisation issue.
+
+	* src/pkgnget.cpp (pkgDownloadMeterGUI::SpinWait): Handle stop
+	requests explicitly; acknowledge when waiting thread has stopped.
+	(pkgDownloadMeterGUI::SpinWaitAction): Raise explicit stop requests;
+	wait for acknowledgement that waiting thread has stopped.
+
 2013-04-23  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Select compressed data streaming filters for use by setup tool.

@@ -122,12 +122,13 @@ void pkgDownloadMeterGUI::SpinWait( void * )
        /*
 	* ...until requested to terminate the thread.
 	*/
-     } while( spin_active );
+     } while( spin_active == 1 );
 
   /* When done, release the buffer used to pass the download
-   * host domain identification.
+   * host domain identification, and mark the state as idle.
    */
   free( (void *)(host) ); host = NULL;
+  spin_active = 0;
 }
 
 void pkgDownloadMeterGUI::SpinWaitAction( int run, const char *uri )
@@ -136,11 +137,16 @@ void pkgDownloadMeterGUI::SpinWaitAction( int run, const char *uri )
    * thread procedure.
    */
   if( run == 0 )
-    /*
-     * This is a "stop" request; we simply pass it on to the
-     * thread procedure, by clearing its activation flag.
+  {
+    /* This is a "stop" request; provided there is a spin-wait
+     * thread active, we signal it to stop, then wait for it to
+     * acknowledge that it has done so.
      */
-    spin_active = 0;
+    if( spin_active == 1 )
+      spin_active = 2;
+    while( spin_active == 2 )
+      Sleep( 100 );
+  }
 
   else if( spin_active == 0 )
   {
