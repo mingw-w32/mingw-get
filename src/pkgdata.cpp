@@ -947,7 +947,7 @@ void AppWindowMaker::InitPackageTabControl()
    */
   TCITEM tab;
   tab.mask = TCIF_TEXT;
-  char *TabLegend[] =
+  const char *TabLegend[] =
   { "General", "Description", "Dependencies", "Installed Files", "Versions",
 
     /* ...with a NULL sentinel marking the preceding label as
@@ -959,7 +959,7 @@ void AppWindowMaker::InitPackageTabControl()
   {
     /* This loop assumes responsibility for actual tab creation...
      */
-    tab.pszText = TabLegend[i];
+    tab.pszText = (char *)(TabLegend[i]);
     if( TabCtrl_InsertItem( PackageTabControl, i, &tab ) == -1 )
     {
       /* ...bailing out, and deleting the container window,

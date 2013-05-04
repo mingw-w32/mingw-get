@@ -73,7 +73,7 @@ void AppWindowMaker::InitPackageListView()
   /* Initialise the table layout, and assign column headings.
    */
   LVCOLUMN table;
-  struct { int id; int width; char *text; } headings[] =
+  struct { int id; int width; const char *text; } headings[] =
   {
     /* Specify the column headings for the package list table.
      */
@@ -96,7 +96,7 @@ void AppWindowMaker::InitPackageListView()
      * (in pixels), and assigning the heading to each.
      */
     table.cx = headings[index].width;
-    table.pszText = headings[index].text;
+    table.pszText = (char *)(headings[index].text);
     ListView_InsertColumn( PackageListView, index, &table );
   }
   /* "Update" the package list, to initialise the list view.
@@ -443,7 +443,7 @@ void pkgListViewMaker::Dispatch( pkgXmlNode *package )
       /* ...otherwise, simply insert an unclassified list entry
        * for the bare package name, omitting the component class.
        */
-      InsertItem( package, "" );
+      InsertItem( package, (char *)("") );
   }
   else if( package->IsElementOfType( component_key ) )
   {

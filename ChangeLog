@@ -1,3 +1,15 @@
+2013-05-04  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Address some GCC-4.7 string initialisation warnings.
+
+	* src/pkglist.cpp (AppWindowMaker::InitPackageListView): Declare all
+	headings[].text initialisers as 'const'; cast to 'char *' as required.
+	(pkgListViewMaker::Dispatch): Ditto, when inserting the 'const' empty
+	string into the list, as a component class value.
+
+	* src/pkgdata.cpp (AppWindowMaker::InitPackageTabControl): Declare all
+	TabLegend[] initialisers as 'const'; cast to 'char *' as required.
+
 2013-05-02  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Correct a spin wait thread synchronisation issue.
