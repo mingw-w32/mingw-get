@@ -5,7 +5,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2012, MinGW.org Project
+ * Copyright (C) 2009, 2012, 2013, MinGW.org Project
  *
  *
  * Declaration of the classes on which the implementation of the
@@ -29,6 +29,7 @@
 #define DMHCORE_H  1
 
 #include "dmh.h"
+#include <stdarg.h>
 
 class dmhTypeGeneric
 {
@@ -46,5 +47,7 @@ class dmhTypeGeneric
     static const char *severity_tag( dmh_severity );
     static const char *notification_format;
 };
+
+EXTERN_C dmhTypeGeneric *dmh_bind( dmhTypeGeneric* );
 
 #endif /* DMHCORE_H: $RCSfile$: end of file */

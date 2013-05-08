@@ -46,6 +46,16 @@ EXTERN_C void dmh_setpty( HWND );
  */
 static dmhTypeGeneric *dmh = NULL;
 
+EXTERN_C dmhTypeGeneric *dmh_bind( dmhTypeGeneric *dmh_preset )
+{
+  /* Initialisation hook; this is called by the setup tool, to
+   * bind its pre-assigned message handler to the corresponding
+   * service within a dynamically loaded DLL.
+   */
+  if( dmh == NULL ) dmh = dmh_preset;
+  return dmh;
+}
+
 /* Initialisation requires this constructor.
  */
 dmhTypeGeneric::dmhTypeGeneric( const char* name ):progname( name ){}

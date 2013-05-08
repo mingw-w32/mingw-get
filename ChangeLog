@@ -1,5 +1,15 @@
 2013-05-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Extend DMH services to delay-loaded DLL clients.
+
+	* src/dmhcore.h (dmh_bind): New function; declare it.
+	* src/dmhcore.cpp (dmh_bind): Implement it; it provides an API through
+	which the setup tool makes its existing DMH services available to post
+	install hooks in mingw-get-0.dll, which cannot be loaded until after
+	the providing package has been downloaded and unpacked.
+
+2013-05-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Avoid unnecessary command line globbing in GUI applications.
 
 	* src/guimain.cpp src/guistub.cpp (_CRT_glob): Declare as extern "C";
