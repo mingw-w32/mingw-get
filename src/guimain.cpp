@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, MinGW Project
+ * Copyright (C) 2012, 2013, MinGW.org Project
  *
  *
  * Implementation of the WinMain() function, providing the program
@@ -33,6 +33,14 @@ using WTK::StringResource;
 using WTK::WindowClassMaker;
 using WTK::MainWindowMaker;
 using WTK::runtime_error;
+
+/* We've no use for command line arguments here, so disable globbing;
+ * note that this API must be declared 'extern "C"', but the compiler
+ * will complain if we declare as such, and initialise with a single
+ * statement, so we keep the two concepts separate.
+ */
+extern "C" int _CRT_glob;
+int _CRT_glob = 0;
 
 int APIENTRY WinMain
 ( HINSTANCE Instance, HINSTANCE PrevInstance, char *CmdLine, int ShowMode )

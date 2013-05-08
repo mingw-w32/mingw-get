@@ -5,7 +5,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2012, MinGW.org Project
+ * Copyright (C) 2009, 2010, 2012, 2013, MinGW.org Project
  *
  *
  * Implementation of the main program function for the "lastrites.exe"
@@ -94,6 +94,12 @@
   * always report success.
   */
 # define END_RITES_IMPLEMENTATION	return EXIT_SUCCESS;
+
+/* We may note that this free-standing "main()" function doesn't
+ * process command line arguments, so we may disable globbing in
+ * the system runtime start-up code.
+ */
+int _CRT_glob = 0;
 #endif
 
 /* Provide selectors, to discriminate the two distinct classes

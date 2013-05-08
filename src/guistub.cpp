@@ -5,7 +5,7 @@
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
  * Derived from stub by Sze Howe Koh <axfangli@users.sourceforge.net>
- * Copyright (C) 2011, MinGW Project
+ * Copyright (C) 2011, 2013, MinGW.org Project
  *
  *
  * Implementation of the GUI main program function, which is invoked
@@ -30,6 +30,14 @@
  *
  */
 #include <windows.h>
+
+/* We've no use for command line arguments here, so disable globbing;
+ * note that this API must be declared 'extern "C"', but the compiler
+ * will complain if we declare as such, and initialise with a single
+ * statement, so we keep the two concepts separate.
+ */
+extern "C" int _CRT_glob;
+int _CRT_glob = 0;
 
 int APIENTRY WinMain
 ( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )

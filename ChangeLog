@@ -1,3 +1,13 @@
+2013-05-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Avoid unnecessary command line globbing in GUI applications.
+
+	* src/guimain.cpp src/guistub.cpp (_CRT_glob): Declare as extern "C";
+	initialise to zero, so overriding the runtime start-up default.
+
+	* src/rites.c [! IMPLEMENT_INITIATION_RITES] (_CRT_glob): Initialise
+	to zero here too; lastrites.exe doesn't need globbing either.
+
 2013-05-04  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Address some GCC-4.7 string initialisation warnings.
