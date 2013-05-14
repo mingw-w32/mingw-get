@@ -1,0 +1,50 @@
+/*
+ * manifest.rc
+ *
+ * $Id$
+ *
+ * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
+ * Copyright (C) 2013, MinGW.org Project
+ *
+ *
+ * Manifest resource definition, supporting visual style attributes
+ * and unprivileged UAC, when running on current MS-Windows variants.
+ *
+ *
+ * This is free software.  Permission is granted to copy, modify and
+ * redistribute this software, under the provisions of the GNU General
+ * Public License, Version 3, (or, at your option, any later version),
+ * as published by the Free Software Foundation; see the file COPYING
+ * for licensing details.
+ *
+ * Note, in particular, that this software is provided "as is", in the
+ * hope that it may prove useful, but WITHOUT WARRANTY OF ANY KIND; not
+ * even an implied WARRANTY OF MERCHANTABILITY, nor of FITNESS FOR ANY
+ * PARTICULAR PURPOSE.  Under no circumstances will the author, or the
+ * MinGW Project, accept liability for any damages, however caused,
+ * arising from the use of this software.
+ *
+ */
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST MOVEABLE PURE
+  BEGIN
+    "<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes""?> \
+    <assembly xmlns=""urn:schemas-microsoft-com:asm.v1"" manifestVersion=""1.0""> \
+      <trustInfo xmlns=""urn:schemas-microsoft-com:asm.v2""> \
+	<security> \
+	  <requestedPrivileges> \
+	    <requestedExecutionLevel level=""asInvoker"" uiAccess=""false"" /> \
+	  </requestedPrivileges> \
+	</security> \
+      </trustInfo> \
+      <dependency> \
+	<dependentAssembly> \
+	  <assemblyIdentity \
+	    type=""Win32"" name=""Microsoft.Windows.Common-Controls"" version=""6.0.0.0"" \
+	    processorArchitecture=""x86"" publicKeyToken=""6595b64144ccf1df"" language=""*"" \
+	  /> \
+	</dependentAssembly> \
+      </dependency> \
+    </assembly>"
+  END
+
+/* $RCSfile$: end of file */

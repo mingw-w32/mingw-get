@@ -1,3 +1,10 @@
+2013-05-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Make application manifest resource definition reusable.
+
+	* src/manifest.rc: New file; factor content from...
+	* src/guimain.rc: ...here, whence include it.
+
 2013-05-08  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Extend DMH services to delay-loaded DLL clients.
