@@ -1,0 +1,48 @@
+#ifndef VERINFO_H
+/*
+ * verinfo.h, verinfo.h.in
+ *
+ * $Id$
+ *
+ * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
+ * Copyright (C) 2013, MinGW.org Project
+ *
+ *
+ * Product version resource definitions which are common to all
+ * distributable components of the mingw-get package implementation;
+ * the deployable verinfo.h is generated from the source template,
+ * verinfo.h.in, at package build time.
+ *
+ *
+ * This is free software.  Permission is granted to copy, modify and
+ * redistribute this software, under the provisions of the GNU General
+ * Public License, Version 3, (or, at your option, any later version),
+ * as published by the Free Software Foundation; see the file COPYING
+ * for licensing details.
+ *
+ * Note, in particular, that this software is provided "as is", in the
+ * hope that it may prove useful, but WITHOUT WARRANTY OF ANY KIND; not
+ * even an implied WARRANTY OF MERCHANTABILITY, nor of FITNESS FOR ANY
+ * PARTICULAR PURPOSE.  Under no circumstances will the author, or the
+ * MinGW Project, accept liability for any damages, however caused,
+ * arising from the use of this software.
+ *
+ */
+#define VERINFO_H			1
+
+#define VERINFO_PRODUCT_NAME		"%PACKAGE_NAME%"
+#define VERINFO_PRODUCT_VERSION 	%PACKAGE_VERINFO_PRODUCT_VERSION%
+#define VERINFO_PRODUCT_VERSION_STRING	"%PACKAGE_VERSION%"
+
+#define VERINFO_COMPANY_NAME		"%COPYRIGHT_HOLDER%"
+#define VERINFO_COPYRIGHT_NOTICE	"Copyright \xa9 %YEARS_OF_ISSUE%, %COPYRIGHT_HOLDER%"
+
+#define VERINFO_FILE_OS 		VOS__WINDOWS32
+#define VERINFO_FILE_TYPE		VFT_APP
+#define VERINFO_FILE_SUBTYPE		VFT2_UNKNOWN
+#define VERINFO_FILE_FLAGS		VS_FF_PRERELEASE
+
+#define VERINFO_DEFAULT_LOCALE		"080904E4"   /* U.K. English, code page 1252 */
+#define VERINFO_LOCALE_TUPLES		0x0809, 1252
+
+#endif /* VERINFO_H: $RCSfile$: end of file */

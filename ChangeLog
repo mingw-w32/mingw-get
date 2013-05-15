@@ -1,3 +1,21 @@
+2013-05-15  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add resources for specification of product version.
+
+	* src/verinfo.rc src/verinfo.h.in: New files; included by...
+	* src/guimain.rc: ...this, whence also specify version information...
+	(VERINFO_FILE_NAME, VERINFO_INTERNAL_NAME, VERINFO_FILE_DESCRIPTION):
+	(VERINFO_FILE_VERSION, VERINFO_FILE_VERSION_STRING): ...per these new
+	manifest constant macros; define them, with propagation to...
+	(ID_MAIN_WINDOW_CAPTION): ...this; keep it consistent.
+
+	* Makefile.in (TAG_SCRIPT): Include invocation for...
+	(PACKAGE_VERINFO_SCRIPT): ...this new macro; defined to interpret...
+	(PACKAGE_VERINFO_PRODUCT_VERSION): ...this new substitution template;
+	it is used in src/verinfo.h.in, whence verinfo.h is generated.
+	(RC_INCLUDES): Add current working directory, for...
+	(verinfo.h): ...this; add rule and dependencies to generate it.
+
 2013-05-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Make application manifest resource definition reusable.

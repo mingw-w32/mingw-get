@@ -130,10 +130,21 @@ VERSION_SCRIPT = tag=$(BUILD_TAG); \
 TAG_SCRIPT = sed \
   -e "s!%PACKAGE_NAME%!$(PACKAGE_TARNAME)!g" \
   -e "s!%PACKAGE_VERSION%!$(PACKAGE_VERSION)$$tag!g" \
+  -e "s!%PACKAGE_VERINFO_PRODUCT_VERSION%!`$(PACKAGE_VERINFO_SCRIPT)`!g" \
   -e "s!%COPYRIGHT_HOLDER%!@COPYRIGHT_HOLDER@!g" \
   -e "s!%YEARS_OF_ISSUE%!@YEARS_OF_ISSUE@!g"
 
-RC_INCLUDES = -I ${srcdir}/src -I ${srcdir}/icons
+PACKAGE_VERINFO_SCRIPT = \
+  echo $(PACKAGE_VERSION) | awk -F. '{ \
+    printf "%d, %d, ", $$1, $$2 * 100 + $$3 \
+  }'; \
+  (test -f build.tag && cat build.tag || date +%Y%m%d-0) | awk -F- '{ \
+    printf "%d, %d", (( substr( $$1, 1, 4 ) - 1970 ) * 16 \
+      + substr( $$1, 5, 2 )) * 32 + substr( $$1, 7, 2 ), \
+      $$2 \
+  }'
+
+RC_INCLUDES = -I . -I ${srcdir}/src -I ${srcdir}/icons
 
 # Specify extensions, and link-time requirements, for binary
 # package deliverables.
@@ -260,7 +271,13 @@ time-stamp:
 %.c: %.c.in
 	$(VERSION_SCRIPT) $< > $@
 
-version.c guimain.res.$(OBJEXT): Makefile build.time
+%.h: %.h.in
+	$(VERSION_SCRIPT) $< > $@
+
+# The following dependencies must be explicitly declared.
+#
+guimain.res.$(OBJEXT): Makefile build.time verinfo.h
+verinfo.h version.c: Makefile build.time
 
 # Installation tools and directory paths...
 #

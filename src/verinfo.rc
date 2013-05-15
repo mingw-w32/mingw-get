@@ -1,0 +1,59 @@
+/*
+ * verinfo.rc
+ *
+ * $Id$
+ *
+ * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
+ * Copyright (C) 2013, MinGW.org Project
+ *
+ *
+ * Resource definition template for adding version information
+ * properties to an application module.
+ *
+ *
+ * This is free software.  Permission is granted to copy, modify and
+ * redistribute this software, under the provisions of the GNU General
+ * Public License, Version 3, (or, at your option, any later version),
+ * as published by the Free Software Foundation; see the file COPYING
+ * for licensing details.
+ *
+ * Note, in particular, that this software is provided "as is", in the
+ * hope that it may prove useful, but WITHOUT WARRANTY OF ANY KIND; not
+ * even an implied WARRANTY OF MERCHANTABILITY, nor of FITNESS FOR ANY
+ * PARTICULAR PURPOSE.  Under no circumstances will the author, or the
+ * MinGW Project, accept liability for any damages, however caused,
+ * arising from the use of this software.
+ *
+ */
+#include "verinfo.h"
+
+VS_VERSION_INFO VERSIONINFO
+  FILEVERSION   			VERINFO_FILE_VERSION
+  PRODUCTVERSION			VERINFO_PRODUCT_VERSION
+  FILEFLAGSMASK 			VS_FFI_FILEFLAGSMASK
+  FILEFLAGS     			VERINFO_FILE_FLAGS
+  FILEOS				VERINFO_FILE_OS
+  FILETYPE				VERINFO_FILE_TYPE
+  FILESUBTYPE   			VERINFO_FILE_SUBTYPE
+  BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+      BLOCK VERINFO_DEFAULT_LOCALE
+      BEGIN
+        VALUE "ProductName",     	VERINFO_PRODUCT_NAME
+        VALUE "ProductVersion",  	VERINFO_PRODUCT_VERSION_STRING
+        VALUE "CompanyName",     	VERINFO_COMPANY_NAME
+        VALUE "LegalCopyright",  	VERINFO_COPYRIGHT_NOTICE
+        VALUE "OriginalFileName",	VERINFO_FILE_NAME
+        VALUE "FileDescription", 	VERINFO_FILE_DESCRIPTION
+        VALUE "FileVersion",     	VERINFO_FILE_VERSION_STRING
+        VALUE "InternalName",    	VERINFO_INTERNAL_NAME
+      END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+      VALUE "Translation",		VERINFO_LOCALE_TUPLES
+    END
+  END
+
+/* $RCSfile$: end of file */

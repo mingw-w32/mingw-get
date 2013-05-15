@@ -27,6 +27,20 @@
 #include "guimain.h"
 #include <windows.h>
 
+/* Version identification resources which are specific to guimain.exe
+ */
+#define VERINFO_INTERNAL_NAME		"guimain"
+
+#define VERINFO_FILE_NAME		VERINFO_INTERNAL_NAME ".exe"
+#define VERINFO_FILE_DESCRIPTION	"MinGW Installation Manager"
+#define VERINFO_FILE_VERSION_STRING	VERINFO_PRODUCT_VERSION_STRING
+#define VERINFO_FILE_VERSION		VERINFO_PRODUCT_VERSION
+
+/* Interpret the foregoing, together with common product version
+ * information, in this package component context.
+ */
+#include "verinfo.rc"
+
 /* The icon representing the mingw-get application; it is a clone
  * of the icon representing the synaptic package for Debian APT.
  */
@@ -63,7 +77,7 @@ END
 STRINGTABLE		DISCARDABLE
 BEGIN
   ID_MAIN_WINDOW_CLASS  		"mingw-get-gui"
-  ID_MAIN_WINDOW_CAPTION 		"MinGW Installation Manager"
+  ID_MAIN_WINDOW_CAPTION 		 VERINFO_FILE_DESCRIPTION
   ID_SASH_WINDOW_PANE_CLASS		"mingw-get-sash-pane"
   ID_FONT_PREF				"Verdana"
 END
