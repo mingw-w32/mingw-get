@@ -36,8 +36,8 @@ DEBUGLEVEL = @DEBUGLEVEL@
 # Establish the appropriate mechanism for invoking 'make' recursively,
 # WITHOUT incurring the noise of its "Entering directory..." messages.
 #
-@SET_MAKE@
 QUIET_MAKE = $(MAKE)@NO_PRINT_DIRECTORY@
+@SET_MAKE@
 
 # Establish source code directory organisation, and set reference
 # paths for access to source files.
@@ -223,7 +223,8 @@ execute-command:
 
 # Compilation and dependency tracking...
 #
-DEPFLAGS = -MM -MP -MD
+DEPFLAGS = -MMD -MP
+RC_DEPFLAGS = -MM -MP -MD -MF $*.res.x
 sinclude *.d
 
 %.c: %.l
@@ -235,19 +236,15 @@ sinclude *.d
 	  || $(WITH_REQUEST)='rm -f $(LEX_OUTPUT)' execute-command
 
 %.$(OBJEXT): %.c
-	$(CC) $(DEPFLAGS) $(CPPFLAGS) $(CFLAGS) $<
-	$(CC) -c $(CPPFLAGS) $(CFLAGS) -o $@ $<
+	$(CC) $(DEPFLAGS) -c $(CPPFLAGS) $(CFLAGS) -o $@ $<
 
 %.$(OBJEXT): %.cpp
-	$(CXX) $(DEPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $<
-	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
+	$(CXX) $(DEPFLAGS) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
 
 %.res.$(OBJEXT): %.rc
-	test ! -f $*.d || mv $*.d $*.d.bak
-	$(CC) $(DEPFLAGS) $(RC_INCLUDES) -DRC_INVOKED -xc-header $<
-	sed 's,$*\.$(OBJEXT):,$@:,' $*.d > $*.res.d; rm -f $*.d
+	$(CC) $(RC_DEPFLAGS) $(RC_INCLUDES) -DRC_INVOKED -xc-header $<
+	sed 's,$*\.$(OBJEXT):,$@:,' $*.res.x > $*.res.d; rm -f $*.res.x
 	$(RC_SCRIPT) $< | $(RC) $(RC_INCLUDES) -o $@
-	test ! -f $*.d.bak || mv $*.d.bak $*.d
 
 %.$(OBJEXT): %.ico
 	echo $* ICON $*.ico | $(RC) -I ${srcdir}/icons -o $@
@@ -258,8 +255,7 @@ time-stamp:
 %.tagged.time: time-stamp
 	> $*.time
 
-%.time:
-	> $*.time
+%.time: %.tagged.time
 
 %.tag: %.tagged.time
 	>> $@; tag=`date +%Y%m%d`; \

@@ -1,5 +1,16 @@
 2013-05-15  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Streamline build-time dependency tracking procedures.
+
+	* Makefile.in (DEPFLAGS): Adjust for simultaneous .o/.d generation.
+	(RC_DEPFLAGS): New macro; define dependency generation flags for the
+	resource compiler, which can't handle the new DEPFLAGS methodology.
+	(%.c, %.cpp, %.rc): Simplify $OBJEXT generation procedures.
+	(%.time): Remove redundantly replicated build-time procedure from...
+	(%.tagged.time): ...this; just make it a prerequisite.
+
+2013-05-15  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Add resources for specification of product version.
 
 	* src/verinfo.rc src/verinfo.h.in: New files; included by...
