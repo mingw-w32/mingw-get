@@ -1,3 +1,9 @@
+2013-05-31  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Avoid a potential macro definition conflict.
+
+	* src/pkgbase.h (strcasecmp) [__MINGW32__]: Use string.h definition.
+
 2013-05-15  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Streamline build-time dependency tracking procedures.

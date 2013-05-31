@@ -527,10 +527,14 @@ bool safe_strcmp( strcmp_function strcmp, const char *value, const char *proto )
 # ifndef CASE_INSENSITIVE_FILESYSTEM
 #  define CASE_INSENSITIVE_FILESYSTEM  1
 # endif
+# ifndef __MINGW32__
   /* The preferred name for MS-Windows' case insensitive string
-   * matching function, equivalent to POSIX strcasecmp().
+   * matching function, equivalent to POSIX strcasecmp(); MinGW's
+   * string.h will have established this mapping already, so we
+   * don't introduce a (possibly incompatible) redefinition.
    */
-# define strcasecmp  stricmp
+#  define strcasecmp _stricmp
+# endif
 #else
   /* On other systems, we prefer to adopt case sensitive matching
    * strategies for subsystem and file names.
