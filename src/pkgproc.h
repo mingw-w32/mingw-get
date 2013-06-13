@@ -5,7 +5,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, MinGW Project
+ * Copyright (C) 2009, 2010, 2011, 2013, MinGW.org Project
  *
  *
  * Specifications for the internal architecture of package archives,
@@ -32,6 +32,8 @@
 #include "pkgbase.h"
 #include "pkgstrm.h"
 
+#if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
+
 EXTERN_C void pkgInstall( pkgActionItem* );
 EXTERN_C void pkgRegister( pkgXmlNode*, pkgXmlNode*, const char*, const char* );
 EXTERN_C void pkgRemove( pkgActionItem* );
@@ -57,17 +59,22 @@ class pkgManifest
     pkgXmlNode     *inventory;
 };
 
+#endif /* PACKAGE_BASE_COMPONENT */
+
 class pkgArchiveProcessor
 {
   /* A minimal generic abstract base class, from which we derive
    * processing tools for handling arbitrary package architectures.
    */
   public:
-    pkgArchiveProcessor(){}
+    pkgArchiveProcessor():save_on_extract(true){}
     virtual ~pkgArchiveProcessor(){}
 
     virtual bool IsOk() = 0;
     virtual int Process() = 0;
+
+    inline void SaveExtractedFiles( bool mode ){ save_on_extract = mode; }
+    inline int SetOutputStream( const char *, int );
 
   protected:
     int sysroot_len;
@@ -87,6 +94,8 @@ class pkgArchiveProcessor
 
     virtual int CreateExtractionDirectory( const char* );
     virtual int ExtractFile( int, const char*, int );
+
+    bool save_on_extract;
 };
 
 /* Our standard package format specifies the use of tar archives;
@@ -197,6 +206,8 @@ class pkgTarArchiveExtractor : public pkgTarArchiveProcessor
     virtual int ProcessDataStream( const char* );
 };
 
+#if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
+
 class pkgTarArchiveInstaller : public pkgTarArchiveProcessor
 {
   /* Worker class for extraction of package tar archive content
@@ -236,4 +247,5 @@ class pkgTarArchiveUninstaller : public pkgTarArchiveProcessor
     virtual int ProcessDataStream( const char* );
 };
 
+#endif /* PACKAGE_BASE_COMPONENT */
 #endif /* PKGPROC_H: $RCSfile$: end of file */

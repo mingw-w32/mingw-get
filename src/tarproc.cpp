@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, 2012, MinGW.org Project
+ * Copyright (C) 2009, 2010, 2011, 2012, 2013, MinGW.org Project
  *
  *
  * Implementation of package archive processing methods, for reading
@@ -27,6 +27,8 @@
  * arising from the use of this software.
  *
  */
+#include "pkgimpl.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,14 +38,19 @@
 #include <fcntl.h>
 #include <errno.h>
 
+#if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
+
 #include "dmh.h"
 #include "debug.h"
 #include "mkpath.h"
 
 #include "pkginfo.h"
 #include "pkgkeys.h"
-#include "pkgproc.h"
 #include "pkgstat.h"
+
+#endif /* PACKAGE_BASE_COMPONENT */
+
+#include "pkgproc.h"
 
 /*******************
  *
@@ -55,10 +62,19 @@ int pkgArchiveProcessor::CreateExtractionDirectory( const char *pathname )
   /* Helper method for creation of the directory infrastructure
    * into which archived file entities are to be extracted.
    */
-  int status;
-  if( (status = mkdir_recursive( pathname, 0755 )) != 0 )
+  int status = 0;
+  if( save_on_extract && ((status = mkdir_recursive( pathname, 0755 )) != 0) )
     dmh_notify( DMH_ERROR, "cannot create directory `%s'\n", pathname );
   return status;
+}
+
+inline int pkgArchiveProcessor::SetOutputStream( const char *name, int mode )
+{
+  /* Wrapper method to facilitate the set up of output streams
+   * for writing extracted content to disk, except in the special
+   * case where saving of files has been disabled.
+   */
+  return save_on_extract ? set_output_stream( name, mode ) : -2;
 }
 
 int pkgArchiveProcessor::ExtractFile( int fd, const char *pathname, int status )
@@ -66,7 +82,7 @@ int pkgArchiveProcessor::ExtractFile( int fd, const char *pathname, int status )
   /* Helper method to finalise extraction of archived file entities;
    * called by the ProcessDataStream() method of the extractor class,
    * where "fd" is the file descriptor for the extraction data stream,
-   * "pathname" is the corresponding path wher the data is extracted,
+   * "pathname" is the corresponding path where the data is extracted,
    * and "status" is the result of calling the ProcessEntityData()
    * method of the extractor class on "fd".
    */
@@ -93,6 +109,11 @@ int pkgArchiveProcessor::ExtractFile( int fd, const char *pathname, int status )
  *
  * Class Implementation: pkgTarArchiveProcessor
  *
+ */
+#if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
+/*
+ * The GUI setup tool will provide a simplified substitute for
+ * this constructor.
  */
 pkgTarArchiveProcessor::pkgTarArchiveProcessor( pkgXmlNode *pkg )
 {
@@ -170,6 +191,8 @@ pkgTarArchiveProcessor::~pkgTarArchiveProcessor()
   delete installed;
   delete stream;
 }
+
+#endif /* PACKAGE_BASE_COMPONENT */
 
 int pkgTarArchiveProcessor::ProcessLinkedEntity( const char *pathname )
 {
@@ -554,7 +577,6 @@ pkgTarArchiveExtractor::pkgTarArchiveExtractor( const char *fn, const char *dir 
     sysroot_len = mkpath( NULL, template_text, "", NULL ) - 1;
     sysroot_path = strdup( template_text );
   }
-
   /* Finally, open the specified archive using the appropriate
    * stream type, and invoke the extraction Process() method.
    */
@@ -578,17 +600,20 @@ int pkgTarArchiveExtractor::ProcessDataStream( const char *pathname )
    * processing on behalf of the base class ExtractFile() method..
    */
   int status;
-  int fd = set_output_stream( pathname, octval( header.field.mode ) );
+  int fd = SetOutputStream( pathname, octval( header.field.mode ) );
   if( (status = ExtractFile( fd, pathname, ProcessEntityData( fd ))) == 0 )
-    /*
-     * ...and commit the file after successful extraction...
-     */
-    commit_saved_entity( pathname, octval( header.field.mtime ) );
+    if( save_on_extract )
+      /*
+       * ...and commit the file after successful extraction...
+       */
+      commit_saved_entity( pathname, octval( header.field.mtime ) );
 
   /* ...ultimately returning the extraction status code.
    */
   return status;
 }
+
+#if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
 
 /*******************
  *
@@ -691,28 +716,31 @@ int pkgTarArchiveInstaller::ProcessDataStream( const char *pathname )
     /* Establish an output file stream, extract the entity data,
      * writing it to this stream...
      */
-    int fd = set_output_stream( pathname, octval( header.field.mode ) );
+    int fd = SetOutputStream( pathname, octval( header.field.mode ) );
     if( (status = ExtractFile( fd, pathname, ProcessEntityData( fd ))) == 0 )
     {
-	/* ...and on successful completion, commit the file
-	 * and record it in the installation database.
-	 */
+      /* ...and on successful completion, commit the file
+       * and record it in the installation database.
+       */
+      if( save_on_extract )
 	commit_saved_entity( pathname, octval( header.field.mtime ) );
-	installed->AddEntry( filename_key, pathname + sysroot_len );
+      installed->AddEntry( filename_key, pathname + sysroot_len );
 
-	/* Additionally, when the appropriate level of debug
-	 * tracing has been enabled, report the installation of
-	 * this file to the diagnostic log.
-	 *
-	 * FIXME: this would be a good place to add reporting
-	 * of installation, in verbose execution mode.
-	 */
-	DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_TRANSACTIONS ),
-	    dmh_printf( "  %s\n", pathname )
-	  );
+      /* Additionally, when the appropriate level of debug
+       * tracing has been enabled, report the installation of
+       * this file to the diagnostic log.
+       *
+       * FIXME: this would be a good place to add reporting
+       * of installation, in verbose execution mode.
+       */
+      DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_TRANSACTIONS ),
+	  dmh_printf( "  %s\n", pathname )
+	);
     }
     return status;
   }
 }
+
+#endif /* PACKAGE_BASE_COMPONENT */
 
 /* $RCSfile$: end of file */

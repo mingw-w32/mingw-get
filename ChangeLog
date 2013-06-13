@@ -1,5 +1,21 @@
 2013-06-13  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Facilitate package extraction and registration at setup time.
+
+	* src/pkgproc.h (IMPLEMENTATION_LEVEL): Add filters to facilitate
+	implementation of distinct setup time archive processing behaviour.
+	(pkgArchiveProcessor::save_on_extract): New property; declare it.
+	(pkgArchiveProcessor::SaveExtractedFiles): New method; implement it.
+	(pkgArchiveProcessor::SetOutputStream): New method; declare it.
+
+	* src/tarproc.cpp (IMPLEMENTATION_LEVEL): Add filters to implement
+	distinct setup time specific archive processing behaviour.
+	(pkgArchiveProcessor::SetOutputStream): Implement it.
+	(pkgTarArchiveExtractor::ProcessDataStream): Use it.
+	(pkgTarArchiveInstaller::ProcessDataStream): Likewise.
+
+2013-06-13  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Implement some GUI progress metering dialogue enhancements.
 
 	* src/pkgbase.h (pkgProgressMeter): Don't pre-empt private features
