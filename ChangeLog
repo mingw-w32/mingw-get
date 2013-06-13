@@ -1,3 +1,31 @@
+2013-06-13  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement some GUI progress metering dialogue enhancements.
+
+	* src/pkgbase.h (pkgProgressMeter): Don't pre-empt private features
+	of derived progress metering classes; hence, we no longer need this...
+	(AppWindowMaker): ...as a forward class declaration; delete it.
+
+	* src/guimain.rc (IDD_REPO_UPDATE): Resize, and adjust layout.
+	(IDD_PROGRESS_VAL, IDD_PROGRESS_MAX, IDD_PROGRESS_PCT): Add these
+	dialogue box progress counter display elements.
+
+	* src/pkgbind.cpp (pkgRepository::GetPackageList): Adjust style of
+	progress status messages, to suit reporting via GUI dialogue box or
+	CLI console, as appropriate.
+
+	* src/guiexec.cpp (ProgressMeterMaker): Redefine class, in terms of...
+	(PROGRESS_METER_CLASS): ...this new generic class name macro.
+	Reimplement private members, previously inherited from base class;
+	adjust class constructor to ensure that they are initialised.
+	Delete explicit destructor; a default destructor is now sufficient.
+	(ProgressMeterMaker::SetRange, ProgressMeterMaker::SetValue):
+	(ProgressMeterMaker::Annotate): Factor out; reimplement them...
+
+	* src/pmihook.cpp: ...in this new file, as generalised methods of...
+	(PROGRESS_METER_CLASS): ...the class named by this macro.
+	(PROGRESS_METER_CLASS::PutVal): New private method; implement it.
+
 2013-05-31  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Avoid a potential macro definition conflict.

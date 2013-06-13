@@ -43,20 +43,26 @@
  */
 EXTERN_C void dmh_setpty( HWND );
 
-class ProgressMeterMaker: public pkgProgressMeter
+#define PROGRESS_METER_CLASS	ProgressMeterMaker
+
+class PROGRESS_METER_CLASS: public pkgProgressMeter
 {
   /* A locally defined class, supporting progress metering
    * for package catalogue update and load operations.
    */
   public:
-    ProgressMeterMaker( HWND, HWND, AppWindowMaker * );
+    PROGRESS_METER_CLASS( HWND, AppWindowMaker * );
+    ~PROGRESS_METER_CLASS(){ referrer->DetachProgressMeter( this ); }
 
     virtual int Annotate( const char *, ... );
     virtual void SetRange( int, int );
     virtual void SetValue( int );
 
-  protected:
-    HWND message_line, progress_bar;
+  private:
+    AppWindowMaker *referrer;
+    HWND annotation, count, lim, frac, progress_bar;
+    void PutVal( HWND, const char *, ... );
+    int total;
 };
 
 inline
@@ -82,55 +88,23 @@ inline void AppWindowMaker::DetachProgressMeter( pkgProgressMeter *meter )
   }
 }
 
-/* We need to provide a destructor for the abstract base class, from which
- * our progress meters are derived; here is as good a place as any.
- */
-pkgProgressMeter::~pkgProgressMeter(){ referrer->DetachProgressMeter( this ); }
-
 /* We must also provide the implementation of our local progress meter class.
  */
-ProgressMeterMaker::ProgressMeterMaker
-( HWND annotation, HWND indicator, AppWindowMaker *owner ):
-pkgProgressMeter( owner ), message_line( annotation ), progress_bar( indicator )
+#define IDD( DLG, ITEM ) GetDlgItem( DLG, IDD_PROGRESS_##ITEM )
+PROGRESS_METER_CLASS::PROGRESS_METER_CLASS( HWND dlg, AppWindowMaker *owner ):
+referrer( owner ), annotation( IDD( dlg, MSG ) ), progress_bar( IDD( dlg, BAR ) ),
+count( IDD( dlg, VAL ) ), lim( IDD( dlg, MAX ) ), frac( IDD( dlg, PCT ) )
 {
   /* Constructor creates an instance of the progress meter class, attaching it
    * to the main application window, with an initial metering range of 0..100%,
    * and a starting indicated completion state of 0%.
    */
   owner->AttachProgressMeter( this );
-  SetRange( 0, 100 );
+  SetRange( 0, 1 ); SetValue( 0 );
   SetValue( 0 );
 }
 
-int ProgressMeterMaker::Annotate( const char *fmt, ... )
-{
-  /* Method to add a printf() style annotation to the progress meter dialogue.
-   */
-  va_list argv;
-  va_start( argv, fmt );
-  char annotation[1 + vsnprintf( NULL, 0, fmt, argv )];
-  int len = vsnprintf( annotation, sizeof( annotation ), fmt, argv );
-  va_end( argv );
-
-  SendMessage( message_line, WM_SETTEXT, 0, (LPARAM)(annotation) );
-  return len;
-}
-
-void ProgressMeterMaker::SetRange( int min, int max )
-{
-  /* Method to adjust the range of the progress meter, to represent any
-   * arbitrary range of discrete values, rather than percentage units.
-   */
-  SendMessage( progress_bar, PBM_SETRANGE, 0, MAKELPARAM( min, max ) );
-}
-
-void ProgressMeterMaker::SetValue( int value )
-{
-  /* Method to update the indicated completion state of a progress meter,
-   * to represent any arbitrary value within its assigned metering range.
-   */
-  SendMessage( progress_bar, PBM_SETPOS, value, 0 );
-}
+#include "pmihook.cpp"
 
 /* Implementation of service routines, for loading the package catalogue
  * from its defining collection of XML files.
@@ -215,20 +189,18 @@ static void pkgInvokeInitDataLoad( void *window )
    * we subject it to progress metering, to ensure that the user is
    * not left staring at an apparently hung, blank window.
    */
-  HWND msg = GetDlgItem( (HWND)(window), IDD_PROGRESS_MSG );
-  HWND dlg = GetDlgItem( (HWND)(window), IDD_PROGRESS_BAR );
   AppWindowMaker *app = GetAppWindow( GetParent( (HWND)(window) ));
   SendMessage( (HWND)(window),
       WM_SETTEXT, 0, (LPARAM)("Loading Package Catalogue")
     );
-  ProgressMeterMaker ui( msg, dlg, app );
+  ProgressMeterMaker ui( (HWND)(window), app );
 
   /* For this activity, we request automatic dismissal of the dialogue,
    * when loading has been completed; the user will have an opportunity
    * to countermand this choice, if loading is delayed by the required
    * download of any missing local catalogue file.
    */
-  dlg = GetDlgItem( (HWND)(window), IDD_AUTO_CLOSE_OPTION );
+  HWND dlg = GetDlgItem( (HWND)(window), IDD_AUTO_CLOSE_OPTION );
   SendMessage( dlg, WM_SETTEXT, 0,
       (LPARAM)("Close dialogue automatically, when loading is complete.")
     );
@@ -267,10 +239,8 @@ static void pkgInvokeUpdate( void *window )
    * subject it to progress metering, to ensure that the user is
    * not left staring at an apparently hung, blank window.
    */
-  HWND msg = GetDlgItem( (HWND)(window), IDD_PROGRESS_MSG );
-  HWND dlg = GetDlgItem( (HWND)(window), IDD_PROGRESS_BAR );
   AppWindowMaker *app = GetAppWindow( GetParent( (HWND)(window) ));
-  ProgressMeterMaker ui( msg, dlg, app );
+  ProgressMeterMaker ui( (HWND)(window), app );
 
   /* After setting up the progress meter, we clear out any data
    * which was previously loaded into the package list, reload it
@@ -292,8 +262,8 @@ static void pkgInvokeUpdate( void *window )
   else
   { /* ...otherwise, we activate the manual dismissal button...
      */
-    if( (dlg = GetDlgItem( (HWND)(window), IDOK )) != NULL )
-      EnableWindow( dlg, TRUE );
+    HWND dlg = GetDlgItem( (HWND)(window), IDOK );
+    if( dlg != NULL ) EnableWindow( dlg, TRUE );
 
     /* ...and notify the user that it must be clicked to continue.
      */

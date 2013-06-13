@@ -104,8 +104,10 @@ void pkgRepository::GetPackageList( const char *dname )
 
       /* Set up diagnostics for reporting catalogue loading progress.
        */
-      const char *mode = force_update ? "Retaining" : "Loading";
-      const char *fmt = "%s catalogue: %s.xml; (item %d of %d)\n";
+      const char *mode = force_update ? "Checking" : "Loading";
+      const char *fmt = (owner->ProgressMeter() == NULL)
+	? "%s catalogue: %s.xml; (item %d of %d)\n"
+	: "%s catalogue: %s.xml\n";
 
       /* Check for a locally cached copy of the "package-list" file...
        */

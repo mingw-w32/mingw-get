@@ -50,10 +50,6 @@ EXTERN_C int pkgPutEnv( int, char* );
 class pkgSpecs;
 class pkgDirectory;
 
-#ifndef GUIMAIN_H
-class AppWindowMaker;
-#endif
-
 class pkgProgressMeter
 {
   /* An abstract base class, from which the controller class
@@ -63,11 +59,6 @@ class pkgProgressMeter
     virtual void SetValue( int ) = 0;
     virtual void SetRange( int, int ) = 0;
     virtual int Annotate( const char *, ... ) = 0;
-
-  protected:
-    AppWindowMaker *referrer;
-    pkgProgressMeter( AppWindowMaker *ref = NULL ): referrer( ref ){}
-    ~pkgProgressMeter();
 };
 
 class pkgXmlNode : public TiXmlElement
