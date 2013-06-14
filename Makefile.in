@@ -361,7 +361,17 @@ PACKAGE_DISTVERSION = `echo $(PACKAGE_VERSION)-$(PACKAGE_SUBSYSTEM) | sed \
   -e 's,-$(PACKAGE_SUBSYSTEM),$(SNAPSHOT)&,'`
 PACKAGE_DISTNAME = $(PACKAGE_TARNAME)-$(PACKAGE_DISTVERSION)
 
-dist: srcdist bindist readme.txt
+dist: srcdist bindist readme.txt.dist
+
+# Specify where distributable files should be collected; by default,
+# we will simply use the current build directory.
+#
+distdir = @abs_builddir@
+
+# "Install" distributable text files into the distribution directory.
+#
+%.txt.dist: %.txt
+	cmp -s $< ${distdir}/$(<F) 2>/dev/null || $(INSTALL_DATA) $< ${distdir}
 
 # Specify default compression command, and associated file name extension,
 # for creation and identification of packaged tar archives.
@@ -379,32 +389,34 @@ GCMTAG = `>> $(BLDTAG); cat $(BLDTAG) | sed 's,.,-$(GUI_RELEASE_CLASS)-&,'`
 
 bindist: all licdist
 	rm -rf staged
+	$(mkinstalldirs) ${distdir}
 	$(MAKE) --no-print-directory prefix=`pwd`/staged install-strip
 	cd staged; tar chf - bin/pkginfo$(EXEEXT) | $(TARZIP) -c > \
-	  ../pkginfo-$(PACKAGE_DISTVERSION)$(SCMTAG)-bin.$(TAREXT)
+	  ${distdir}/pkginfo-$(PACKAGE_DISTVERSION)$(SCMTAG)-bin.$(TAREXT)
 	rm staged/bin/pkginfo$(EXEEXT)
 	cd staged; tar chf - libexec/mingw-get/guimain$(EXEEXT) | \
-	  $(TARZIP) -c > ../$(PACKAGE_DISTNAME)$(GCMTAG)-gui.$(TAREXT)
+	  $(TARZIP) -c > ${distdir}/$(PACKAGE_DISTNAME)$(GCMTAG)-gui.$(TAREXT)
 	rm staged/libexec/mingw-get/guimain$(EXEEXT)
 	cd staged; tar chf - * | $(TARZIP) -c > \
-	  ../$(PACKAGE_DISTNAME)$(SCMTAG)-bin.$(TAREXT)
-	cd staged; zip -r ../$(PACKAGE_DISTNAME)$(SCMTAG)-bin.zip *
+	  ${distdir}/$(PACKAGE_DISTNAME)$(SCMTAG)-bin.$(TAREXT)
+	cd staged; zip -r ${distdir}/$(PACKAGE_DISTNAME)$(SCMTAG)-bin.zip *
 	rm -rf staged
 
 licdist:
 	rm -rf share
-	$(mkinstalldirs) ./share/doc/${PACKAGE_TARNAME}
+	$(mkinstalldirs) ${distdir} ./share/doc/${PACKAGE_TARNAME}
 	cd ./share/doc/${PACKAGE_TARNAME}; for file in $(LICENCE_FILES); \
 	  do test -f ${abs_top_srcdir}/$$file \
 	    && $(LN_S) ${abs_top_srcdir}/$$file . \
 	    || $(LN_S) ${CURDIR}/$$file .; \
 	  done
 	tar chf - share | $(TARZIP) -c > \
-	  $(PACKAGE_DISTNAME)$(SCMTAG)-lic.$(TAREXT)
+	  ${distdir}/$(PACKAGE_DISTNAME)$(SCMTAG)-lic.$(TAREXT)
 	rm -rf share
 
 srcdist: srcdist-doc pkginfo.c
-	rm -rf ${PACKAGE_DISTROOT} && mkdir ${PACKAGE_DISTROOT}
+	rm -rf ${PACKAGE_DISTROOT}
+	$(mkinstalldirs) ${distdir} ${PACKAGE_DISTROOT}
 	cd ${PACKAGE_DISTROOT}; for file in $(SRCDIST_FILES); do \
 	  test -f ${abs_top_srcdir}/$$file \
 	    && $(LN_S) ${abs_top_srcdir}/$$file . \
@@ -430,7 +442,7 @@ srcdist: srcdist-doc pkginfo.c
 	cd ${CURDIR}; done
 	cd ${PACKAGE_DISTROOT}/src/pkginfo; $(LN_S) ${CURDIR}/pkginfo.c .
 	tar chf - ${PACKAGE_DISTROOT} | $(TARZIP) -c > \
-	  $(PACKAGE_DISTNAME)$(SCMTAG)-src.$(TAREXT)
+	  ${distdir}/$(PACKAGE_DISTNAME)$(SCMTAG)-src.$(TAREXT)
 	rm -rf ${PACKAGE_DISTROOT}
 
 # README, INSTALL and NEWS files to be included in the source distribution

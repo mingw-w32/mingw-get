@@ -1,5 +1,15 @@
 2013-06-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Collect distributable package files in user specified directory.
+
+	* Makefile.in (distdir): New macro; define default as abs_builddir.
+	(srcdist, bindist, licdist): Use it; direct generated tarballs to it.
+	(%.txt.dist): New pattern rule; define, and use it to make a copy...
+	(readme.txt): ...of this, in distdir, when processing...
+	(dist): ...this build objective.
+
+2013-06-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Handle Microsoft's 32-bit vs. 64-bit time_t ambiguity.
 
 	* src/apihook.c: New file; it provides...
