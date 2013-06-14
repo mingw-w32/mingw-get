@@ -1,3 +1,19 @@
+2013-06-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Handle Microsoft's 32-bit vs. 64-bit time_t ambiguity.
+
+	* src/apihook.c: New file; it provides...
+	(have_api): ...this helper; it checks for availability of any specific
+	API function, within a specific system DLL, (MSVCRT.DLL by default).
+
+	* src/tarproc.cpp (have_utime64_api): New inline function; it wraps...
+	(have_api): ...this, to check whether MSVCRT.DLL provides...
+	(commit_saved_entity) [_utime64]: ...this; use if available, else...
+	(commit_saved_entity) [!_utime64]: ...fall back to using...
+	(utime): ...this.
+
+	* Makefile.in (CORE_DLL_OBJECTS): Add apihook.$OBJEXT
+
 2013-06-13  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Facilitate package extraction and registration at setup time.

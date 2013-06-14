@@ -165,7 +165,7 @@ CORE_DLL_OBJECTS  =  climain.$(OBJEXT) pkgshow.$(OBJEXT) dmhcore.$(OBJEXT) \
    pkgdeps.$(OBJEXT) pkgreqs.$(OBJEXT) pkginst.$(OBJEXT) pkgunst.$(OBJEXT) \
    tarproc.$(OBJEXT) xmlfile.$(OBJEXT) keyword.$(OBJEXT) vercmp.$(OBJEXT) \
    tinyxml.$(OBJEXT) tinystr.$(OBJEXT) tinyxmlparser.$(OBJEXT) \
-   mkpath.$(OBJEXT)  tinyxmlerror.$(OBJEXT)
+   apihook.$(OBJEXT) mkpath.$(OBJEXT)  tinyxmlerror.$(OBJEXT)
 
 CLI_EXE_OBJECTS  =   \
    clistub.$(OBJEXT) version.$(OBJEXT) approot.$(OBJEXT) getopt.$(OBJEXT)

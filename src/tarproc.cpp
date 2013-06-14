@@ -532,16 +532,62 @@ char *pkgTarArchiveProcessor::EntityDataAsString()
  */
 #include <utime.h>
 
-static int commit_saved_entity( const char *pathname, time_t mtime )
+EXTERN_C int have_api( const char *, const char * = NULL );
+
+static inline int have_utime64_api( void )
+{
+  /* Local helper function to check and record the availability of
+   * the _utime64() API function, within the particular version of
+   * MSVCRT.DLL which is installed on the host platform.
+   */
+  enum { API_UNSUPPORTED = 0, API_SUPPORTED, API_UNTESTED };
+
+  /* On first call, we don't know; initialise accordingly.
+   */
+  static int status = (int)(API_UNTESTED);
+
+  return (status == (int)(API_UNTESTED))
+    /*
+     * Must be first time of calling; check, record, and return
+     * the appropriate availability status.
+     */
+    ? status = have_api( "_utime64" )
+    /*
+     * On second and subsequent calls, we've already checked, so
+     * we know the availability status; simply return it.
+     */
+    : status;
+}
+
+static int commit_saved_entity( const char *pathname, __time64_t mtime )
 {
   /* Helper to set the access and modification times for a file,
    * after extraction from an archive, to match the specified "mtime";
    * (typically "mtime" is as recorded within the archive).
    */
-  struct utimbuf timestamp;
+  if( have_utime64_api() )
+  {
+    /* When the _utime64() API function is available...
+     */
+    struct __utimbuf64 timestamp;
 
-  timestamp.actime = timestamp.modtime = mtime;
-  return utime( pathname, &timestamp );
+    /* ...we prefer to use it...
+     */
+    timestamp.actime = timestamp.modtime = mtime;
+    return _utime64( pathname, &timestamp );
+  }
+  else
+  {
+    /* ...otherwise, we assume that this is a legacy system,
+     * and the utime() function is based on 32-bit time_t...
+     */
+    struct __utimbuf32 timestamp;
+
+    /* ...so fall back to using that.
+     */
+    timestamp.actime = timestamp.modtime = mtime;
+    return utime( pathname, (utimbuf *)(&timestamp) );
+  }
 }
 
 pkgTarArchiveExtractor::pkgTarArchiveExtractor( const char *fn, const char *dir )
