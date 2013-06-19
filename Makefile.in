@@ -249,20 +249,21 @@ sinclude *.d
 %.$(OBJEXT): %.ico
 	echo $* ICON $*.ico | $(RC) -I ${srcdir}/icons -o $@
 
-# Release tagging...
+# Release tagging; note that, whereas %.time is nominally updated as
+# a side effect of %.tag, we also must provide an explicit rule which
+# will update it directly.  This ensures that we may INDIRECTLY force
+# a dependency on the TIME when %.tag is updated, WITHOUT creating an
+# explicit dependency on %.tag itself.
 #
 time-stamp:
-%.tagged.time: time-stamp
-	> $*.time
-
-%.time: %.tagged.time
-
-%.tag: %.tagged.time
+%.time:; > $@
+%.tag: time-stamp
 	>> $@; tag=`date +%Y%m%d`; \
 	  tag=`awk -F- -v today=$$tag ' \
 	    BEGIN { tag = 1 } $$1 == today { tag += $$2 } \
 	    END { print today "-" tag }' $@`; \
 	  echo $$tag > $@
+	> $*.time
 
 %.c: %.c.in
 	$(VERSION_SCRIPT) $< > $@

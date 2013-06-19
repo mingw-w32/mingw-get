@@ -1,3 +1,12 @@
+2013-06-19  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Rework defective package build time-stamping logic.
+
+	* Makefile.in (%.time): Make it explicitly touch its target; the
+	2013-05-15 changes, to reduce redundancy, didn't work as expected.
+	(%.tag): Add a side effect; make it also explicitly touch %.time.
+	(%.tagged.time): This is now redundant; remove it.
+
 2013-06-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Collect distributable package files in user specified directory.
