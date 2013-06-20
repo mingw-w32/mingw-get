@@ -1,3 +1,13 @@
+2013-06-20  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Rework defective assignment of product version resources.
+
+	* Makefile.in (BUILD_TAG): Avoid creating an empty build.tag file.
+	(PACKAGE_VERINFO_SCRIPT): Ensure that the build tag is generated as a
+	string of non-zero length.  Do not assume that it comprises only two
+	elements; extract the final two, as the third and fourth elements
+	of the product version meta-data record.
+
 2013-06-19  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Rework defective package build time-stamping logic.

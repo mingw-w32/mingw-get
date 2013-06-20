@@ -30,7 +30,7 @@ PACKAGE_SUBSYSTEM = @host_os@
 CLI_RELEASE_CLASS = @CLI_RELEASE_CLASS@
 GUI_RELEASE_CLASS = @GUI_RELEASE_CLASS@
 
-BUILD_TAG = `>> build.tag; cat build.tag`
+BUILD_TAG = `test -f build.tag && cat build.tag`
 DEBUGLEVEL = @DEBUGLEVEL@
 
 # Establish the appropriate mechanism for invoking 'make' recursively,
@@ -116,7 +116,7 @@ AWK_PRINT_LINE_BUFFER = print linebuf;
 
 # Identify an appropriate resource compiler, for GUI builds,
 # and define a set of script macros to propagate the build-time
-# specific package meta-data into the compile resource modules.
+# specific package meta-data into compiled resource modules.
 #
 RC = @RC@
 RC_SCRIPT = tag=$(BUILD_TAG); \
@@ -137,11 +137,9 @@ TAG_SCRIPT = sed \
 PACKAGE_VERINFO_SCRIPT = \
   echo $(PACKAGE_VERSION) | awk -F. '{ \
     printf "%d, %d, ", $$1, $$2 * 100 + $$3 \
-  }'; \
-  (test -f build.tag && cat build.tag || date +%Y%m%d-0) | awk -F- '{ \
-    printf "%d, %d", (( substr( $$1, 1, 4 ) - 1970 ) * 16 \
-      + substr( $$1, 5, 2 )) * 32 + substr( $$1, 7, 2 ), \
-      $$2 \
+  }'; (test "x$$tag" = x && date +%Y%m%d-0 || echo $$tag) | awk -F- '{ \
+    DF = NF - 1; printf "%d, %d", (( substr( $$DF, 1, 4 ) - 1970 ) * 16 \
+      + substr( $$DF, 5, 2 )) * 32 + substr( $$DF, 7, 2 ), $$NF \
   }'
 
 RC_INCLUDES = -I . -I ${srcdir}/src -I ${srcdir}/icons
