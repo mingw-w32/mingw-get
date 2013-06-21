@@ -1,3 +1,12 @@
+2013-06-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Keep version strings clean when release class is unspecified.
+
+	* Makefile.in (RC_SCRIPT, VERSION_SCRIPT): Simplify; assign specified
+	release class to local variable; delegate release tag generation to...
+	(TAG_SCRIPT): ...this; check release class variable is not an empty
+	string, before inserting it into the generated release tag.
+
 2013-06-20  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Rework defective assignment of product version resources.

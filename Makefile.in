@@ -119,20 +119,21 @@ AWK_PRINT_LINE_BUFFER = print linebuf;
 # specific package meta-data into compiled resource modules.
 #
 RC = @RC@
-RC_SCRIPT = tag=$(BUILD_TAG); \
-  test "x$$tag" != x && tag="-$(GUI_RELEASE_CLASS)-$$tag"; \
+RC_SCRIPT = tag_class=$(GUI_RELEASE_CLASS) \
     $(TAG_SCRIPT)
 
-VERSION_SCRIPT = tag=$(BUILD_TAG); \
-  test "x$$tag" != x && tag="-$(CLI_RELEASE_CLASS)-$$tag"; \
+VERSION_SCRIPT = tag_class=$(CLI_RELEASE_CLASS) \
     $(TAG_SCRIPT)
 
-TAG_SCRIPT = sed \
-  -e "s!%PACKAGE_NAME%!$(PACKAGE_TARNAME)!g" \
-  -e "s!%PACKAGE_VERSION%!$(PACKAGE_VERSION)$$tag!g" \
-  -e "s!%PACKAGE_VERINFO_PRODUCT_VERSION%!`$(PACKAGE_VERINFO_SCRIPT)`!g" \
-  -e "s!%COPYRIGHT_HOLDER%!@COPYRIGHT_HOLDER@!g" \
-  -e "s!%YEARS_OF_ISSUE%!@YEARS_OF_ISSUE@!g"
+TAG_SCRIPT = tag=$(BUILD_TAG); \
+  test "x$$tag_class" != x && test "x$$tag" != x && tag="$$tag_class-$$tag"; \
+  test "x$$tag" != x && tag="-$$tag"; \
+  sed  \
+    -e "s!%PACKAGE_NAME%!$(PACKAGE_TARNAME)!g" \
+    -e "s!%PACKAGE_VERSION%!$(PACKAGE_VERSION)$$tag!g" \
+    -e "s!%PACKAGE_VERINFO_PRODUCT_VERSION%!`$(PACKAGE_VERINFO_SCRIPT)`!g" \
+    -e "s!%COPYRIGHT_HOLDER%!@COPYRIGHT_HOLDER@!g" \
+    -e "s!%YEARS_OF_ISSUE%!@YEARS_OF_ISSUE@!g"
 
 PACKAGE_VERINFO_SCRIPT = \
   echo $(PACKAGE_VERSION) | awk -F. '{ \
