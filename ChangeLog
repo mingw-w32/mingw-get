@@ -1,3 +1,11 @@
+2013-06-24  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Facilitate version synchronisation for mingw-get-setup.
+
+	* VERSION.m4: New file.
+	* configure.ac: Include it, and...
+	(AC_INIT): ...use it.
+
 2013-06-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Keep version strings clean when release class is unspecified.
