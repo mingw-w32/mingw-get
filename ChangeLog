@@ -1,3 +1,21 @@
+2013-06-27  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Improve diagnostics for tar archive processing faults.
+
+	* src/pkgproc.h (TAR_ARCHIVE_FORMAT_ERROR): New constant; define it.
+	(TAR_ARCHIVE_DATA_READ_ERROR, TAR_ARCHIVE_DATA_WRITE_ERROR): Likewise.
+
+	* src/tarproc.cpp (dmh_notify_archive_data_exhausted): New static
+	inline function; implement it.
+	(pkgTarArchiveProcessor::GetArchiveEntry) [short header]: Use it.
+	(pkgArchiveProcessor::ExtractFile) [TAR_ARCHIVE_DATA_READ_ERROR]:
+	Likewise, use it here; also explicitlycheck for, and diagnose...
+	[TAR_ARCHIVE_DATA_WRITE_ERROR]: ...this; also add a further catch all
+	case, to diagnose any other unexpected condition.
+	(pkgTarArchiveProcessor::GetArchiveEntry) [bad checksum]: Diagnose it.
+	(pkgTarArchiveProcessor::Process): Return appropriate status codes.
+	(pkgTarArchiveProcessor::ProcessEntityData): Likewise.
+
 2013-06-24  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Facilitate version synchronisation for mingw-get-setup.

@@ -137,7 +137,7 @@ union tar_archive_header
  */
 #define TAR_ENTITY_TYPE_FILE		'0'
 #define TAR_ENTITY_TYPE_LINK		'1'
-#define TAR_ENTITY_TYPE_SYMLINK		'2'
+#define TAR_ENTITY_TYPE_SYMLINK 	'2'
 #define TAR_ENTITY_TYPE_CHRDEV		'3'
 #define TAR_ENTITY_TYPE_BLKDEV		'4'
 #define TAR_ENTITY_TYPE_DIRECTORY	'5'
@@ -146,7 +146,13 @@ union tar_archive_header
 /* Some older style tar archives may use '\0' as an alternative to '0',
  * to identify an archive entry representing a regular file.
  */
-#define TAR_ENTITY_TYPE_ALTFILE		'\0'
+#define TAR_ENTITY_TYPE_ALTFILE 	'\0'
+
+/* Specify classification codes for tar archive processing errors.
+ */
+#define TAR_ARCHIVE_DATA_READ_ERROR	-1
+#define TAR_ARCHIVE_DATA_WRITE_ERROR	-2
+#define TAR_ARCHIVE_FORMAT_ERROR	-3
 
 class pkgTarArchiveProcessor : public pkgArchiveProcessor
 {

@@ -68,6 +68,15 @@ int pkgArchiveProcessor::CreateExtractionDirectory( const char *pathname )
   return status;
 }
 
+static inline int dmh_notify_archive_data_exhausted( const char *context )
+{
+  /* Helper function to emit "premature end of archive" diagnostics.
+   */
+  return dmh_notify( DMH_ERROR,
+      "unexpected end of archive reading %s record\n", context
+    );
+}
+
 inline int pkgArchiveProcessor::SetOutputStream( const char *name, int mode )
 {
   /* Wrapper method to facilitate the set up of output streams
@@ -98,6 +107,19 @@ int pkgArchiveProcessor::ExtractFile( int fd, const char *pathname, int status )
        */
       unlink( pathname );
       dmh_notify( DMH_ERROR, "%s: extraction failed\n", pathname );
+      switch( status )
+      {
+	case TAR_ARCHIVE_DATA_READ_ERROR:
+	  dmh_notify_archive_data_exhausted( "content" );
+	  break;
+
+	case TAR_ARCHIVE_DATA_WRITE_ERROR:
+	  dmh_notify( DMH_ERROR, "write error extracting file content\n" );
+	  break;
+
+	default:
+	  dmh_notify( DMH_ERROR, "unexpected fault; status = %d\n", status );
+      }
     }
   }
   /* Finally, we pass the original status value back to the caller.
@@ -249,9 +271,10 @@ int pkgTarArchiveProcessor::GetArchiveEntry()
 
   if( count < sizeof( header ) )
   {
-    /* Failed to read a complete header; return error code.
+    /* Failed to read a complete header; diagnose and return error code.
      */
-    return -1;
+    dmh_notify_archive_data_exhausted( "header" );
+    return TAR_ARCHIVE_DATA_READ_ERROR;
   }
 
   while( count-- )
@@ -280,9 +303,16 @@ int pkgTarArchiveProcessor::GetArchiveEntry()
       }
       /* After computing the checksum for a non-zero header,
        * verify it against the value recorded in the checksum field;
-       * return +1 for a successful match, or -2 for failure.
+       * return +1 for a successful match...
        */
-      return (sum == octval( header.field.chksum )) ? 1 : -2;
+      if( sum == octval( header.field.chksum ) )
+       	return 1;
+
+      /* ...otherwise diagnose checksum validation failure, and
+       * return the fault status.
+       */
+      dmh_notify( DMH_ERROR, "checksum validation failed\n" );
+      return TAR_ARCHIVE_FORMAT_ERROR;
     }
 
   /* If we get to here, then the inner loop was never entered;
@@ -297,7 +327,8 @@ int pkgTarArchiveProcessor::Process()
   /* Generic method for reading tar archives, and extracting their
    * content; loops over each archive entry in turn...
    */
-  while( GetArchiveEntry() > 0 )
+  int status;
+  while( (status = GetArchiveEntry()) > 0 )
   {
     char *prefix = *header.field.prefix ? header.field.prefix : NULL;
     char *name = header.field.name;
@@ -312,14 +343,19 @@ int pkgTarArchiveProcessor::Process()
     {
       /* Extract the full pathname from the data of this entry.
        */
-      longname = EntityDataAsString();
-      if( !longname )
+      if( (longname = EntityDataAsString()) == NULL )
+      {
         dmh_notify( DMH_ERROR, "Unable to read a long name entry\n" );
+	return TAR_ARCHIVE_FORMAT_ERROR;
+      }
 
       /* Read the entry for which this long name is intended.
        */
       if( GetArchiveEntry() <= 0 )
+      {
         dmh_notify( DMH_ERROR, "Expected a new entry after a long name entry\n" );
+	return TAR_ARCHIVE_FORMAT_ERROR;
+      }
 
       /* Use the previously determined long name as the pathname for this entry.
        */
@@ -448,7 +484,7 @@ int pkgTarArchiveProcessor::ProcessEntityData( int fd )
        * Failure to fully populate the transfer buffer, (i.e. a short
        * read), indicates a corrupt archive; bail out immediately.
        */
-      return -1;
+      return TAR_ARCHIVE_DATA_READ_ERROR;
 
     /* When the number of actual data bytes expected is fewer than the
      * total number of bytes in the transfer buffer...
@@ -470,7 +506,7 @@ int pkgTarArchiveProcessor::ProcessEntityData( int fd )
        * An extraction error occurred; set the status code to
        * indicate failure.
        */
-      status = -2;
+      status = TAR_ARCHIVE_DATA_WRITE_ERROR;
 
     /* Adjust the count of remaining unprocessed data bytes, and begin
      * a new processing cycle, to capture any which may be present.
