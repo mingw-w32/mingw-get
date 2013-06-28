@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2011, MinGW Project
+ * Copyright (C) 2009, 2011, 2013, MinGW.org Project
  *
  *
  * Helper functions for constructing path names, creating directory
@@ -27,6 +27,7 @@
  *
  */
 #include "mkpath.h"
+#include "pkgimpl.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,9 +47,18 @@
  /*
   * MS-Windows _O_BINARY vs. _O_TEXT discrimination can't be explicitly
   * resolved in a simple `creat()' call; instead, we will use `_open()',
-  * with the following explicit attribute set...
+  * with one of the following explicit attribute sets...
   */
-# define _O_NEWFILE  _O_RDWR | _O_CREAT | _O_TRUNC | _O_BINARY
+# if IMPLEMENTATION_LEVEL == SETUP_TOOL_COMPONENT
+  /*
+   * ...allowing overwrite in the setup tool implementation...
+   */
+#  define _O_NEWFILE  _O_RDWR | _O_CREAT | _O_TRUNC | _O_BINARY
+# else
+  /* ...but not in the standard mingw-get implementation...
+   */
+#  define _O_NEWFILE  _O_RDWR | _O_CREAT | _O_EXCL | _O_BINARY
+# endif
 # define creat(P,M)  _open( P, _O_NEWFILE, _map_posix_mode(M) )
 
  /* Furthermore, MS-Windows protection modes are naive, in comparison

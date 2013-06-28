@@ -1,3 +1,20 @@
+2013-06-28  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Avoid inadvertent overwrite of existing files.
+
+	* src/mkpath.c (_O_NEWFILE): Conditionally specify attributes...
+	[IMPLEMENTATION_LEVEL == SETUP_TOOL_COMPONENT]: ...as they were...
+	[IMPLEMENTATION_LEVEL != SETUP_TOOL_COMPONENT]: ...else, include
+	_O_EXCL in the specified set; exclude _O_TRUNC.
+
+	* src/tarproc.cpp (dmh_notify_extraction_failed): New static inline
+	function; it encapsulates the diagnostic message factored out from...
+	(pkgArchiveProcessor::ExtractFile): ...here, whence use it.
+	(create_output_stream): Also used in this new static inline function;
+	it adds an appropriate diagnostic wrapper around set_output_stream(),
+	when _O_EXCL prevents overwrite of an existing file.
+	(pkgArchiveProcessor::SetOutputStream): Use it.
+
 2013-06-27  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Improve diagnostics for tar archive processing faults.

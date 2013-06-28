@@ -68,6 +68,13 @@ int pkgArchiveProcessor::CreateExtractionDirectory( const char *pathname )
   return status;
 }
 
+static inline int dmh_notify_extraction_failed( const char *name )
+{
+  /* Helper function to emit archive "extraction failed" diagnostics.
+   */
+  return dmh_notify( DMH_ERROR, "%s: extraction failed\n", name );
+}
+
 static inline int dmh_notify_archive_data_exhausted( const char *context )
 {
   /* Helper function to emit "premature end of archive" diagnostics.
@@ -77,13 +84,30 @@ static inline int dmh_notify_archive_data_exhausted( const char *context )
     );
 }
 
+static int create_output_stream( const char *name, int mode )
+{
+  /* Wrapper encapsulating the set_output_stream() function, while
+   * protecting against inadvertently overwriting any unexpectedly
+   * pre-existing file.
+   */
+  int fd = set_output_stream( name, mode );
+  if( (fd == -1) && ((errno == EEXIST) || (errno == EACCES)) )
+  {
+    /* Overwrite prevention was triggered; diagnose.
+     */
+    dmh_notify_extraction_failed( name );
+    dmh_notify( DMH_ERROR, "cannot replace existing file\n" );
+  }
+  return fd;
+}
+
 inline int pkgArchiveProcessor::SetOutputStream( const char *name, int mode )
 {
   /* Wrapper method to facilitate the set up of output streams
    * for writing extracted content to disk, except in the special
    * case where saving of files has been disabled.
    */
-  return save_on_extract ? set_output_stream( name, mode ) : -2;
+  return save_on_extract ? create_output_stream( name, mode ) : -2;
 }
 
 int pkgArchiveProcessor::ExtractFile( int fd, const char *pathname, int status )
@@ -106,7 +130,7 @@ int pkgArchiveProcessor::ExtractFile( int fd, const char *pathname, int status )
        * written; discard it, and diagnose failure.
        */
       unlink( pathname );
-      dmh_notify( DMH_ERROR, "%s: extraction failed\n", pathname );
+      dmh_notify_extraction_failed( pathname );
       switch( status )
       {
 	case TAR_ARCHIVE_DATA_READ_ERROR:
