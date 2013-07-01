@@ -1,3 +1,15 @@
+2013-07-01  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add subprocess argument vector construction helpers.
+
+	* src/argwrap.c src/argwrap.h: New files; they implement an API for
+	construction of argument vectors, with appropriate quoting, to be
+	passed to MS-Windows exec'd subprocesses.  Rewritten from scratch,
+	without reference to any prior GPL licensed implementation, with MIT
+	style licence, these provide the foundation for a possible future
+	libmingwex.a implementation; they are included here, since no such
+	implementation is currently available.
+
 2013-06-28  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Avoid inadvertent overwrite of existing files.
