@@ -1,5 +1,12 @@
 2013-07-03  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Correct an omission from the source code distribution.
+
+	* Makefile.in (BUILD_AUX_FILES): Add makeopts.m4; this was omitted
+	from the 2013-04-10 modification to fix MinGW-Bug #1601.
+
+2013-07-03  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Incorporate foundation for setup tool implementation.
 
 	* src/setup.cpp: New file; it implements the setup program.

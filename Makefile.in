@@ -363,7 +363,8 @@ SRCDIST_SUBDIRS = src src/pkginfo srcdist-doc icons \
 # from the project's global build-aux repository...
 #
 BUILD_AUX_DIRS = build-aux build-aux/m4
-BUILD_AUX_FILES = config.guess config.sub install-sh missing.m4
+BUILD_AUX_FILES = config.guess config.sub install-sh \
+  makeopts.m4 missing.m4
 
 # The names of distributed package archive files incorporate version
 # information, derived from PACKAGE_VERSION; this is decomposed, so that
