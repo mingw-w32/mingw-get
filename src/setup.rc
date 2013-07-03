@@ -1,0 +1,249 @@
+/*
+ * setup.rc
+ *
+ * $Id$
+ *
+ * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
+ * Copyright (C) 2013, MinGW.org Project
+ *
+ *
+ * Resource definitions for the mingw-get-setup.exe implementation.
+ *
+ *
+ * This is free software.  Permission is granted to copy, modify and
+ * redistribute this software, under the provisions of the GNU General
+ * Public License, Version 3, (or, at your option, any later version),
+ * as published by the Free Software Foundation; see the file COPYING
+ * for licensing details.
+ *
+ * Note, in particular, that this software is provided "as is", in the
+ * hope that it may prove useful, but WITHOUT WARRANTY OF ANY KIND; not
+ * even an implied WARRANTY OF MERCHANTABILITY, nor of FITNESS FOR ANY
+ * PARTICULAR PURPOSE.  Under no circumstances will the author, or the
+ * MinGW Project, accept liability for any damages, however caused,
+ * arising from the use of this software.
+ *
+ */
+#include "setup.h"
+#include "guimain.h"
+
+#include <windows.h>
+
+/* Version identification resources which are spectific to the
+ * package setup tool, mingw-get-setup.exe
+ */
+#define VERINFO_INTERNAL_NAME		"%PACKAGE_NAME%-setup"
+
+#define VERINFO_FILE_NAME		VERINFO_INTERNAL_NAME ".exe"
+#define VERINFO_FILE_DESCRIPTION	"MinGW Installation Manager Setup Tool"
+#define VERINFO_FILE_VERSION_STRING	VERINFO_PRODUCT_VERSION_STRING
+#define VERINFO_FILE_VERSION		VERINFO_PRODUCT_VERSION
+
+/* Interpret the foregoing, together with common product version
+ * information, in this package component context.
+ */
+#include "verinfo.rc"
+
+/* The icon representing the mingw-get application; it is a clone
+ * of the icon representing the synaptic package for Debian APT.
+ */
+ID_MAIN_WINDOW ICON DISCARDABLE 	"pkgicon.ico"
+
+IDD_SETUP_BEGIN DIALOG DISCARDABLE	80, 50, 300, 250
+ /*
+  * Template for the layout and content of the top level dialogue panel
+  * which acts as the opening view within the setup tool.
+  */
+  STYLE 				DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_DLGFRAME
+  FONT					9, "Verdana"
+  BEGIN
+    DEFPUSHBUTTON 			"Install", IDOK, 170, 225, 50, 14
+    PUSHBUTTON				"View Licence", ID_SETUP_SHOW_LICENCE, 20, 225, 80, 14
+    PUSHBUTTON				"Cancel", IDCANCEL, 230, 225, 50, 14
+    ICON				ID_MAIN_WINDOW, ID_MAIN_WINDOW, 140, 28, 0, 0
+    CTEXT				"%PACKAGE_NAME% version %PACKAGE_VERSION%", -1, 0, 8, 300, 20
+    CTEXT				"Written by Keith Marshall", -1, 0, 58, 300, 12
+    CTEXT				VERINFO_COPYRIGHT_NOTICE, \
+					-1, 0, 70, 300, 12
+    CTEXT				"http://mingw.org", -1, 0, 82, 300, 12
+    CTEXT				"\
+This is free software; see the product documentation or source code, for copying and redistribution \
+conditions.  There is NO WARRANTY; not even an implied WARRANTY OF MERCHANTABILITY, nor of FITNESS FOR \
+ANY PARTICULAR PURPOSE.", -1, 10, 108, 280, 40
+    CTEXT				"\
+This tool will guide you through the first time setup of the MinGW Installation Manager software \
+(mingw-get) on your computer; additionally, it will offer you the opportunity to install some other \
+common components of the MinGW software distribution.\n\n\
+After first time setup has been completed, you should invoke the MinGW Installation Manager directly, \
+(either the CLI mingw-get.exe variant, or its GUI counterpart, according to your preference), when you \
+wish to add or to remove components, or to upgrade your MinGW software installation.", \
+-1, 10, 148, 280, 70
+  END
+
+/* Include a manifest resource, to support visual style attributes
+ * and unprivileged UAC, when running on current MS-Windows variants.
+ */
+#include "manifest.rc"
+
+STRINGTABLE DISCARDABLE
+ /*
+  * Miscellaneous string constants.
+  */
+  BEGIN
+    ID_MAIN_WINDOW_CLASS		"mingw-get"
+    ID_MAIN_WINDOW_CAPTION		"MinGW Installation Manager"
+    ID_MAIN_DIALOGUE_CAPTION		 VERINFO_FILE_DESCRIPTION
+    ID_DOWNLOAD_HOST_URI		"http://prdownloads.sourceforge.net/keithmarshall.u/%F?download"
+    ID_PACKAGE_BASE_DISTNAME		"%PACKAGE_BASE_DISTNAME%"
+    ID_PACKAGE_DATA_DISTNAME		"%PACKAGE_DATA_DISTNAME%"
+    ID_PACKAGE_GUI_DISTNAME 		"%PACKAGE_GUI_DISTNAME%"
+    ID_FONT_PREF			"Verdana"
+  END
+
+#define SS_CTEXTBOX			SS_SUNKEN | SS_CENTER
+#define ES_VT100			ES_LEFT | ES_READONLY | ES_MULTILINE | ES_AUTOVSCROLL
+
+IDD_SETUP_LICENCE DIALOG DISCARDABLE	2, 90, 296, 105
+ /*
+  * Template for the embedded dialogue pane which is presented to seek
+  * confirmation of a user request, to invoke the web browser in order
+  * to display the product licence (GPLv3).
+  */
+  STYLE 				WS_POPUP
+  FONT					10, "Verdana"
+  BEGIN
+    GROUPBOX				" Licensing Terms ", -1, 4, 0, 288, 101
+    ICON				IDI_INFORMATION, IDI_INFORMATION, 17, 15, 0, 0
+    LTEXT				"This is free software.  Permission is granted to copy, " \
+					"modify, and redistribute this software under the terms " \
+					"of the GNU General Public License, Version 3, (or, at " \
+					"your option, any later version), as published", \
+					-1, 40, 11, 242, 25
+    LTEXT				"by the Free Software Foundation.", -1, 14, 35, 266, 10
+    LTEXT				"By selecting the appropriate option below, you may " \
+					"submit a request to display the full text of the license " \
+					"document in your preferred internet browser; (there may " \
+					"be some delay, while the browser starts up, and fetches " \
+					"the document).", -1, 14, 48, 266, 25
+    DEFPUSHBUTTON			"Submit Request", IDOK, 18, 80, 124, 13
+    PUSHBUTTON				"Cancel Request", IDCANCEL, 154, 80, 124, 13
+  END
+
+IDD_SETUP_OPTIONS DIALOG DISCARDABLE	2, 49, 296, 165
+ /*
+  * Template for the embedded dialogue pane which is presented to offer
+  * a choice of user configurable installation options.
+  */
+  STYLE 				WS_POPUP
+  FONT					10, "Verdana"
+  BEGIN
+    CTEXT				"Step 1: Specify Installation Preferences", \
+					-1, 4, 0, 288, 11
+    GROUPBOX				" Installation Directory ", -1, 4, 10, 288, 48
+    EDITTEXT				ID_SETUP_CURDIR, 9, 21, 229, 11, ES_LEFT | ES_READONLY
+    PUSHBUTTON				"Change", ID_SETUP_CHDIR, 247, 20, 40, 13
+    LTEXT				"If you elect to change this, you are advised to avoid any " \
+                                        "choice of directory which includes white space within the " \
+					"absolute representation of its path name.", \
+					-1, 9, 38, 278, 18
+    GROUPBOX				" User Interface Options ", -1, 4, 60, 288, 81
+    LTEXT				"Both command line and graphical options are available.  The " \
+					"command line interface is always supported; the alternative " \
+					"only if you choose the following option to ...", \
+					-1, 9, 70, 278, 18
+    AUTOCHECKBOX			" ... also install support for the graphical user interface.", \
+					ID_SETUP_WITH_GUI, 9, 86, 278, 11
+    LTEXT				"Program shortcuts for launching the graphical user interface " \
+					"should be installed ...", \
+					-1, 9, 99, 278, 11
+    AUTORADIOBUTTON			" ... just for me (the current user), or ...", \
+					ID_SETUP_ME_ONLY, 9, 107, 145, 11
+    AUTORADIOBUTTON			" ... for all users * ...", \
+					ID_SETUP_ALL_USERS, 155, 107, 118, 11, WS_DISABLED
+    AUTOCHECKBOX			" ... in the start menu, and/or ...", \
+					ID_SETUP_START_MENU, 9, 117, 118, 11
+    AUTOCHECKBOX			" ... on the desktop.", \
+					ID_SETUP_DESKTOP, 130, 117, 100, 11
+    LTEXT				"*  selection of this option requires administrative privilege.", \
+					-1, 10, 129, 278, 11
+    PUSHBUTTON				"View Licence", ID_SETUP_SHOW_LICENCE, 18, 147, 80, 13
+    DEFPUSHBUTTON			"Continue", IDOK, 170, 147, 50, 13
+    PUSHBUTTON				"Cancel", IDCANCEL, 230, 147, 50, 13
+  END
+
+IDD_SETUP_UNWISE DIALOG DISCARDABLE	0, 60, 296, 105
+ /*
+  * Template for the embedded warning dialogue pane which is displayed
+  * to warn the user of an ill advised choice of installation directory.
+  */
+  STYLE 				WS_POPUP
+  FONT					10, "Verdana"
+  BEGIN
+    GROUPBOX				" WARNING: Unwise Directory Selection ", -1, 4, 0, 288, 81
+    ICON				IDI_WARNING, IDI_WARNING, 9, 11, 0, 0
+    LTEXT				"You appear to have ignored the advice offered above, since " \
+					"your choice of installation directory includes white space " \
+					"in its path name.", -1, 29, 11, 258, 19
+    LTEXT				"It is strongly recommended that you reconsider this unwise " \
+					"choice of installation directory, and choose a more suitable " \
+					"alternative.  If you persist with this choice, you may find " \
+					"that your MinGW installation does not function correctly, " \
+					"and that MinGW Project Members will decline to support you.", \
+					-1, 9, 30, 278, 34
+    AUTOCHECKBOX			" I have considered the advice above; notwithstanding, " \
+					"I choose to ignore it.", IDIGNORE, 9, 66, 278, 10
+    DEFPUSHBUTTON			"Choose an Alternative", IDNO, 18, 88, 126, 13
+    PUSHBUTTON				"Accept my Choice Anyway", IDYES, 154, 88, 126, 13, WS_DISABLED
+  END
+
+IDD_SETUP_EXISTS DIALOG DISCARDABLE	0, 60, 295, 85
+ /*
+  * Template for the embedded warning dialogue pane which is displayed
+  * when the setup tool detects a pre-existing installation of mingw-get,
+  * within the directory tree designated for a new installation; it then
+  * offers the choice to reinstall, change configuration, or abort.
+  */
+  STYLE 				WS_POPUP
+  FONT					10, "Verdana"
+  BEGIN
+    GROUPBOX				" ERROR: Application is Already Installed", -1, 4, 0, 288, 81
+    ICON				IDI_ERROR, IDI_ERROR, 15, 14, 0, 0
+    LTEXT				"There appears to be a copy of mingw-get installed in this " \
+					"directory already; you should use this installed copy of " \
+					"the program to manage your installation.", -1, 42, 11, 240, 35
+    LTEXT				"Would you like to run the installed copy of mingw-get now, " \
+					"reinstall it, change your choice of installation directory, " \
+					"or quit?", -1, 9, 38, 278, 16
+    DEFPUSHBUTTON			"Run Now", ID_SETUP_RUN, 18, 60, 50, 13
+    PUSHBUTTON				"Reinstall", IDOK, 78, 60, 50, 13
+    PUSHBUTTON				"Change Directory", IDRETRY, 138, 60, 82, 13
+    PUSHBUTTON				"Quit", IDCANCEL, 230, 60, 50, 13
+  END
+
+IDD_SETUP_DOWNLOAD DIALOG DISCARDABLE	2, 49, 296, 165
+  /*
+   * Template for the embedded dialogue pane which is displayed to monitor
+   * the progress of package downloads initiated by the setup tool.
+   */
+  STYLE 				WS_POPUP
+  FONT					10, "Verdana"
+  BEGIN
+    CTEXT				"Step 2: Download and Set Up MinGW Installation Manager", \
+					-1, 4, 0, 288, 11
+    GROUPBOX				" Download Progress ", -1, 4, 10, 288, 54
+    LTEXT				"", IDD_PROGRESS_MSG, 9, 20, 278, 10
+    CONTROL				"", IDD_PROGRESS_VAL, "STATIC", SS_CTEXTBOX, 9, 32, 105, 10
+    CTEXT				"of", -1, 115, 32, 16, 10
+    CONTROL				"", IDD_PROGRESS_MAX, "STATIC", SS_CTEXTBOX, 132, 32, 105, 10
+    CTEXT				":", -1, 238, 32, 8, 10
+    CONTROL				"", IDD_PROGRESS_PCT, "STATIC", SS_CTEXTBOX, 247, 32, 40, 10
+    CONTROL				"", IDD_PROGRESS_BAR, PROGRESS_CLASS, WS_CHILD | PBS_SMOOTH, \
+					9, 47, 278, 10
+    GROUPBOX				" Details ", -1, 4, 65, 288, 75
+    EDITTEXT				IDD_DMH_CONSOLE, 5, 75, 286, 64, WS_BORDER | WS_VSCROLL | ES_VT100
+    PUSHBUTTON				"View Licence", ID_SETUP_SHOW_LICENCE, 18, 147, 80, 13
+    DEFPUSHBUTTON			"Continue", IDOK, 172, 147, 50, 13, WS_DISABLED
+    PUSHBUTTON				"Quit", IDCANCEL, 232, 147, 50, 13, WS_DISABLED
+  END
+
+/* $RCSfile$: end of file */

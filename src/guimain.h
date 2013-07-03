@@ -41,6 +41,12 @@
 
 #define SASH_BAR_THICKNESS 		   6
 
+#define ID_MAIN_DIALOGUE_CAPTION 	 122
+#define ID_DOWNLOAD_HOST_URI		 130
+#define ID_PACKAGE_BASE_DISTNAME 	 131
+#define ID_PACKAGE_DATA_DISTNAME 	 132
+#define ID_PACKAGE_GUI_DISTNAME 	 133
+
 #define ID_PACKAGE_TREEVIEW		 201
 #define ID_PACKAGE_LISTVIEW		 202
 #define ID_PACKAGE_TABCONTROL		 203
@@ -127,6 +133,11 @@
 #include <wtklite.h>
 #include <commctrl.h>
 
+#if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
+/*
+ * The remaining class declarations and function prototypes are
+ * required only by the main mingw-get GUI client application.
+ */
 class pkgXmlNode;
 class pkgXmlDocument;
 class pkgProgressMeter;
@@ -228,6 +239,8 @@ inline long AppWindowMaker::DialogueResponse( int id, DLGPROC handler )
 /* FIXME: this prototype belongs in pkgtree.h
  */
 EXTERN_C void pkgInitCategoryTreeGraft( pkgXmlNode* );
+
+#endif /* PACKAGE_BASE_COMPONENT */
 
 #endif /* ! RC_INVOKED */
 #endif /* GUIMAIN_H: $RCSfile$: end of file */

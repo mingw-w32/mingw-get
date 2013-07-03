@@ -132,6 +132,9 @@ TAG_SCRIPT = tag=$(BUILD_TAG); \
     -e "s!%PACKAGE_NAME%!$(PACKAGE_TARNAME)!g" \
     -e "s!%PACKAGE_VERSION%!$(PACKAGE_VERSION)$$tag!g" \
     -e "s!%PACKAGE_VERINFO_PRODUCT_VERSION%!`$(PACKAGE_VERINFO_SCRIPT)`!g" \
+    -e "s!%PACKAGE_BASE_DISTNAME%!$(PACKAGE_DISTNAME)$$tag-bin.$(TAREXT)!g" \
+    -e "s!%PACKAGE_GUI_DISTNAME%!$(PACKAGE_DISTNAME)$$tag-gui.$(TAREXT)!g" \
+    -e "s!%PACKAGE_DATA_DISTNAME%!$(SETUP_DISTNAME)$$tag-%s.$(TAREXT)!g" \
     -e "s!%COPYRIGHT_HOLDER%!@COPYRIGHT_HOLDER@!g" \
     -e "s!%YEARS_OF_ISSUE%!@YEARS_OF_ISSUE@!g"
 
@@ -176,6 +179,12 @@ GUIMAIN_OBJECTS  =   \
 
 GUIMAIN_LIBS = -lwtklite -lcomctl32
 
+SETUP_TOOL_OBJECTS = setup.$(OBJEXT) setup.res.$(OBJEXT) apihook.$(OBJEXT)
+SETUP_TOOL_LIBS = -lwtklite -lwininet -lcomctl32 -lole32 -Wl,-Bstatic -llzma
+
+SETUP_DLL_OBJECTS = dllhook.$(OBJEXT)
+SETUP_DLL_LIBS =
+
 script_srcdir = ${srcdir}/scripts/libexec
 
 BIN_PROGRAMS = pkginfo$(EXEEXT) mingw-get$(EXEEXT)
@@ -186,7 +195,16 @@ LIBEXEC_DATA = mingw-get-0.dll
 
 # Primary build goals...
 #
-all: $(BIN_PROGRAMS) $(LIBEXEC_PROGRAMS) $(LIBEXEC_DATA)
+all: all-core all-setup
+all-core: $(BIN_PROGRAMS) $(LIBEXEC_PROGRAMS) $(LIBEXEC_DATA)
+all-setup: all-setup-dll all-setup-exe
+all-setup-dll: mingw-get-setup-0.dll
+
+all-setup-exe:
+	@$(QUIET_MAKE) CXXFLAGS='$(CXXFLAGS) -Os' mingw-get-setup$(EXEEXT)
+
+mingw-get-setup$(EXEEXT): $(SETUP_TOOL_OBJECTS)
+	$(CXX) -o $@ $(CXXFLAGS) $(GUI_LDFLAGS) $+ $(SETUP_TOOL_LIBS)
 
 pkginfo$(EXEEXT):  driver.$(OBJEXT) pkginfo.$(OBJEXT)
 	$(CC) -o $@ $(CFLAGS) $(LDFLAGS) $+
@@ -205,6 +223,9 @@ lastrites$(EXEEXT): rites.$(OBJEXT)
 
 mingw-get-0.dll: $(CORE_DLL_OBJECTS)
 	$(CXX) -shared -o $@ $(CXXFLAGS) $(LDFLAGS) $+ $(LIBS)
+
+mingw-get-setup-0.dll: $(SETUP_DLL_OBJECTS) mingw-get-0.dll
+	$(CXX) -shared -o $@ $(CXXFLAGS) $(LDFLAGS) $+ $(SETUP_DLL_LIBS)
 
 # The following recursive invocation hook provides a mechanism for
 # accessing make's facility for reporting what it is doing, even when
@@ -272,7 +293,7 @@ time-stamp:
 
 # The following dependencies must be explicitly declared.
 #
-guimain.res.$(OBJEXT): Makefile build.time verinfo.h
+guimain.res.$(OBJEXT) setup.res.$(OBJEXT): Makefile build.time verinfo.h
 verinfo.h version.c: Makefile build.time
 
 # Installation tools and directory paths...
@@ -360,6 +381,8 @@ PACKAGE_DISTVERSION = `echo $(PACKAGE_VERSION)-$(PACKAGE_SUBSYSTEM) | sed \
   -e 's,\(-$(PACKAGE_SUBSYSTEM).*\)-$(PACKAGE_SUBSYSTEM),\1,' \
   -e 's,-$(PACKAGE_SUBSYSTEM),$(SNAPSHOT)&,'`
 PACKAGE_DISTNAME = $(PACKAGE_TARNAME)-$(PACKAGE_DISTVERSION)
+
+SETUP_DISTNAME = $(PACKAGE_TARNAME)-setup-$(PACKAGE_DISTVERSION)
 
 dist: srcdist bindist readme.txt.dist
 

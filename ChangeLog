@@ -1,3 +1,35 @@
+2013-07-03  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Incorporate foundation for setup tool implementation.
+
+	* src/setup.cpp: New file; it implements the setup program.
+	* src/setup.rc: New file; it implements setup program resources.
+	
+	* src/dllhook.cpp: New file; it implements a DLL bridging API to
+	facilitate invocation of mingw-get-0.dll functions from the setup
+	program, after both DLLs have been explicitly loaded at run time.
+
+	* src/setup.h: New file; it declares the interface between the
+	setup program and the preceding mingw-get bridging DLL.
+
+	* src/guimain.h: Add filter to exclude declarations specific to...
+	[IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT]: ...this case, when
+	included by compilation units specific to the setup tool components.
+	(ID_MAIN_DIALOGUE_CAPTION, ID_DOWNLOAD_HOST_URI): New resource IDs.
+	(ID_PACKAGE_BASE_DISTNAME, ID_PACKAGE_DATA_DISTNAME): Likewise.
+	(ID_PACKAGE_GUI_DISTNAME): Likewise; define them.
+
+	* Makefile.in (all): Respecify it, in terms of...
+	(all-core, all-setup): ...these new rules; define them, and also...
+	(all-setup-exe, all-setup-dll): ...these, to force building of...
+	(mingw-get-setup.$EXEEXT, mingw-get-setup-0.dll): ...these binaries.
+	(setup.res.$OBJEXT): Specify prerequisites, as for guimain.res.$OBJEXT
+	(SETUP_TOOL_OBJECTS, SETUP_TOOL_LIBS): New macros; define them.
+	(SETUP_DLL_OBJECTS, SETUP_DLL_LIBS, SETUP_DISTNAME): Likewise.
+	(TAG_SCRIPT): Add resource script substitution definitions for...
+	(ID_PACKAGE_BASE_DISTNAME, ID_PACKAGE_DATA_DISTNAME): ...these...
+	(ID_PACKAGE_GUI_DISTNAME): ...and this.
+
 2013-07-01  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Add subprocess argument vector construction helpers.
