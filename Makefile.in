@@ -530,11 +530,14 @@ readme.txt.in: README.in NEWS.in INSTALL.in
 
 # Workspace clean-up...
 #
-clean:
+mostlyclean:
 	rm -f *.$(OBJEXT) *.d *.dll $(BIN_PROGRAMS) $(LIBEXEC_PROGRAMS)
 
+clean: mostlyclean
+	rm -f version.c verinfo.h
+
 distclean: clean
-	rm -f config.* version.c build.tag build.time
+	rm -f config.* build.tag build.time
 
 maintainer-clean: distclean
 	rm -f README NEWS INSTALL readme.txt Makefile pkginfo.c

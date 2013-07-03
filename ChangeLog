@@ -1,5 +1,15 @@
 2013-07-03  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Improve handling of workspace clean-up requests.
+
+	* Makefile.in (mostlyclean): New rule; it replaces...
+	(clean): ...original intent delegated to 'mostlyclean'; retained and
+	augmented to remove all content specified by 'mostlyclean', plus...
+	(version.c, verinfo.h): ...these additional generated files.
+	(distclean): Modified; 'version.c' now removed by 'clean'.
+
+2013-07-03  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Correct an omission from the source code distribution.
 
 	* Makefile.in (BUILD_AUX_FILES): Add makeopts.m4; this was omitted
