@@ -1,5 +1,18 @@
 2013-07-12  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Correct a static string buffer aliasing issue.
+
+	* src/setup.cpp (SetupTool::setup_dll): New inline method; it ensures
+	that the buffer within approot_path() refers to the setup helper DLL.
+	(SetupTool::InitialiseSetupHookAPI): Use it, when loading the DLL.
+	(SetupTool::SetupTool): Use it again, when subsequently calling...
+	(_wunlink): ...this; it is now the preferred API, replacing...
+	(DeleteFileW): ...this; do not blindly assume that...
+	(SetupTool::dll_name): ...this remains unchanged between references;
+	it is an alias for the static buffer within approot_path().
+
+2013-07-12  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Add a custom profile for use by the setup tool.
 
 	* xml/setup.xml: New file.

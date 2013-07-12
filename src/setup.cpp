@@ -190,6 +190,13 @@ class SetupTool
     static const wchar_t *gui_program;
     int RunInstalledProgram( const wchar_t * );
 
+    inline wchar_t *setup_dll( void )
+    { /* Helper function to ensure that the static "approot_path" buffer
+       * specifies a reference path name for mingw-get-setup-0.dll
+       */
+      return approot_path( L"libexec\\mingw-get\\mingw-get-setup-0.dll" );
+    }
+
     inline void CreateApplicationLauncher
       ( int, const wchar_t *, const char *, const char * );
 };
@@ -449,8 +456,7 @@ bool SetupTool::InitialiseSetupHookAPI( void )
   /* Having successfully loaded the main DLL, we perform a similar
    * check for the setup tool's bridging DLL...
    */
-  dll_name = approot_path( L"libexec\\mingw-get\\mingw-get-setup-0.dll" );
-  if( (hook_dll = LoadLibraryW( dll_name )) == NULL )
+  if( (hook_dll = LoadLibraryW( dll_name = setup_dll() )) == NULL )
   {
     /* ...once again, abandoning the installation, if this is not
      * available; in this case, since we've already successfully
@@ -1050,7 +1056,7 @@ base_dll( NULL ), hook_dll( NULL )
      * then we must now unload them; we also have no further use for
      * mingw-get-setup-0.dll, so we may delete it.
      */
-    if( hook_dll != NULL ){ FreeLibrary( hook_dll ); DeleteFileW( dll_name ); }
+    if( hook_dll != NULL ){ FreeLibrary( hook_dll ); _wunlink( setup_dll() ); }
     if( base_dll != NULL ){ FreeLibrary( base_dll ); }
 
     /* We're done with the COM subsystem; release it.
