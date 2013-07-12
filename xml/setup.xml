@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<profile project="MinGW" application="mingw-get">
+  <!--
+    $Id$
+
+    Written by Keith Marshall  <keithmarshall@users.sourceforge.net>
+    Copyright (C) 2013, MinGW.org Project
+
+
+    Initial configuration profile for mingw-get-setup.
+
+
+    This is free software.  Permission is granted to copy, modify and
+    redistribute this software, under the provisions of the GNU General
+    Public License, Version 3, (or, at your option, any later version),
+    as published by the Free Software Foundation; see the file COPYING
+    for licensing details.
+
+    Note, in particular, that this software is provided "as is", in the
+    hope that it may prove useful, but WITHOUT WARRANTY OF ANY KIND; not
+    even an implied WARRANTY OF MERCHANTABILITY, nor of FITNESS FOR ANY
+    PARTICULAR PURPOSE.  Under no circumstances will the author, or the
+    MinGW Project, accept liability for any damages, however caused,
+    arising from the use of this software.
+  -->
+
+  <repository uri="http://prdownloads.sourceforge.net/mingw/%F.xml.lzma?download">
+    <!--
+      The "repository" specification identifies the URI whence package
+      list catalogues may be downloaded; each catalogue download URI is
+      identified by substituting the catalogue name for the "%F" field
+      in the uri specification.
+
+      For the purpose of initial setup, we offer only a limited subset
+      of the packages which are available within the repository.
+    -->
+   <package-list catalogue="mingw32-mingw-get" />
+  </repository>
+
+  <system-map id="default">
+    <!--
+      The system map specifies the installation paths for each managed
+      subsystem.  Multiple system maps are supported, provided each is
+      given a unique "id" attribute; each specifies an "installation",
+      comprising a collection of subsystems, each of which in turn is
+      associated with a specific "sysroot path".
+
+      In the case of the setup tool, we require only a single sysroot
+      specification, relating to the default installation path.
+    -->
+    <sysroot subsystem="mingw32" path="%R" />
+  </system-map>
+
+</profile>
+<!-- $RCSfile$: end of file -->

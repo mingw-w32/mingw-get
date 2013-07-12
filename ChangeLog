@@ -1,3 +1,9 @@
+2013-07-12  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add a custom profile for use by the setup tool.
+
+	* xml/setup.xml: New file.
+
 2013-07-03  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Improve handling of workspace clean-up requests.
