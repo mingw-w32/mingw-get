@@ -113,7 +113,23 @@ void AppWindowMaker::UpdatePackageList()
   pkgDirectory *dir = pkgData->CatalogueAllPackages();
   dir->InOrder( &PackageList );
   delete dir;
+
+  /* Force a redraw of the application window, to ensure that the
+   * data pane content remains synchronised.
+   */
+  InvalidateRect( AppWindow, NULL, FALSE );
+  UpdateWindow( AppWindow );
 }
+
+inline bool pkgXmlNode::IsVisibleGroupMember()
+{
+  /* Hook invoked before adding a package reference to the package list,
+   * to ensure that it represents a member of the current package group.
+   */
+  return AppWindowMaker::IsPackageGroupAffiliate( this );
+}
+
+inline bool pkgXmlNode::IsVisibleClass(){ return true; }
 
 static char *pkgGetTitle( pkgXmlNode *pkg, const pkgXmlNode *xml_root )
 {
@@ -421,7 +437,7 @@ void pkgListViewMaker::Dispatch( pkgXmlNode *package )
    * dispatching the content of the directory to the display service,
    * (which, in this case, populates the list view window pane).
    */
-  if( package->IsElementOfType( package_key ) )
+  if( package->IsElementOfType( package_key ) && package->IsVisibleGroupMember() )
   {
     /* Assemble the package name into the list view record block.
      */
@@ -445,7 +461,7 @@ void pkgListViewMaker::Dispatch( pkgXmlNode *package )
        */
       InsertItem( package, (char *)("") );
   }
-  else if( package->IsElementOfType( component_key ) )
+  else if( package->IsElementOfType( component_key ) && package->IsVisibleClass() )
   {
     /* Handle the recursive calls for the component sub-directory,
      * inheriting the package name entry from the original package

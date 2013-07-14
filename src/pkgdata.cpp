@@ -1328,6 +1328,66 @@ long AppWindowMaker::OnNotify( WPARAM client_id, LPARAM data )
 	  SelectPackageAction( LVHT_ONITEMICON );
       }
       break;
+
+    /* We also need to consider notifications from the tree view...
+     */
+    case ID_PACKAGE_TREEVIEW:
+      if( ((NMHDR *)(data))->code == TVN_SELCHANGED )
+      {
+	/* ...from which we are interested only in notifications
+	 * that the user has changed the package group selection.
+	 *
+	 * First, we ensure that any children of the selected
+	 * package group are made visible.
+	 */
+	TreeView_Expand( PackageTreeView,
+	    ((NMTREEVIEW *)(data))->itemNew.hItem, TVE_EXPAND
+	  );
+
+	/* We then clear out the previous content of the list view
+	 * pane, and reconstruct it with new content, as determined
+	 * by the new package group selection...
+	 */
+	ClearPackageList();
+	UpdatePackageList();
+
+	/* ...and reapply any scheduled action markers, which may
+	 * be applicable.
+	 */
+	MarkSchedule( pkgData->Schedule() );
+
+	/* Finally, provided the previous selection is not an
+	 * ancestor of the current, we may collapse any visible
+	 * subtree descending from the previous.
+	 *
+	 * FIXME: We may wish to avoid collapsing any subtree
+	 * which was designated as "expanded", in the original
+	 * group hierarchy specification.  We may also wish to
+	 * provide a user option, to disable this feature.
+	 */
+	bool may_fold = true;
+	HTREEITEM prev = ((NMTREEVIEW *)(data))->itemNew.hItem;
+	while( may_fold && (prev != NULL) )
+	{ if( prev == ((NMTREEVIEW *)(data))->itemOld.hItem )
+	    /*
+	     * Previous selection IS an ancestor of current;
+	     * we must not collapse it.
+	     */
+	    may_fold = false;
+
+	  else
+	    /* Continue tracing ancestry, back to the root.
+	     */
+	    prev = TreeView_GetParent( PackageTreeView, prev );
+	}
+	if( may_fold )
+	  /*
+	   * Previous selection may be collapsed; do so.
+	   */
+	  TreeView_Expand( PackageTreeView,
+	      ((NMTREEVIEW *)(data))->itemOld.hItem, TVE_COLLAPSE
+	    );
+      }
   }
   /* Otherwise, this return causes any other notifiable events
    * to be simply ignored, (as they were by the original stub).

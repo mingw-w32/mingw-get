@@ -185,6 +185,7 @@ class AppWindowMaker: public WTK::MainWindowMaker
     int DispatchDialogueThread( int, pkgDialogueThread * );
 
     void LoadPackageData( bool = false );
+    static bool IsPackageGroupAffiliate( pkgXmlNode * );
     void ClearPackageList( void ){ ListView_DeleteAllItems( PackageListView ); }
     void UpdatePackageList( void );
 
@@ -210,7 +211,7 @@ class AppWindowMaker: public WTK::MainWindowMaker
     pkgProgressMeter *AttachedProgressMeter;
     HFONT DefaultFont;
 
-    HWND PackageTreeView;
+    static HWND PackageTreeView;
     void InitPackageTreeView( void );
 
     HWND PackageListView;

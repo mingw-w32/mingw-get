@@ -1,3 +1,42 @@
+2013-07-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement GUI filtering of package list by group selection.
+
+	* src/pkgbase.h (pkgXmlNode::IsVisibleGroupMember):
+	(pkgXmlNode::IsVisibleClass): New inline methods; declare them.
+	(pkgXmlNode::MapPackageGroupHierarchy): New inline method; declare it.
+	(pkgXmlNode::SetPackageGroupHierarchyMapper): Likewise; it sets up...
+	(pkgXmlNode::PackageGroupHierarchyMapper): ...this new private static
+	function pointer; declare it as a function reference, in terms of...
+	(pkgXmlNode::GroupHierarchyMapper): ...this new typedef; define it.
+
+	* src/guimain.h (AppWindowMaker::PackageTreeView): Make it static.
+	(AppWindowMaker::IsPackageGroupAffiliate): Declare new static method.
+
+	* src/pkgbind.cpp (pkgRepository::GetPackageList): Make it invoke...
+	(pkgXmlNode::MapPackageGroupHierarchy): ...this; implement it.
+
+	* src/pkglist.cpp (pkgXmlNode::IsVisibleGroupMember): Implement it.
+	(pkgXmlNode::IsVisibleClass): Likewise; just provide a stub, for now.
+	(pkgListViewMaker::Dispatch): Use them to filter package list content.
+	(AppWindowMaker::UpdatePackageList): Redraw main window when done.
+
+	* src/pkgtree.cpp [_WIN32_IE >= 0x0400]: Require this.
+	(AppWindowMaker::PackageTreeView): Define and initialise it.
+	(AppWindowMaker::InitPackageTreeView): Extend implementation; use...
+	(map_package_group_hierarchy_recursive, load package_group_hierarchy):
+	(is_existing_group, map_package_group_hierarchy): ...these; implement
+	them locally, as file scoped static helper functions.
+	(select_key): New static local string constant; define it.
+	(pkgInitCategoryTreeGraft): Use it; also have it invoke...
+	(pkgXmlNode::SetPackageGroupHierarchyMapper): ...this; implement it.
+	(AppWindowMaker::IsPackageGroupAffiliate): Implement it; it uses...
+	(is_affiliated, is_child_affiliate): ...these helpers; provide them as
+	locally implemented, file scoped static functions.
+
+	* src/pkgdata.cpp (AppWindowMaker::OnNotify): Add handler for...
+	[ID_PACKAGE_TREEVIEW && TVN_SELCHANGED]: ...this notification.
+
 2013-07-12  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Correct a static string buffer aliasing issue.

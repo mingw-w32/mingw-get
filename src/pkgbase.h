@@ -151,11 +151,27 @@ class pkgXmlNode : public TiXmlElement
       return this ? strcmp( GetName(), tagname ) == 0 : false;
     }
 
+    /* Methods to determine which packages should be displayed
+     * in the package list pane of the GUI client.
+     */
+    inline bool IsVisibleGroupMember();
+    inline bool IsVisibleClass();
+
     /* Methods for retrieving the system root management records
      * for a specified installed subsystem.
      */
     pkgXmlNode *GetSysRoot( const char* );
     pkgXmlNode *GetInstallationRecord( const char* );
+
+    /* Methods for mapping the package group hierarchy.
+     */
+    inline void SetPackageGroupHierarchyMapper();
+    inline void MapPackageGroupHierarchy( pkgXmlNode* );
+
+    /* Type definition for a helper function, which must be assigned
+     * to the package group hierarchy mapper, in order to enable it.
+     */
+    typedef void (*GroupHierarchyMapper)( pkgXmlNode*, pkgXmlNode* );
 
     /* The following pair of methods provide an iterator
      * for enumerating the contained nodes, within the owner,
@@ -195,6 +211,11 @@ class pkgXmlNode : public TiXmlElement
      */
     int InvokeScript( int, const char* );
     int DispatchScript( int, const char*, const char*, pkgXmlNode* );
+
+    /* Hook via which the requisite helper function is attached
+     * to the package group hierarchy mapper.
+     */
+    static GroupHierarchyMapper PackageGroupHierarchyMapper;
 };
 
 enum { to_remove = 0, to_install, selection_types };

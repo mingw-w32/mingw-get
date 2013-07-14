@@ -83,6 +83,21 @@ pkgRepository::pkgRepository
 owner( client ), dbase( db ), repository( ref ), force_update( mode ),
 expected_issue( value_assumed_new ){}
 
+/* Provide the hook, via which the package group hierarchy builder
+ * may gain access to its configuration data, during loading of the
+ * package list files.
+ */
+pkgXmlNode::GroupHierarchyMapper
+pkgXmlNode::PackageGroupHierarchyMapper = NULL;
+inline void pkgXmlNode::MapPackageGroupHierarchy( pkgXmlNode *catalogue )
+{
+  /* This is a no-op, unless the client attaches a handler to the
+   * hook, before invoking the package list loader.
+   */
+  if( PackageGroupHierarchyMapper != NULL )
+    PackageGroupHierarchyMapper( this, catalogue );
+}
+
 void pkgRepository::GetPackageList( const char *dname )
 {
   /* Helper to retrieve and recursively process a named package list.
@@ -179,7 +194,11 @@ void pkgRepository::GetPackageList( const char *dname )
 	pkgXmlNode *catalogue, *pkglist;
 	if( (catalogue = merge.GetRoot()) != NULL )
 	{
-	  /* ...read it, selecting each of the "package-collection"
+	  /* ...map any package group hierarchy which it specifies...
+	   */
+	  dbase->MapPackageGroupHierarchy( catalogue );
+
+	  /* ...then read it, selecting each of the "package-collection"
 	   * records contained within it...
 	   */
 	  pkglist = catalogue->FindFirstAssociate( package_collection_key );
