@@ -86,7 +86,8 @@ enum
    * serviced by mingw-get-setup-0.dll
    */
   SETUP_HOOK_DMH_BIND = 0,
-  SETUP_HOOK_POST_INSTALL
+  SETUP_HOOK_POST_INSTALL,
+  SETUP_HOOK_RUN_INSTALLER
 };
 
 class pkgSetupAction

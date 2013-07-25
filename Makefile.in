@@ -173,17 +173,22 @@ CLI_EXE_OBJECTS  =   \
    clistub.$(OBJEXT) version.$(OBJEXT) approot.$(OBJEXT) getopt.$(OBJEXT)
 
 GUIMAIN_OBJECTS  =   \
-   guimain.$(OBJEXT) guiexec.$(OBJEXT) dmhguix.$(OBJEXT) \
-   approot.$(OBJEXT) pkgview.$(OBJEXT) pkgtree.$(OBJEXT) pkglist.$(OBJEXT) \
-   pkgdata.$(OBJEXT) pkgnget.$(OBJEXT) guimain.res.$(OBJEXT)
+   guimain.$(OBJEXT) dmhguix.$(OBJEXT) $(GUIMAIN_LIB_OBJECTS) \
+   approot.$(OBJEXT) guimain.res.$(OBJEXT)
+
+GUIMAIN_LIB_OBJECTS = \
+   guiexec.$(OBJEXT) pkgview.$(OBJEXT) pkgtree.$(OBJEXT) pkglist.$(OBJEXT) \
+   pkgdata.$(OBJEXT) pkgnget.$(OBJEXT)
 
 GUIMAIN_LIBS = -lwtklite -lcomctl32
 
 SETUP_TOOL_OBJECTS = setup.$(OBJEXT) setup.res.$(OBJEXT) apihook.$(OBJEXT)
 SETUP_TOOL_LIBS = -lwtklite -lwininet -lcomctl32 -lole32 -Wl,-Bstatic -llzma
 
-SETUP_DLL_OBJECTS = dllhook.$(OBJEXT)
-SETUP_DLL_LIBS =
+SETUP_DLL_OBJECTS =  \
+   dllhook.$(OBJEXT) $(GUIMAIN_LIB_OBJECTS) guimain.res.$(OBJEXT)
+
+SETUP_DLL_LIBS = $(GUIMAIN_LIBS)
 
 script_srcdir = ${srcdir}/scripts/libexec
 
@@ -225,7 +230,7 @@ mingw-get-0.dll: $(CORE_DLL_OBJECTS)
 	$(CXX) -shared -o $@ $(CXXFLAGS) $(LDFLAGS) $+ $(LIBS)
 
 mingw-get-setup-0.dll: $(SETUP_DLL_OBJECTS) mingw-get-0.dll
-	$(CXX) -shared -o $@ $(CXXFLAGS) $(LDFLAGS) $+ $(SETUP_DLL_LIBS)
+	$(CXX) -shared -o $@ $(CXXFLAGS) $(GUI_LDFLAGS) $+ $(SETUP_DLL_LIBS)
 
 # The following recursive invocation hook provides a mechanism for
 # accessing make's facility for reporting what it is doing, even when

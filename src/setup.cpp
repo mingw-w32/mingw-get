@@ -188,7 +188,7 @@ class SetupTool
       ( HWND, unsigned, WPARAM, LPARAM );
 
     static const wchar_t *gui_program;
-    int RunInstalledProgram( const wchar_t * );
+    inline int RunInstalledProgram( const wchar_t * );
 
     inline wchar_t *setup_dll( void )
     { /* Helper function to ensure that the static "approot_path" buffer
@@ -1051,6 +1051,17 @@ base_dll( NULL ), hook_dll( NULL )
 	MAKEINTRESOURCE( IDD_SETUP_BEGIN ), NULL, OpeningDialogue
       );
 
+    /* When the user has requested progression to package installation...
+     */
+    if( Status == EXIT_CONTINUE )
+    {
+      /* ...then delegate that to the embedded mingw-get plugin, before
+       * reasserting successful completion status for the setup tool.
+       */
+      DispatchSetupHookRequest( SETUP_HOOK_RUN_INSTALLER, setup_dll() );
+      Status = EXIT_SUCCESS;
+    }
+
     /* If the mingw-get-0.dll and mingw-get-setup-0.dll libraries
      * were successfully loaded, to complete the installation process,
      * then we must now unload them; we also have no further use for
@@ -1062,17 +1073,6 @@ base_dll( NULL ), hook_dll( NULL )
     /* We're done with the COM subsystem; release it.
      */
     CoUninitialize();
-
-    /* When the user has requested progression to advanced installation...
-     */
-    if( Status == EXIT_CONTINUE )
-    {
-      /* ...the delegate that to mingw-get itself, before reasserting
-       * the successful completion status for the setup tool.
-       */
-      RunInstalledProgram( gui_program );
-      Status = EXIT_SUCCESS;
-    }
   }
 }
 
@@ -1285,7 +1285,7 @@ inline HMODULE SetupTool::HaveWorkingInstallation( void )
  */
 const wchar_t *SetupTool::gui_program = L"libexec\\mingw-get\\guimain.exe";
 
-int SetupTool::RunInstalledProgram( const wchar_t *program )
+inline int SetupTool::RunInstalledProgram( const wchar_t *program )
 {
   /* Helper method to spawn an external process, into which a
    * specified program image is loaded; (typically this will be

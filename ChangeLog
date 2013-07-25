@@ -1,5 +1,35 @@
 2013-07-25  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Implement setup tool installer "plugin".
+
+	* src/setup.h (SETUP_HOOK_RUN_INSTALLER): Define request code.
+
+	* src/dllhook.cpp (run_basic_system_installer): Implement handler...
+	(setup_hook) [SETUP_HOOK_RUN_INSTALLER]: ...and invoke it.
+	(setup_hook) [default]: Collect diagnostics in common message digest.
+	(AppWindowMaker::SetupHookInvoked): Define and initialise it; in this
+	context, which does not conflict with prior definition in guimain.exe,
+	it must always remain true.
+
+	* src/setup.cpp (SetupTool) [constructor]: Invoke...
+	(SetupTool::DispatchSetupHookRequest): ...this, on user's request...
+	(SETUP_HOOK_RUN_INSTALLER): ...with this action code; this replaces...
+	(SetupTool::RunInstalledProgram): ...one reference instance for this
+	external program fork, leaving only one such reference remaining;
+	declare it to be "inline".
+
+	* Makefile.in (GUIMAIN_LIB_OBJECTS): New macro; define it.  It
+	abstracts a subset of the object modules originally enumerated...
+	(GUIMAIN_OBJECTS): ...here, whence use it; also incorporate into...
+	(SETUP_DLL_OBJECTS): ...this.
+	(SETUP_DLL_LIBS): Make it equivalent to...
+	(GUIMAIN_LIBS): ...this.
+	(mingw-get-setup-0.dll): Use...
+	(GUI_LDFLAGS): ...this, to specify linking options, rather than...
+	(LDFLAGS): ...this.
+
+2013-07-25  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Add "Basic Setup" as a built-in standard package group.
 
 	* src/guimain.h (AppWindowMaker::SetupToolInvoked): New private

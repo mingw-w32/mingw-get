@@ -48,6 +48,13 @@ static const char *setup_key = "setup";
 #include <sys/stat.h>
 #include <fcntl.h>
 
+/* This file implements the plugin variant of the mingw-get
+ * GUI installer, for use by the setup tool; in this context
+ * this AppWindowMaker static attribute must be initialised
+ * to indicate this mode of use.
+ */
+bool AppWindowMaker::SetupToolInvoked = true;
+
 static const char *internal_error = "internal error";
 #define MSG_INTERNAL_ERROR(MSG) "%s: "MSG_##MSG"\n", internal_error
 
@@ -204,6 +211,59 @@ void update_catalogue( HWND owner )
   free( (void *)(dfile) );
 }
 
+static inline
+int run_basic_system_installer( const wchar_t *dll_name )
+{
+  /* Hook to emulate a subset of the mingw-get GUI installer
+   * capabilities, via an embedded subset of its functions.
+   */
+  try
+  { /* Identify the DLL module, whence we may retrieve resources
+     * similar to those of the free-standing GUI application, and
+     * create a clone of that application's main window.
+     */
+    HINSTANCE instance;
+    AppWindowMaker MainWindow( instance = GetModuleHandleW( dll_name ) );
+    MainWindow.Create( WTK::StringResource( instance, ID_MAIN_WINDOW_CLASS ),
+	WTK::StringResource( instance, ID_MAIN_WINDOW_CAPTION )
+      );
+
+    /* Show this window, and paint its initial content...
+     */
+    MainWindow.Show( SW_SHOW );
+    MainWindow.Update();
+
+    /* ...then invoke its message loop, ultimately returning the
+     * status code which prevails, when the user closes it.
+     */
+    return MainWindow.Invoked();
+  }
+  catch( dmh_exception &e )
+  {
+    /* Here, we handle any fatal exception which has been raised
+     * and identified by the diagnostic message handler...
+     */
+    MessageBox( NULL, e.what(), "WinMain", MB_ICONERROR );
+    return EXIT_FAILURE;
+  }
+  catch( WTK::runtime_error &e )
+  {
+    /* ...while here, we diagnose any other error which was captured
+     * during the creation of the application's window hierarchy, or
+     * processing of its message loop...
+     */
+    MessageBox( NULL, e.what(), "WinMain", MB_ICONERROR );
+    return EXIT_FAILURE;
+  }
+  catch(...)
+  { /* ...and here, we diagnose any other error which we weren't
+     * able to explicitly identify.
+     */
+    MessageBox( NULL, "Unknown exception", "WinMain", MB_ICONERROR );
+    return EXIT_FAILURE;
+  }
+}
+
 EXTERN_C __declspec(dllexport)
 void setup_hook( unsigned int request, va_list argv )
 {
@@ -230,12 +290,21 @@ void setup_hook( unsigned int request, va_list argv )
       update_catalogue( va_arg( argv, HWND ) );
       break;
 
+    case SETUP_HOOK_RUN_INSTALLER:
+      /* This hook invokes the mingw-get GUI, in setup tool mode, to
+       * facilitate installation of a user configured basic system.
+       */
+      run_basic_system_installer( va_arg( argv, const wchar_t * ) );
+      break;
+
     default:
       /* We should never get to here; it's a programming error in
        * the setup tool, if we do.
        */
+      dmh_control( DMH_BEGIN_DIGEST );
       dmh_notify( DMH_ERROR, MSG_INTERNAL_ERROR( INVALID_REQUEST ) );
       dmh_notify( DMH_ERROR, MSG_INTERNAL_ERROR( NOTIFY_MAINTAINER ) );
+      dmh_control( DMH_END_DIGEST );
   }
 }
 
