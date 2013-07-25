@@ -29,6 +29,12 @@
 #include "pkglock.h"
 #include "dmh.h"
 
+/* This is the main program source for the full, free-standing
+ * mingw-get GUI installer; initialise this static AppWindowMaker
+ * attribute, indicating that this is not a setup tool plugin.
+ */
+bool AppWindowMaker::SetupToolInvoked = false;
+
 using WTK::StringResource;
 using WTK::WindowClassMaker;
 using WTK::MainWindowMaker;

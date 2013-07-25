@@ -32,6 +32,8 @@
 #include "pkgbase.h"
 #include "pkgkeys.h"
 
+#define PKG_AFFILIATE_ALL  1
+
 static const char *package_group_key = "package-group";
 static const char *package_group_all = "All Packages";
 
@@ -148,12 +150,15 @@ load_package_group_hierarchy( HWND display, HTREEITEM parent, pkgXmlNode *group 
    * database representation, into a Windows tree view control.
    */
   TVINSERTSTRUCT ref;
+  static long root_affiliate = PKG_AFFILIATE_ALL;
 
   /* Establish initial state for the tree view item insertion control.
    */
   ref.hParent = parent;
-  ref.item.mask = TVIF_TEXT | TVIF_CHILDREN;
   ref.hInsertAfter = TVI_FIRST;
+  ref.item.mask = TVIF_TEXT | TVIF_PARAM | TVIF_CHILDREN;
+  ref.item.lParam = root_affiliate;
+  root_affiliate = 0;
 
   do { /* For each package group specified at the current level in the
 	* package group hierarchy, retrieve its name from the XML record...
@@ -168,6 +173,7 @@ load_package_group_hierarchy( HWND display, HTREEITEM parent, pkgXmlNode *group 
 	* ...and add a corresponding entry to the tree view.
 	*/
        ref.hInsertAfter = TreeView_InsertItem( display, &ref );
+       ref.item.lParam = 0;
 
        /* Check if the current group is to be made the initial selection,
 	* when the tree view is first displayed; the last entry so marked
@@ -274,12 +280,36 @@ void AppWindowMaker::InitPackageTreeView()
     TreeView_InsertItem( PackageTreeView, &entry );
   }
   else
-    /* The package group hierarchy has been incorporated into
+  { /* The package group hierarchy has been incorporated into
      * the in-core image of the XML database; create a windows
      * "tree view", into which we load a representation of the
      * structure of this hierarchy.
      */
     load_package_group_hierarchy( PackageTreeView, TVI_ROOT, tree );
+
+    /* Augment this "All Packages" hierarchy...
+     */
+    if( (tree = new pkgXmlNode( package_group_key )) != NULL )
+    {
+      /* ...by the addition of a further "Basic Setup"
+       * category at root level...
+       */
+      tree->SetAttribute( name_key, "Basic Setup" );
+      if( SetupToolInvoked )
+	/*
+	 * ...which becomes the default group selection when
+	 * running the installer from within the setup tool.
+	 */
+	tree->SetAttribute( select_key, value_true );
+      load_package_group_hierarchy( PackageTreeView, TVI_ROOT, tree );
+
+      /* The XML node, from which we created the "Basic Setup"
+       * group entry, has not been attached to the in-core image
+       * of the XML database; we have no need to keep it.
+       */
+      delete tree;
+    }
+  }
 }
 
 static bool is_child_affiliate( HWND tree, TVITEM *ref, const char *name )
@@ -322,6 +352,16 @@ static bool is_child_affiliate( HWND tree, TVITEM *ref, const char *name )
   return false;
 }
 
+static inline long group_attributes( HWND tree, TVITEM *ref )
+{
+  /* Helper to retrieve the application specific attributes
+   * which are associated with a package group tree item.
+   */
+  ref->mask = TVIF_PARAM;
+  TreeView_GetItem( tree, ref );
+  return ref->lParam;
+}
+
 static inline bool is_affiliated( HWND tree, const char *name )
 {
   /* Helper to initiate a determination if a specified package
@@ -331,11 +371,11 @@ static inline bool is_affiliated( HWND tree, const char *name )
    */
   TVITEM ref;
   if(  ((ref.hItem = TreeView_GetSelection( tree )) == NULL)
-  ||    (ref.hItem == TreeView_GetRoot( tree ))		      )
+  ||   ((group_attributes( tree, &ref ) & PKG_AFFILIATE_ALL) != 0)  )
     /*
      * Before proceeding further, we may note that ANY group name
-     * is considered to be IMPLICITLY matched, at the root of the
-     * package group tree.
+     * is considered to be IMPLICITLY matched, for specified groups
+     * (nominally at the root) within the package group tree.
      */
     return true;
 

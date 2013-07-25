@@ -1,3 +1,25 @@
+2013-07-25  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add "Basic Setup" as a built-in standard package group.
+
+	* src/guimain.h (AppWindowMaker::SetupToolInvoked): New private
+	static member variable; declare it.
+
+	* src/guimain.cpp (AppWindowMaker::SetupToolInvoked): Define and
+	initialise it; this instance is specific to guimain.exe, where it
+	must always remain false.
+
+	* src/pkgtree.cpp (PKG_AFFILIATE_ALL): New constant; define it.
+	(load_package_group_hierarchy): Use it to specify those groups which
+	have all packages as affiliates, rather than just first root group.
+	(group_attributes): New static inline function; implement it, then...
+	(is_affiliated) [PKG_AFFILIATE_ALL]: ...use it to identify groups
+	which are specified as having all packages as affiliates.
+	(AppWindowMaker::InitPackageTreeView): Construct a temporary XML
+	specification for the "Basic Setup" package group, thence add it to
+	the package tree view; mark it as default group selection when...
+	[AppWindowMaker::SetupToolInvoked]: ...this is true.
+
 2013-07-14  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Implement GUI filtering of package list by group selection.

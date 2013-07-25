@@ -212,6 +212,7 @@ class AppWindowMaker: public WTK::MainWindowMaker
     HFONT DefaultFont;
 
     static HWND PackageTreeView;
+    static bool SetupToolInvoked;
     void InitPackageTreeView( void );
 
     HWND PackageListView;
