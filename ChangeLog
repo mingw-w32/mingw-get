@@ -1,3 +1,13 @@
+2013-07-26  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Make a minor GUI layout adjustment.
+
+	* src/pkgview.cpp (VSASH_INIT_POS): Increment from 0.30 to 0.35; this
+	sets the initial height of the package list pane to be 35% of the main
+	window height, which, at the default initial window size, neatly fits
+	the entire "Basic Setup" package group, without scrolling, on my
+	1366x768 pixel Win7-VM display.
+
 2013-07-25  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Implement setup tool installer "plugin".

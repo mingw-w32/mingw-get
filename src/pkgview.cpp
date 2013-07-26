@@ -52,7 +52,7 @@ static const double HSASH_MAX_POS = 0.40;
  * measured from its top edge.
  */
 static const double VSASH_MIN_POS = 0.25;
-static const double VSASH_INIT_POS = 0.30;
+static const double VSASH_INIT_POS = 0.35;
 static const double VSASH_MAX_POS = 0.60;
 
 HWND AppWindowMaker::Create( const char *class_name, const char *caption )
