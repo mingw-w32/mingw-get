@@ -1,5 +1,13 @@
 2013-07-30  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Match "about" dialogue caption to main window.
+
+	* src/guimain.rc (IDM_HELP_ABOUT) <MENUITEM>: Match it to...
+	(IDD_HELP_ABOUT) <CAPTION>: ...this; make it representative of...
+	(ID_MAIN_WINDOW_CAPTION): ...this.
+
+2013-07-30  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Implement "icon legend" display as "help" menu item.
 
 	* src/guimain.rc (IDM_HELP_LEGEND): Make menu item active; define

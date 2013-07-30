@@ -50,7 +50,7 @@ ID_MAIN_WINDOW	ICON	DISCARDABLE	"pkgicon.ico"
  * which is called out by the "Help --> About mingw-get" menu pick.
  */
 IDD_HELP_ABOUT	DIALOG	DISCARDABLE	80, 50, 250, 185
-CAPTION					"About mingw-get"
+CAPTION 				"About MinGW Installation Manager"
 STYLE					DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_DLGFRAME
 FONT					9, "Verdana"
 BEGIN
@@ -121,10 +121,10 @@ BEGIN
    */
   POPUP 	"&Help",				HELP
   BEGIN
-    MENUITEM	"&Contents",				IDM_HELP_CONTENTS, GRAYED
-    MENUITEM	"Quick &Introduction",			IDM_HELP_INTRO, GRAYED
-    MENUITEM	"Icon &Legend",				IDM_HELP_LEGEND
-    MENUITEM  	"&About mingw-get",			IDM_HELP_ABOUT
+    MENUITEM	  "&Contents",				IDM_HELP_CONTENTS, GRAYED
+    MENUITEM	  "Quick &Introduction",		IDM_HELP_INTRO, GRAYED
+    MENUITEM	  "Icon &Legend",			IDM_HELP_LEGEND
+    MENUITEM  	  "&About MinGW Installation Manager",	IDM_HELP_ABOUT
   END
 
 END
