@@ -1,5 +1,16 @@
 2013-07-30  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Implement "icon legend" display as "help" menu item.
+
+	* src/guimain.rc (IDM_HELP_LEGEND): Make menu item active; define
+	template for the dialogue box which it is to call out.
+
+	* src/guiexec.cpp (AppWindowMaker::OnCommand) [IDM_HELP_LEGEND]: New
+	case handler; implement dialogue box call out, as a variation on...
+	[IDM_HELP_ABOUT]: ...this; modify it accordingly.
+
+2013-07-30  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Avoid discarding pending changes when catalogue is updated.
 
 	* src/guimain.h (IDD_CONFIRMATION): New manifest constant; define it.

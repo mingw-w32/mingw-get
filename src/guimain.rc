@@ -123,7 +123,7 @@ BEGIN
   BEGIN
     MENUITEM	"&Contents",				IDM_HELP_CONTENTS, GRAYED
     MENUITEM	"Quick &Introduction",			IDM_HELP_INTRO, GRAYED
-    MENUITEM	"Icon &Legend",				IDM_HELP_LEGEND, GRAYED
+    MENUITEM	"Icon &Legend",				IDM_HELP_LEGEND
     MENUITEM  	"&About mingw-get",			IDM_HELP_ABOUT
   END
 
@@ -150,6 +150,48 @@ ID_PKGSTATE_DOWNGRADE		ICON	DISCARDABLE	"state10.ico"
 ID_PKGSTATE_BROKEN		ICON	DISCARDABLE	"state11.ico"
 ID_PKGSTATE_REMOVE		ICON	DISCARDABLE	"state12.ico"
 ID_PKGSTATE_PURGE		ICON	DISCARDABLE	"state13.ico"
+
+/* Template for dialogue box to document the meanings of these icons;
+ * (display is restricted to subset in current active deployment).
+ */
+IDM_HELP_LEGEND DIALOG	DISCARDABLE	10, 20, 190, 140
+CAPTION					"Icon Legend"
+STYLE					DS_MODALFRAME | DS_SETFONT | WS_POPUP | WS_CAPTION | WS_DLGFRAME
+FONT					10, "Verdana"
+BEGIN
+  LTEXT 				"mingw-get indicates the status of all packages using the " \
+					"following set of icons, one of which is displayed to the left " \
+					"of each entry within the package list:", -1, 5, 4, 180, 24
+  CONTROL				ID_PKGSTATE_AVAILABLE, ID_PKGSTATE_AVAILABLE, \
+					"Static", SS_ICON | SS_REALSIZEIMAGE, 7, 34, 0, 0
+  LTEXT 				"Package available in repository; not installed.", \
+					-1, 20, 34, 186, 10
+  CONTROL				ID_PKGSTATE_AVAILABLE_INSTALL, ID_PKGSTATE_AVAILABLE_INSTALL, \
+					"Static", SS_ICON | SS_REALSIZEIMAGE, 7, 44, 0, 0
+  LTEXT 				"Package selected; marked for installation.", \
+					-1, 20, 44, 186, 10
+  CONTROL				ID_PKGSTATE_INSTALLED_CURRENT, ID_PKGSTATE_INSTALLED_CURRENT, \
+					"Static", SS_ICON | SS_REALSIZEIMAGE, 7, 54, 0, 0
+  LTEXT 				"Package installed; version is latest available.", \
+					-1, 20, 54, 186, 10
+  CONTROL				ID_PKGSTATE_INSTALLED_OLD, ID_PKGSTATE_INSTALLED_OLD, \
+					"Static", SS_ICON | SS_REALSIZEIMAGE, 7, 64, 0, 0
+  LTEXT 				"Package installed; newer version available.", \
+					-1, 20, 64, 186, 10
+  CONTROL				ID_PKGSTATE_UPGRADE, ID_PKGSTATE_UPGRADE, \
+					"Static", SS_ICON | SS_REALSIZEIMAGE, 7, 74, 0, 0
+  LTEXT 				"Package installed; marked for upgrade.", \
+					-1, 20, 74, 186, 10
+  CONTROL				ID_PKGSTATE_REINSTALL, ID_PKGSTATE_REINSTALL, \
+					"Static", SS_ICON | SS_REALSIZEIMAGE, 7, 84, 0, 0
+  LTEXT 				"Package installed; marked for reinstallation.", \
+					-1, 20, 84, 186, 10
+  CONTROL				ID_PKGSTATE_REMOVE, ID_PKGSTATE_REMOVE, \
+					"Static", SS_ICON | SS_REALSIZEIMAGE, 7, 94, 0, 0
+  LTEXT 				"Package installed; marked for removal.", \
+					-1, 20, 94, 186, 10
+  DEFPUSHBUTTON 			"Dismiss", IDOK, 70, 115, 50, 14, WS_GROUP | WS_TABSTOP
+END
 
 #define SS_CTEXTBOX			SS_SUNKEN | SS_CENTER
 #define ES_VT100			ES_LEFT | ES_READONLY | ES_MULTILINE | ES_AUTOVSCROLL

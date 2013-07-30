@@ -715,11 +715,14 @@ long AppWindowMaker::OnCommand( WPARAM cmd )
    */
   switch( cmd )
   { case IDM_HELP_ABOUT:
-      /* This request is initiated by selecting "About mingw-get"
-       * from the "Help" menu; we respond by displaying the "about"
+      /* This request is initiated by selecting "About ...", ...
+       */
+    case IDM_HELP_LEGEND:
+      /* ...and this one by selecting "Icon Legend", from the "Help"
+       * menu; in both cases, we respond by displaying an associated
        * dialogue box.
        */
-      WTK::GenericDialogue( AppInstance, AppWindow, IDD_HELP_ABOUT );
+      WTK::GenericDialogue( AppInstance, AppWindow, cmd );
       break;
 
     case IDM_PACKAGE_INSTALL:
