@@ -1,5 +1,12 @@
 2013-07-30  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Minor modification to "about" dialogue dismissal button.
+
+	* src/guimain.rc (IDD_HELP_ABOUT) <DEFPUSHBUTTON>: Change label text
+	to "Dismiss"; add WS_TABSTOP style.
+
+2013-07-30  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Match "about" dialogue caption to main window.
 
 	* src/guimain.rc (IDM_HELP_ABOUT) <MENUITEM>: Match it to...
