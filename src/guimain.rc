@@ -175,6 +175,27 @@ BEGIN
   LTEXT 				"", IDD_PROGRESS_MSG, 7, 6, 256, 12
 END
 
+IDD_CONFIRMATION DIALOG DISCARDABLE	10, 20, 270, 115
+CAPTION 				"Action Requires Confirmation"
+STYLE					DS_MODALFRAME | DS_SETFONT | WS_POPUP | WS_CAPTION | WS_DLGFRAME
+FONT					10, "Verdana"
+BEGIN
+  ICON					IDI_WARNING, IDI_WARNING, 15, 16, 0, 0
+  LTEXT 				"You have marked packages for installation, upgrade, or " \
+					"removal, but you have not yet committed these changes; " \
+					"if you %s without committing these changes, they will "  \
+					"be discarded, and you may need to reschedule them.", \
+					IDD_PROGRESS_MSG, 42, 10, 219, 35
+  LTEXT 				"You are advised to review your marked changes, before you " \
+					"%s; (you may select the ""Review Changes"" option button " \
+					"below), or alternatively, you may simply discard the changes, " \
+					"unseen, or you may cancel this request to %s.", \
+					IDD_PROGRESS_TXT, 9, 50, 260, 35
+  DEFPUSHBUTTON 			"Review Changes", IDOK, 10, 91, 76, 13, WS_GROUP | WS_TABSTOP
+  PUSHBUTTON				"Discard Changes", IDIGNORE, 97, 91, 76, 13, WS_TABSTOP
+  PUSHBUTTON				"Cancel Request", IDCANCEL, 184, 91, 76, 13, WS_TABSTOP
+END
+
 /* Template for dialogue requesting user confirmation of intent
  * to proceed with scheduled change actions.
  */

@@ -1,3 +1,23 @@
+2013-07-30  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Avoid discarding pending changes when catalogue is updated.
+
+	* src/guimain.h (IDD_CONFIRMATION): New manifest constant; define it.
+	(AppWindowMaker::ConfirmActionDialogue): New static method; declare it.
+	(AppWindowMaker::ConfirmActionRequest): New method; declare it.
+
+	* src/guimain.rc (IDD_CONFIRMATION): Implement new dialogue template.
+
+	* src/guiexec.cpp (pkgConfirmAction, pkgConfirmActionClient): New
+	static variables; they are used as pseudo-arguments, together with...
+	(DIALOGUE_DISPATCH, DIALOGUE_RESPONSE, DIALOGUE_CHKSTATE): ...these
+	new macros; define them; they facilitate the implementation of...
+	(AppWindowMaker::ConfirmActionDialogue): ...this; implement it.
+	(AppWindowMaker::ConfirmActionRequest): Implement it; use it...
+	(AppWindowMaker::OnCommand) [IDM_REPO_UPDATE]: ...here, and...
+
+	* src/pkgdata.cpp (AppWindowMaker::OnClose): ...here.
+
 2013-07-26  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Make a minor GUI layout adjustment.

@@ -97,6 +97,7 @@
 #define IDD_PROGRESS_MAX		 616
 #define IDD_PROGRESS_PCT		 617
 #define IDD_PROGRESS_TXT		 618
+#define IDD_CONFIRMATION		 619
 
 #define IDD_APPLY_APPROVE		 630
 #define IDD_APPLY_DOWNLOAD		 631
@@ -218,6 +219,8 @@ class AppWindowMaker: public WTK::MainWindowMaker
     HWND PackageListView;
     void InitPackageListView( void );
     void UpdatePackageMenuBindings( void );
+    bool ConfirmActionRequest( const char * );
+    static int CALLBACK ConfirmActionDialogue( HWND, unsigned, WPARAM, LPARAM );
     void Schedule( unsigned long, const char * = NULL, const char * = NULL );
     inline void MarkSchedule( pkgActionItem * );
     void SelectPackageAction( unsigned );

@@ -1483,15 +1483,7 @@ long AppWindowMaker::OnClose()
    * option for the termination request, so that the user
    * has an opportunity to complete such actions.
    */
-  if( (pkgData->Schedule()->EnumeratePendingActions() > 0)
-  &&  (MessageBox( AppWindow,
-	"You have marked changes which have not been applied;\n"
-	"these will be lost, if you quit without applying them.\n\n"
-	"Are you sure you want to discard these marked changes?",
-	"Discard Marked Changes?", MB_YESNO | MB_ICONWARNING
-      ) == IDNO)
-    ) return 0;
-  return -1;
+  return ConfirmActionRequest( "quit" ) ? -1 : 0;
 }
 
 /* $RCSfile$: end of file */
