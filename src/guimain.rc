@@ -56,12 +56,12 @@ FONT					9, "Verdana"
 BEGIN
   DEFPUSHBUTTON 			"Dismiss", IDOK, 100, 155, 50, 14, WS_GROUP | WS_TABSTOP
   ICON					ID_MAIN_WINDOW, ID_MAIN_WINDOW, 115, 30, 0, 0
-  CTEXT					"%PACKAGE_NAME% version %PACKAGE_VERSION%", -1, 0, 10, 250, 20
-  CTEXT					"Written by Keith Marshall", -1, 0, 60, 250, 12
-  CTEXT					"Copyright \xa9 %YEARS_OF_ISSUE%, %COPYRIGHT_HOLDER%", \
+  CTEXT 				"%PACKAGE_NAME% version %PACKAGE_VERSION%", -1, 0, 10, 250, 20
+  CTEXT 				"Written by Keith Marshall", -1, 0, 60, 250, 12
+  CTEXT 				"Copyright \xa9 %YEARS_OF_ISSUE%, %COPYRIGHT_HOLDER%", \
 					-1, 0, 72, 250, 12
-  CTEXT					"http://mingw.org", -1, 0, 84, 250, 12
-  CTEXT					"\
+  CTEXT 				"http://mingw.org", -1, 0, 84, 250, 12
+  CTEXT 				"\
 This is free software; see the product documentation or source code, for copying and redistribution \
 conditions.  There is NO WARRANTY; not even an implied WARRANTY OF MERCHANTABILITY, nor of FITNESS FOR \
 ANY PARTICULAR PURPOSE.", -1, 10, 108, 230, 40
@@ -95,14 +95,14 @@ BEGIN
     MENUITEM	  "&Update Catalogue",			IDM_REPO_UPDATE
     MENUITEM	  "&Mark All Upgrades",			IDM_REPO_MARK_UPGRADES
     MENUITEM	  "&Apply Changes",			IDM_REPO_APPLY, GRAYED
-    MENUITEM	  SEPARATOR
+    MENUITEM	   SEPARATOR
     MENUITEM	  "&Quit\tAlt+F4", 			IDM_REPO_QUIT
   END
 
   /* The "Package" drop-down menu; this provides for selection of
    * the actions to be performed on a collection of packages.
    */
-  POPUP		"&Package"
+  POPUP 	"&Package"
   BEGIN
     MENUITEM	  "U&nmark",				IDM_PACKAGE_UNMARK, GRAYED
     MENUITEM	  "Mark for &Installation",		IDM_PACKAGE_INSTALL, GRAYED
@@ -113,7 +113,7 @@ BEGIN
 
   /* The "Settings" drop-down menu is currently unimplemented.
    */
-  POPUP		"&Settings"
+  POPUP 	"&Settings"
   BEGIN
   END
 
@@ -155,7 +155,7 @@ ID_PKGSTATE_PURGE		ICON	DISCARDABLE	"state13.ico"
  * (display is restricted to subset in current active deployment).
  */
 IDM_HELP_LEGEND DIALOG	DISCARDABLE	10, 20, 190, 140
-CAPTION					"Icon Legend"
+CAPTION 				"Icon Legend"
 STYLE					DS_MODALFRAME | DS_SETFONT | WS_POPUP | WS_CAPTION | WS_DLGFRAME
 FONT					10, "Verdana"
 BEGIN
@@ -204,17 +204,17 @@ STYLE					DS_MODALFRAME | DS_SETFONT | WS_POPUP | WS_CAPTION | WS_DLGFRAME
 FONT					10, "Verdana"
 BEGIN
   GROUPBOX				"Actions", IDD_CLOSE_OPTIONS, 5, 48, 260, 25
-  DEFPUSHBUTTON 			"Close", IDOK, 219, 56, 40, 12, WS_GROUP | WS_DISABLED
-  AUTOCHECKBOX				"Close dialogue automatically, when update is complete.", \
-					IDD_AUTO_CLOSE_OPTION, 10, 58, 200, 11
   CONTROL				"", IDD_PROGRESS_VAL, "STATIC", SS_CTEXTBOX, 6, 19, 96, 10
-  CTEXT					"of", IDD_PROGRESS_TXT, 102, 19, 18, 10
+  CTEXT 				"of", IDD_PROGRESS_TXT, 102, 19, 18, 10
   CONTROL				"", IDD_PROGRESS_MAX, "STATIC", SS_CTEXTBOX, 120, 19, 96, 10
-  CTEXT					":", IDD_PROGRESS_TXT, 213, 19, 10, 10
+  CTEXT 				":", IDD_PROGRESS_TXT, 213, 19, 10, 10
   CONTROL				"", IDD_PROGRESS_PCT, "STATIC", SS_CTEXTBOX, 223, 19, 41, 10
   CONTROL				"", IDD_PROGRESS_BAR, PROGRESS_CLASS, WS_CHILD \
 					| PBS_SMOOTH, 6, 34, 258, 10
   LTEXT 				"", IDD_PROGRESS_MSG, 7, 6, 256, 12
+  DEFPUSHBUTTON 			"Close", IDOK, 219, 56, 40, 12, WS_GROUP | WS_TABSTOP | WS_DISABLED
+  AUTOCHECKBOX				"Close dialogue automatically, when update is complete.", \
+					IDD_AUTO_CLOSE_OPTION, 10, 58, 200, 11, WS_TABSTOP
 END
 
 IDD_CONFIRMATION DIALOG DISCARDABLE	10, 20, 270, 115
@@ -242,53 +242,53 @@ END
  * to proceed with scheduled change actions.
  */
 IDD_APPLY_APPROVE DIALOG DISCARDABLE	10, 10, 306, 191
-CAPTION					"Schedule of Pending Actions"
+CAPTION 				"Schedule of Pending Actions"
 STYLE					DS_MODALFRAME | DS_SETFONT | WS_POPUP | WS_CAPTION | WS_DLGFRAME
 FONT					10, "Verdana"
 BEGIN
-  GROUPBOX				"Okay to proceed?", IDD_PROGRESS_TXT, 6, 5, 294, 33
-  LTEXT 				"The package changes itemised below will\n" \
-  					"be implemented when you choose ""Apply""", IDD_PROGRESS_MSG, \
-					10, 15, 150, 20
-  DEFPUSHBUTTON 			"Apply", ID_APPLY, 166, 17, 40, 12, WS_GROUP
-  PUSHBUTTON 				"Defer", ID_DEFER, 210, 17, 40, 12, WS_GROUP
-  PUSHBUTTON 				"Discard", ID_DISCARD, 254, 17, 40, 12, WS_GROUP
   GROUPBOX				"", IDD_APPLY_REMOVES_SUMMARY, 6, 40, 294, 47
   EDITTEXT				IDD_APPLY_REMOVES_PACKAGES, 7, 50, 292, 36, WS_VSCROLL | ES_VT100
   GROUPBOX				"", IDD_APPLY_UPGRADES_SUMMARY, 6, 89, 294, 47
   EDITTEXT				IDD_APPLY_UPGRADES_PACKAGES, 7, 99, 292, 36, WS_VSCROLL | ES_VT100
   GROUPBOX				"", IDD_APPLY_INSTALLS_SUMMARY, 6, 138, 294, 47
   EDITTEXT				IDD_APPLY_INSTALLS_PACKAGES, 7, 148, 292, 36, WS_VSCROLL | ES_VT100
+  GROUPBOX				"Okay to proceed?", IDD_PROGRESS_TXT, 6, 5, 294, 33
+  LTEXT 				"The package changes itemised below will\n" \
+  					"be implemented when you choose ""Apply""", IDD_PROGRESS_MSG, \
+					10, 15, 150, 20
+  DEFPUSHBUTTON 			"Apply", ID_APPLY, 166, 17, 40, 12, WS_GROUP | WS_TABSTOP
+  PUSHBUTTON 				"Defer", ID_DEFER, 210, 17, 40, 12, WS_TABSTOP
+  PUSHBUTTON 				"Discard", ID_DISCARD, 254, 17, 40, 12, WS_TABSTOP
 END
 
 /* Template for a GUI styled package download monitoring dialogue box.
  */
 IDD_APPLY_DOWNLOAD DIALOG DISCARDABLE	10, 20, 280, 52
-CAPTION					"Download Package"
+CAPTION 				"Download Package"
 STYLE					DS_MODALFRAME | DS_SETFONT | WS_POPUP | WS_CAPTION | WS_DLGFRAME
 FONT					10, "Verdana"
 BEGIN
   LTEXT 				"Connecting...", IDD_PROGRESS_MSG, 7, 6, 266, 10
   CONTROL				"", IDD_PROGRESS_VAL, "STATIC", SS_CTEXTBOX, 6, 20, 100, 10
-  CTEXT					"of", IDD_PROGRESS_TXT, 106, 20, 18, 10
+  CTEXT 				"of", IDD_PROGRESS_TXT, 106, 20, 18, 10
   CONTROL				"", IDD_PROGRESS_MAX, "STATIC", SS_CTEXTBOX, 124, 20, 100, 10
-  CTEXT					":", IDD_PROGRESS_TXT, 224, 20, 10, 10
+  CTEXT 				":", IDD_PROGRESS_TXT, 224, 20, 10, 10
   CONTROL				"", IDD_PROGRESS_PCT, "STATIC", SS_CTEXTBOX, 234, 20, 40, 10
   CONTROL				"", IDD_PROGRESS_BAR, PROGRESS_CLASS, WS_CHILD \
 					| PBS_SMOOTH, 6, 35, 268, 10
 END
 
 IDD_APPLY_EXECUTE DIALOG DISCARDABLE	10, 10, 306, 193
-CAPTION					"Applying Scheduled Changes"
+CAPTION 				"Applying Scheduled Changes"
 STYLE					DS_MODALFRAME | DS_SETFONT | WS_POPUP | WS_CAPTION | WS_DLGFRAME
 FONT					10, "Verdana"
 BEGIN
   LTEXT 				"", IDD_PROGRESS_MSG, 7, 6, 294, 10
-  AUTOCHECKBOX				"Close dialogue automatically, when activity is complete.", \
-					IDD_AUTO_CLOSE_OPTION, 8, 19, 240, 11
-  DEFPUSHBUTTON 			"Close", IDOK, 258, 18, 40, 12, WS_GROUP | WS_DISABLED
   GROUPBOX				"Details", IDD_PROGRESS_TXT, 6, 35, 294, 152
   EDITTEXT				IDD_DMH_CONSOLE, 7, 45, 292, 141, WS_BORDER | WS_VSCROLL | ES_VT100
+  DEFPUSHBUTTON 			"Close", IDOK, 258, 18, 40, 12, WS_GROUP | WS_TABSTOP | WS_DISABLED
+  AUTOCHECKBOX				"Close dialogue automatically, when activity is complete.", \
+					IDD_AUTO_CLOSE_OPTION, 8, 19, 240, 11, WS_TABSTOP
 END
 
 /* $RCSfile$: end of file */

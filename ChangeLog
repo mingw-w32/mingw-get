@@ -1,5 +1,12 @@
 2013-08-13  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	More dialogue box adjustments.
+
+	* src/guimain.rc: Generally clean up white-space distribution.
+	(All dialogue templates): Use WS_TABSTOP consistently.
+
+2013-08-13  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Circumvent Windows-7 "Program Compatibility Assistant" misbehaviour.
 
 	* src/manifest.rc (assembly) <compatibility>: Add <supportedOS>
