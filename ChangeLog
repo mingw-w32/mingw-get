@@ -1,5 +1,20 @@
 2013-08-13  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Install licence as standard setup component.
+
+	* src/guimain.h src/setup.rc (ID_PACKAGE_GUI_DISTNAME): Macro
+	no longer required; delete definition.
+
+	* src/setup.cpp (pkgSetup::DoFirstTimeInstallation):
+	<pkgSetupAction> [ID_PACKAGE_GUI_DISTNAME]: Delete reference.
+	<pkgSetupAction> [ID_PACKAGE_BASE_DISTNAME]: Update reference; repeat
+	to explicitly address each of "bin", "gui", and "lic" components.
+
+	* Makefile.in (TAG_SCRIPT) [PACKAGE_GUI_DISTNAME]: Delete reference.
+	(TAG_SCRIPT) [PACKAGE_BASE_DISTNAME]: Redefine as template.
+
+2013-08-13  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	More dialogue box adjustments.
 
 	* src/guimain.rc: Generally clean up white-space distribution.

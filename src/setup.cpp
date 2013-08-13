@@ -1185,12 +1185,16 @@ inline void SetupTool::DoFirstTimeSetup( HWND AppWindow )
    * beginning with a setup action request for the base package...
    */
   pkgSetupAction *linked, *list;
-  linked = list = new pkgSetupAction( NULL, archive_class( PACKAGE_BASE ) );
+  linked = list = new pkgSetupAction( NULL, archive_class( PACKAGE_BASE ), "bin" );
   if( IsPref( SETUP_OPTION_WITH_GUI ) )
     /*
      * ...optionally adding the GUI extension, at the user's behest...
      */
-    linked = new pkgSetupAction( linked, archive_class( PACKAGE_GUI ) );
+    linked = new pkgSetupAction( linked, archive_class( PACKAGE_BASE ), "gui" );
+
+  /* ...always installing the licence pack...
+   */
+  linked = new pkgSetupAction( linked, archive_class( PACKAGE_BASE ), "lic" );
 
   /* ...and finishing up with the setup DLL and XML data packages.
    */
