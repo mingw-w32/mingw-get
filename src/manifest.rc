@@ -36,6 +36,18 @@ CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST MOVEABLE PURE
 	  </requestedPrivileges> \
 	</security> \
       </trustInfo> \
+      <compatibility xmlns=""urn:schemas-microsoft-com:compatibility.v1""> \
+	<application> \
+	  <!-- Note: the GUIDs for Vista and Win7, below, are from \
+	       msdn.microsoft.com/en-us/library/dd371711(VS.85).aspx; \
+	       that for Win8 is not authoritive, and has been obtained \
+	       from stackoverflow.com/questions/898220 \
+	    --> \
+	  <supportedOS Id=""{e2011457-1546-43c5-a5fe-008deee3d3f0}"" /><!-- Vista --> \
+	  <supportedOS Id=""{35138b9a-5d96-4fbd-8e2d-a2440225f93a}"" /><!-- Win7 --> \
+	  <supportedOS Id=""{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}"" /><!-- Win8 --> \
+	</application> \
+      </compatibility> \
       <dependency> \
 	<dependentAssembly> \
 	  <assemblyIdentity \

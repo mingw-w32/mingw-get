@@ -1,3 +1,10 @@
+2013-08-13  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Circumvent Windows-7 "Program Compatibility Assistant" misbehaviour.
+
+	* src/manifest.rc (assembly) <compatibility>: Add <supportedOS>
+	declarations for each of Vista, Win7, and (tentatively) Win8.
+
 2013-07-30  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Minor modification to "about" dialogue dismissal button.
