@@ -56,30 +56,11 @@ int APIENTRY WinMain
      * so first, we check to ensure that there is no other instance
      * already running...
      */
-    HWND AppWindow = FindWindow(
-	StringResource( Instance, ID_MAIN_WINDOW_CLASS ), NULL
-      );
-    if( (AppWindow != NULL) && IsWindow( AppWindow ) )
-    {
-      /* ...and when one is, we identify its active window...
-       */
-      HWND AppPopup = GetLastActivePopup( AppWindow );
-      if( IsWindow( AppPopup ) )
-	AppWindow = AppPopup;
-
-      /* ...bring it to the foreground...
-       */
-      SetForegroundWindow( AppWindow );
+    if( WTK::RaiseAppWindow( Instance, ID_MAIN_WINDOW_CLASS ) )
       /*
-       * ...restore it from minimised state, if necessary...
-       */
-      if( IsIconic( AppWindow ) )
-	ShowWindow( AppWindow, SW_RESTORE );
-
-      /* ...and defer execution to it.
+       * ...and when one is, we defer execution to it.
        */
       return EXIT_SUCCESS;
-    }
 
     /* There is no running instance of mingw-get; before we create one,
      * ensure we can acquire an exclusive lock for the XML catalogue.
@@ -92,7 +73,7 @@ int APIENTRY WinMain
        * instance of the mingw-get GUI application window.
        */
       AppWindowMaker MainWindow( Instance );
-      AppWindow = MainWindow.Create(
+      HWND AppWindow = MainWindow.Create(
 	  StringResource( Instance, ID_MAIN_WINDOW_CLASS ), MainWindowCaption
 	);
 

@@ -1,3 +1,10 @@
+2013-08-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Simplify guimain.exe duplicate instance prevention.
+
+	* src/guimain.cpp (WinMain): Delegate requisite checking to...
+	(WTK::RaiseAppWindow): ...this external toolkit function.
+
 2013-08-13  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Install licence as standard setup component.
