@@ -1,3 +1,16 @@
+2013-08-24  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Reassign default URL for download of setup tool components.
+
+	* aclocal.m4 (PACKAGE_DIST_DOMAIN, PACKAGE_DIST_DIR): New precious
+	variables; declare them as such, and assign default values by using...
+	(MINGW_AC_PACKAGE_DIST_URL): ...this new macro; implement it.
+
+	* configure.ac (MINGW_AC_PACKAGE_DIST_URL): Use it.
+	* Makefile.in (TAG_SCRIPT): Capture assigned URL; substitute it...
+	(PACKAGE_DIST_URL): ...for this replacement text marker...
+	* src/setup.rc (ID_DOWNLOAD_HOST_URI): ...here.
+
 2013-08-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Simplify guimain.exe duplicate instance prevention.

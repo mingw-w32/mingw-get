@@ -28,6 +28,13 @@
   AC_SUBST([COPYRIGHT_HOLDER],["MinGW.org Project"])
   AC_SUBST([YEARS_OF_ISSUE],["2009-2013"])
 
+# Specify the default internet domain and relative directory path,
+# whence packages are to be offered for download; user may remap these
+# at configure time, by specifying alternatives for either, or both of
+# the precious variables, PACKAGE_DIST_DOMAIN and PACKAGE_DIST_DIR.
+#
+  MINGW_AC_PACKAGE_DIST_URL([http://prdownloads.sourceforge.net],[mingw])
+
 # Identify the formal release classes for each of the CLI and the GUI
 # application sub-packages; these may be overriden at configure time,
 # by specifying a common SNAPSHOT_CLASS definition, (e.g. by running

@@ -3,7 +3,7 @@
 # $Id$
 #
 # Written by Keith Marshall <keithmarshall@users.sourceforge.net>
-# Copyright (C) 2009, 2010, MinGW Project
+# Copyright (C) 2009, 2010, 2013, MinGW.org Project
 #
 #
 # Configuration script for mingw-get
@@ -24,6 +24,20 @@
 #
 m4_include([build-aux/m4/missing.m4])
 m4_include([build-aux/m4/makeopts.m4])
+
+# MINGW_AC_PACKAGE_DIST_URL( DOMAIN, PATH )
+# -----------------------------------------
+# Provides a mechanism for specifying the internet DOMAIN, and the
+# directory PATH relative to that DOMAIN, whence project packages are
+# to be offered for download.  Precious variables PACKAGE_DIST_DOMAIN
+# and PACKAGE_DIST_DIR are assigned the default values as specified
+# for DOMAIN and PATH respectively; AC_SUBST is called for each.
+#
+AC_DEFUN([MINGW_AC_PACKAGE_DIST_URL],
+[: ${PACKAGE_DIST_DOMAIN="$1"} ${PACKAGE_DIST_DIR="$2"}dnl
+ AC_ARG_VAR([PACKAGE_DIST_DOMAIN],[Package download domain url [$1]])dnl
+ AC_ARG_VAR([PACKAGE_DIST_DIR],[Package download host directory [$2]])dnl
+])# MINGW_AC_PACKAGE_DIST_URL
 
 # MINGW_AC_OUTPUT
 # ---------------
