@@ -28,6 +28,28 @@
  */
 #define PKGINET_H  1
 
+/* profile.xml may specify the maximum number of retries which will
+ * be permitted, for each configured repository, when any attempt to
+ * establish a download connection fails.  In the event that this is
+ * not specified in profile.xml, the following default will apply:
+ */
+#define INTERNET_RETRY_ATTEMPTS     5
+
+/* In the default case, when profile.xml doesn't stipulate options,
+ * specify the interval, in milliseconds, to wait between successive
+ * retries to open any one URL.  The first attempt for each individual
+ * URL is immediate; if it fails, the first retry is scheduled after
+ *
+ *   INTERNET_RETRY_INTERVAL * INTERNET_DELAY_FACTOR  milliseconds
+ *
+ * In the event that further retries are necessary, they are scheduled
+ * at geometrically incrementing intervals, by multiplying the interval
+ * from the preceding attempt by INTERNET_DELAY_FACTOR, prior to each
+ * successive connection attempt.
+ */
+#define INTERNET_DELAY_FACTOR       2
+#define INTERNET_RETRY_INTERVAL  1000
+
 class pkgDownloadMeter
 {
   /* Abstract base class, from which facilities for monitoring the

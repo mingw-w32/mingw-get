@@ -244,6 +244,23 @@ int pkgDownloadMeter::SizeFormat( char *buf, unsigned long filesize )
   return retval;
 }
 
+/* To facilitate the implementation of the pkgInternetAgent class, which
+ * is declared below:
+ */
+#if IMPLEMENTATION_LEVEL == SETUP_TOOL_COMPONENT
+
+/* Within the setup tool, the pkgInternetAgent::SetRetryOptions() method
+ * requires a pointer to a pkgSetupAction...
+ */
+ typedef pkgSetupAction *INTERNET_RETRY_REQUESTER;
+
+#else
+/* ...whereas, in the general case, it requires a pointer to a pkgXmlNode.
+ */
+ typedef pkgXmlNode *INTERNET_RETRY_REQUESTER;
+
+#endif
+
 class pkgInternetAgent
 {
   /* A minimal, locally implemented class, instantiated ONCE as a
@@ -252,6 +269,7 @@ class pkgInternetAgent
    */
   private:
     HINTERNET SessionHandle;
+    int connection_delay, delay_factor, retries, retry_interval;
 
   public:
     inline pkgInternetAgent():SessionHandle( NULL )
@@ -272,6 +290,7 @@ class pkgInternetAgent
       if( SessionHandle != NULL )
 	Close( SessionHandle );
     }
+    void SetRetryOptions( INTERNET_RETRY_REQUESTER, const char* );
     HINTERNET OpenURL( const char* );
 
     /* Remaining methods are simple inline wrappers for the
@@ -353,6 +372,32 @@ pkgInternetStreamingAgent::~pkgInternetStreamingAgent()
   free( (void *)(dest_file) );
 }
 
+void pkgInternetAgent::SetRetryOptions
+( INTERNET_RETRY_REQUESTER referrer, const char *url_template )
+{
+  /* Initialisation method, invoked immediately prior to the start
+   * of each archive download request, to establish the options for
+   * retrying any failed host connection request.
+   *
+   * The first of any sequence of connection attempts may always be
+   * initiated immediately.
+   */
+  connection_delay = 0;
+
+  /* If any further attempts are necessary, we will delay them
+   * at progressively increasing intervals, to give us the best
+   * possible chance to circumvent throttling of excess frequency
+   * connection requests, by the download server.
+   *
+   * FIXME: for each change of host domain, we should establish
+   * settings by consulting the configuration profile; for the
+   * time being, we simply assign fixed defaults.
+   */
+  delay_factor = INTERNET_DELAY_FACTOR;
+  retry_interval = INTERNET_RETRY_INTERVAL;
+  retries = INTERNET_RETRY_ATTEMPTS;
+}
+
 HINTERNET pkgInternetAgent::OpenURL( const char *URL )
 {
   /* Open an internet data stream.
@@ -378,8 +423,24 @@ HINTERNET pkgInternetAgent::OpenURL( const char *URL )
   /* Aggressively attempt to acquire a resource handle, which we may use
    * to access the specified URL; (schedule a maximum of five attempts).
    */
-  int retries = 5;
   do { pkgDownloadMeter::SpinWait( 1, URL );
+
+       /* Distribute retries at geometrically incrementing intervals.
+	*/
+       if( connection_delay > 0 )
+	 /* This is not the first time we've tried to open this URL;
+	  * compute the appropriate retry interval, and wait between
+	  * successive attempts to establish the connection.
+	  */
+	 Sleep( connection_delay = delay_factor * connection_delay );
+       else
+	 /* This is the first attempt to open this URL; don't wait,
+	  * but set up the baseline, in milliseconds, for interval
+	  * computation, in the event that further attempts may be
+	  * required.
+	  */
+	 connection_delay = retry_interval;
+
        ResourceHandle = InternetOpenUrl
 	 (
 	   /* Here, we attempt to assign a URL specific resource handle,
@@ -405,14 +466,18 @@ HINTERNET pkgInternetAgent::OpenURL( const char *URL )
 	  * unless we have exhausted the specified retry limit...
 	  */
 	 if( --retries < 1 )
-	   /*
-	    * ...in which case, we diagnose failure to open the URL.
+	 {
+	   /* ...in which case, we diagnose failure to open the URL.
 	    */
+	   DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_INTERNET_REQUESTS ),
+	     dmh_printf( "%s\nConnection failed(status=%u); abandoned.\n",
+		 URL, GetLastError() )
+	     );
 	   dmh_notify( DMH_ERROR, "%s:cannot open URL\n", URL );
-
+	 }
 	 else DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_INTERNET_REQUESTS ),
-	   dmh_printf( "%s\nConnecting ... failed(status=%u); retrying...\n",
-	       URL, GetLastError() )
+	   dmh_printf( "%s\nConnecting ... failed(status=%u); retrying in %ds...\n",
+	       URL, GetLastError(), delay_factor * connection_delay / 1000 )
 	   );
        }
        else
@@ -771,11 +836,18 @@ void pkgActionItem::DownloadSingleArchive
     if( url_template != NULL )
     {
       /* ...from the URL constructed from the template specified in
-       * the package repository catalogue (configuration database)...
+       * the package repository catalogue (configuration database).
        */
       const char *mirror = get_host_info( Selection(), mirror_key );
       char package_url[mkpath( NULL, url_template, package_name, mirror )];
       mkpath( package_url, url_template, package_name, mirror );
+
+      /* Enable retrying of failed connection attempts, according to the
+       * preferences, if any, which have been configured for the repository
+       * associated with the current URL template, or with default settings
+       * otherwise, then initiate the package download process.
+       */
+      pkgDownloadAgent.SetRetryOptions( Selection(), url_template );
       if( download.Get( package_url ) > 0 )
 	/*
 	 * Download was successful; clear the pending and failure flags.
@@ -992,12 +1064,17 @@ void pkgXmlDocument::SyncRepository( const char *name, pkgXmlNode *repository )
       const char *mirror = repository->GetPropVal( mirror_key, NULL );
       char catalogue_url[mkpath( NULL, url_template, name, mirror )];
       mkpath( catalogue_url, url_template, name, mirror );
-//dmh_printf( "SyncRepository: get %s ...\n", catalogue_url );
+
+      /* Enable retries according to the preferences, if any, as
+       * configured for the repository, or adopt default settings
+       * otherwise, then initiate the download process for the
+       * catalogue file.
+       */
+      pkgDownloadAgent.SetRetryOptions( repository, url_template );
       if( download.Get( catalogue_url ) <= 0 )
 	dmh_notify( DMH_ERROR,
 	    "Sync Repository: %s: download failed\n", catalogue_url
 	  );
-//dmh_printf( "SyncRepository: get %s completed\n", catalogue_url );
     }
 
     /* We will only replace our current working copy of this catalogue,

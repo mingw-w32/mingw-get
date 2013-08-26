@@ -1,3 +1,19 @@
+2013-08-26  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement retry throttling for failed internet connections.
+
+	* src/pkginet.h (INTERNET_RETRY_ATTEMPTS): New macro; define it.
+	(INTERNET_RETRY_INTERVAL, INTERNET_DELAY_FACTOR): Likewise.
+
+	* src/pkginet.cpp (INTERNET_RETRY_REQUESTER): New typedef.
+	(pkgInternetAgent::connection_delay, pkgInternetAgent::delay_factor):
+	(pkgInternetAgent::retries, pkgInternetAgent::retry_interval): New
+	private member variables; declare them.
+	(pkgInternetAgent::OpenURL): Use them; they must be initialised by...
+	(pkgInternetAgent::SetRetryOptions): ...this new method; implement it.
+	(pkgActionItem::DownloadSingleArchive): Invoke it.
+	(pkgXmlDocument::SyncRepository): Likewise.
+
 2013-08-24  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Reassign default URL for download of setup tool components.
