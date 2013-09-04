@@ -14,21 +14,92 @@ source code distribution tarball.
 Please report bugs as directed at http://mingw.org/Reporting_Bugs
 
 
-First Time Installation of a Binary Release
--------------------------------------------
+First Time Installation of a Current Binary Release
+---------------------------------------------------
+
+Note that, as of release 0.6.0, the installation procedure for mingw-get
+has been significantly simplified.  The installation instructions which
+follow relate to this release, and later; for instructions relating to
+any earlier release, or if you are unable to run the new setup tool on
+any legacy version of Windows, please refer to the following section,
+under the heading "First Time Installation of a Legacy Binary Release".
 
 To install mingw-get, visit the MinGW files repository at:
 
     http://sourceforge.net/projects/mingw/files
 
-and, from the "Automated&nbsp;MinGW&nbsp;Installer/mingw-get" folder,
+then, from the "Installer" folder,
+download and run mingw-get-setup.exe, and select your choices from the
+options presented [*], to install mingw-get.  When this has completed,
+you will then be offered the option to immediately continue with the
+installation of a basic selection of MinGW packages [**].  If you do
+choose to continue with package selection, this will be processed by an
+integrated preview of the mingw-get GUI application, (regardless of
+whether you have accepted or declined the option to install the GUI); to
+complete your initial installation:--
+
+- Select individual packages, within the upper right hand "list-view"
+  pane of the GUI window;
+
+- From the "Package" menu, (which also appears as a pop-up, when you
+  click the status icon at the left hand side of the list entry), select
+  the option to "Mark for Installation", in respect of each package
+  which you wish to install;
+
+- Having so marked all packages which you wish to install, from the
+  "Installation" menu select the "Apply Changes" option, to complete
+  your initial installation.
+
+After you have completed the installation of mingw-get, as described
+above, and regardless of whether you chose to install additional
+packages, or not, you are advised to review the configuration, as
+specified in your profile.xml file, and noting in particular, any new
+features which are described in the supplied defaults.xml file, if you
+have a profile.xml from a previous release; please refer to the section
+below, under the heading "Specifying the Configuration", for details.
+
+[*] By default, mingw-get-setup.exe will offer to install mingw-get into
+the "C:\MinGW" directory.  You are *strongly* recommended to adopt this
+default; however, if you do decide to change it, please *do* choose an
+alternative with no white space within its absolute path name.
+In particular, those who choose to ignore
+this advice, and install MinGW into some subdirectory of (for example)
+C:\Program&nbsp;Files", usually discover to their cost that certain
+tools may not work correctly.
+
+[**] The set of packages offered, as the foundation for a basic
+installation, are equivalent to those offered by the mingw-get-inst.exe
+companion to earlier releases of mingw-get.  Unlike mingw-get-inst.exe,
+mingw-get-setup.exe, does *not* insist that you install the basic GCC
+compiler suite.  You are free to install it, or not, at your own option;
+if you do wish to install it, please select the "mingw32-base" package,
+which is the equivalent of the minimum mandatory selection imposed by
+mingw-get-inst.exe
+
+
+First Time Installation of a Legacy Binary Release
+--------------------------------------------------
+
+The instructions which follow relate to the installation of mingw-get
+releases prior to version 0.6.0; they also apply in the case of later
+versions, where a legacy version of Windows may not permit you to run
+the new mingw-get-setup.exe tool.  For installation of release 0.6.0, or
+any later release, using the new tool, please refer to the preceeding
+section, under the heading "First Time Installation of a Current Binary
+Release".
+
+To install mingw-get, visit the MinGW files repository at:
+
+    http://sourceforge.net/projects/mingw/files
+
+and, from the "Installer/mingw-get-<version>-<class>-<release>" folder,
 download your choice of either:
 
-    {PACKAGE_DISTNAME}-bin.zip
+    mingw-get-<version>-mingw32-<class>-<release>-bin.zip
 
 or (preferred, if you know how to unpack it):
 
-    {PACKAGE_DISTNAME}-bin.tar.gz
+    mingw-get-<version>-mingw32-<class>-<release>-bin.tar.xz
 
 Whichever of these you choose to download, you should unpack it into
 the directory in which you intend to host your MinGW installation; (we
@@ -60,7 +131,7 @@ above warning, you do decide to adopt an alternative installation path,
 then please substitute your alternative prefix, as appropriate, where this
 document refers to C:\MinGW.  
 
-[**] If you have chosen {PACKAGE_DISTNAME}-bin.tar.gz as your installation
+[**] If you have chosen {PACKAGE_DISTNAME}-bin.tar.xz as your installation
 source, rather than {PACKAGE_DISTNAME}-bin.zip, you may like to create the
 directory:
 
@@ -182,6 +253,15 @@ In order to build mingw-get from source, you will require:
   from libxz sources no older than version 4.999.9beta, with a snapshot
   release date of 2009-12-09 or later).
 
+- A statically linkable liblua.a for the native MS-Windows host,
+  together with its associated header files; (this should be binary
+  compatible with the lua-5.2.0 release, as offered by MinGW.org).
+
+- A statically linkable libwtklite.a, together with its associated
+  header files; (this is a MinGW.org specific product, currently offered
+  only in source format, which you are advised to build and install for
+  yourself).
+
 Having provisioned a suitable build platform, with these pre-requisite
 libraries installed, you should obtain and unpack the source tarball,
 {PACKAGE_DISTNAME}-src.tar.gz, in any working directory of your choice,
@@ -234,7 +314,7 @@ to create an installation tarball, which may be deployed simply by
 unpacking it in the /mingw root directory, on any host you choose.
 
 
-Building and Installing from Source in CVS
+Building and Installing from Source in Git
 ------------------------------------------
 
 If, rather than building mingw-get from the source code provided in the
@@ -242,7 +322,8 @@ form of a release tarball, you prefer to keep on the cutting edge of
 development within the public CVS repository, there are a few additional
 pre-requisites which you must satisfy on your build platform:
 
-- You must have a CVS client, which you can use to fetch the source code
+- You must have either a git client, or a mercurial client with the
+  hggit extension enabled, which you can use to fetch the source code
   from the repository, and subsequently keep it current.
 
 - You must have the GNU autoconf package, with a version number of 2.59
@@ -257,40 +338,49 @@ pre-requisites which you must satisfy on your build platform:
 Provided you can satisfy (at least the first three of) these additional
 pre-requisites, you may check out the latest source code thus [*]:
 
-!   $ export CVSROOT
-!   $ CVSROOT=:pserver:anonymous@mingw.cvs.sf.net:/cvsroot/mingw
-!   $ cvs login
-!   $ cvs -z3 co -P mingw-get
+!   $ git clone git://git.code.sf.net/p/mingw/mingw-get
+
+or:
+
+!   $ hg clone git://git.code.sf.net/p/mingw/mingw-get
 
 This will create a working copy of the mingw-get source tree, in the
-mingw-get subdirectory of your current working directory.
+mingw-get subdirectory of your current working directory [**].
 
 [*] If you are an accredited MinGW Developer, you may prefer to use the
-:ext: access protocol of CVS, in conjunction with your registered SSH
-keys, to access the CVS repository; in this case, you should know the
+SSH access protocol for git, in conjunction with your registered SSH
+keys, to access the git repository; in this case, you should know the
 appropriate procedure to use, in place of the above.
 
-Having thus obtained your working copy of the source code from the CVS
+[**] Note that, if you are a git user, you *must* perform an additional
+checkout step, (which is not necessary for hg users):
+
+!   $ cd mingw-get
+!   $ git submodule add ../build-aux
+
+Having thus obtained your working copy of the source code from the git
 repository, you should then:
 
 !   $ cd mingw-get
 !   $ autoconf
 
-to generate the configure script, and then:
+(git users should omit the 'cd mingw-get' step, since they will already
+be in the appropriate directory, following the addition of the build-aux
+submodule), to generate the configure script, and then:
 
 !   $ mkdir obj
 !   $ cd obj
 !   $ ../configure --prefix=/mingw [options ...]
 !   $ make
 
-to progress the build [**], as in the previous case of building from the
-source code extracted from a distribution tarball.
+to progress the build [***], as in the previous case of building from
+the source code extracted from a distribution tarball.
 
-[**] Notice that here we choose to build in a subdirectory called obj;
-when building from source in CVS, building in-source becomes even less
+[***] Notice that here we choose to build in a subdirectory called obj;
+when building from source in git, building in-source becomes even less
 desirable than it is when building from distributed source.  The choice
 of obj for the build directory name is dictated by the configuration of
-mingw-get's CVS module itself; cvs "knows" that this directory does not
-contain any source files of interest to it.
+mingw-get's git module itself; both git and hg "know" that this
+directory does not contain any source files of interest to them.
 
 $RCSfile$: end of file

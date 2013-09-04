@@ -9,6 +9,56 @@ historical record is restricted to recent releases; the full history is
 recorded in the NEWS file, which is included in the source code package.
 
 
+mingw-get-0.6.0-mingw32-beta-20130904-1
+---------------------------------------
+
+Release date: 2013-09-04
+
+This is the first release to incorporate a working prototype for the
+mingw-get GUI client, together with the integrated mingw-get-setup.exe
+tool.  With the advent of these additional capabilities, the existing
+mingw-get-inst.exe wrapper becomes redundant, and is now deprecated;
+it will be withdrawn after the next mingw-get release.
+
+With this release of mingw-get-setup.exe, first time installation of
+mingw-get has become considerably simpler than previously; please see
+the "Installation Instructions" for further information.
+
+In addition to the addition of the GUI client, and the simplified first
+time installation procedure, this release incorporates the following new
+user visible features:--
+
+- New "preferences" section in profile.xml; this allows users to adjust
+  the default behaviour for command line options such as "--start-menu"
+  and "--desktop", to allow the automatic creation of shortcuts, (for
+  packages which provide them), without requiring explicit specification
+  of the option on every mingw-get invocation.  See the comments within
+  defaults.xml, for configuration instructions.
+
+- The output from "mingw-get --help" has been revised, to provide a
+  better explanation of the use of the "version selection" feature,
+  which allows users to force installation of a particular non-current
+  version of any package.
+
+- The "gui.exe" subsidiary program has been renamed as "guistub.exe"; it
+  remains in place, with this new name, to furnish diagnostics, in the
+  event that the user attempts to invoke the GUI from the command line,
+  when no GUI support has been installed.  Such GUI support is now
+  provided by "guimain.exe"; this may be installed optionally, by
+  choosing to install the "mingw-get-gui" package.
+
+- Internal "globbing" of command line arguments is now explicitly
+  disabled; (any benefit of ever having supported this seems dubious;
+  however, external "globbing" by shells, such as MSYS' sh.exe and
+  bash.exe is not, and cannot be, affected by this change).
+
+- For users wishing to follow development at the source code level, the
+  master source code repository has been relocated from CVS, to a new
+  git repository at git://git.code.sourceforge.net/p/mingw/mingw-get;
+  please refer to the INSTALL file, in the current source distribution,
+  for further information on accessing this repository.
+
+
 mingw-get-0.5-mingw32-beta-20120426-1
 -------------------------------------
 
@@ -125,6 +175,15 @@ The following new features have been implemented:--
   as --start-menu=all-users, to make such shortcuts available in the
   start menus of all users.
 
+;--------8<-------------------- cut-line -------------------->8--------
+;
+; Any text added below the cut-line will be included in the README
+; file, which is to be included in the source distribution, but it
+; will be excluded from the readme.txt file, which is to be used to
+; add descriptive content on the SourceForge download page.
+;
+; Any lines, such as these, which begin with a semicolon in their
+; first column (not indented), will be excluded from both files.
 
 mingw-get-0.4-mingw32-alpha-1
 -----------------------------
@@ -210,15 +269,6 @@ been implemented:--
   licence packages associated with all runtime dependencies identified
   for the packages named in the command.
 
-;--------8<-------------------- cut-line -------------------->8--------
-;
-; Any text added below the cut-line will be included in the README
-; file, which is to be included in the source distribution, but it
-; will be excluded from the readme.txt file, which is to be used to
-; add descriptive content on the SourceForge download page.
-;
-; Any lines, such as these, which begin with a semicolon in their
-; first column (not indented), will be excluded from both files.
 
 mingw-get-0.3-mingw32-alpha-2.1
 -------------------------------
