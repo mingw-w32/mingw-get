@@ -1,3 +1,9 @@
+2013-09-06  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Update version, pre-empting subsequent release.
+
+	* VERSION.m4 (VERSION_PATCH): Bump from zero to 1.
+
 2013-09-04  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	mingw-get-0.6.0-mingw32-beta-20130904-1 released.
