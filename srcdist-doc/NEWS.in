@@ -9,6 +9,33 @@ historical record is restricted to recent releases; the full history is
 recorded in the NEWS file, which is included in the source code package.
 
 
+mingw-get-0.6.1-mingw32-beta-20130910-1
+---------------------------------------
+
+Release date: 2013-09-10
+
+This is a bug fix release; it corrects a potential buffer overrun issue
+within the diagnostic message handler for the GUI client, as identified 
+by MinGW-Bug&nbsp;#2026.
+
+In addition to fixing the fundamental buffer overrun issue, the
+following changes have been included:--
+
+- Improved diagnosis of possible file collisions, resulting from the
+  installation of packages with conflicting content.
+
+- No entry is now recorded in the installation manifest, for any file
+  which is not extracted from its providing package archive, when such
+  extraction would result in file collision; (this fixes the secondary
+  issue noted on the ticket for MinGW&nbsp;#2026).
+
+- Carriage returns are now handled appropriately, when emitted to the
+  GUI client's diagnostic message handler pseudo-terminal windows.
+
+All users of mingw-get-0.6.0 are advised to upgrade to this release, as
+soon as possible.
+
+
 mingw-get-0.6.0-mingw32-beta-20130904-1
 ---------------------------------------
 

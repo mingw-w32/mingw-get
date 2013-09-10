@@ -1,5 +1,12 @@
 2013-09-10  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	mingw-get-0.6.1-mingw32-beta-20130910-1 released.
+
+	* srcdist-doc/NEWS.in: Release notes updated.
+	* All files (r0-6-1-beta-20130910-1): Tag assigned.
+
+2013-09-10  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Fix MinGW-Bug #2026.
 
 	* src/dmhguix.cpp (DMH_PTY_GUARDBYTES): New manifest constant.
