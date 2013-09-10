@@ -40,6 +40,7 @@
  */
 #define DMH_PTY_MIN_BUFSIZ   4096
 #define DMH_PTY_MAX_BUFSIZ  32768
+#define DMH_PTY_GUARDBYTES      1
 
 class dmhTypePTY
 {
@@ -142,10 +143,14 @@ int dmhTypePTY::printf( const char *fmt, va_list argv )
     {
       /* An explicit '\r' in the data stream should return the
        * caret to the start of the current PHYSICAL line in the
-       * EDITTEXT display
-       *
-       * FIXME: must implement this; ignore, (and discount), it
-       * for now.
+       * EDITTEXT display.
+       */
+      char *mark = caret;
+      while( (mark > console_buffer) && (*--mark != '\n') )
+	caret = mark;
+
+      /* The '\r' character isn't actually written to the
+       * output buffer; discount it.
        */
       --retval;
     }
@@ -187,10 +192,12 @@ int dmhTypePTY::putchar( int charval )
 {
   /* Helper method for appending a single character to the PTY "device"
    * buffer; this will allocate an expanding buffer, (up to the maximum
-   * specified size limit), as may be required.
+   * specified size limit, with reservation of sufficient guard bytes to
+   * ensure that output may be safely terminated), as may be required.
    */
   size_t offset;
-  if( (offset = caret - console_buffer) >= max )
+  const size_t guarded_max = max - DMH_PTY_GUARDBYTES;
+  if( (offset = caret - console_buffer) >= guarded_max )
   {
     /* The current "device" buffer is full; compute a new size, for
      * possible buffer expansion.
@@ -215,7 +222,7 @@ int dmhTypePTY::putchar( int charval )
 	caret = (console_buffer = newbuf) + offset;
       }
     }
-    if( offset >= max )
+    if( offset >= guarded_max )
     {
       /* The buffer has reached its maximum permitted size, (or there
        * was insufficient free memory to expand it), and there still
@@ -228,9 +235,34 @@ int dmhTypePTY::putchar( int charval )
       /* ...then copy it, and all following lines, to the start of the
        * buffer, so deleting the FIRST logical line, and thus free up
        * an equivalent amount of space at the end.
+       *
+       * Note: we might get away with a single memcpy() of the entire
+       * portion of the buffer, from the SECOND line onward, backwards
+       * to overwrite the FIRST line, but that would entail copying of
+       * overlapping memory regions, which is technically described as
+       * causing undefined behaviour; to avoid any possible problems,
+       * we identify a block size equal to the space occupied by the
+       * first line...
        */
-      for( caret = console_buffer; mark < endptr; )
-	*caret++ = *mark++;
+      size_t residual = caret - mark;
+      size_t block_size = mark - (caret = console_buffer);
+      while( residual >= block_size )
+      {
+	/* ...then copy the residual, in chunks of that size, (so that
+	 * there is never any overlap), until we reduce the residual to
+	 * less than the block size...
+	 */
+	memcpy( caret, mark, block_size );
+	residual -= block_size; caret = mark; mark += block_size;
+      }
+      if( residual > 0 )
+      {
+	/* ...finishing up by copying any lesser sized final residual,
+	 * and leaving the caret at the start of the space so freed.
+	 */
+	memcpy( caret, mark, residual );
+	caret += residual;
+      }
     }
   }
   /* Finally, store the current character into the "device" buffer, and

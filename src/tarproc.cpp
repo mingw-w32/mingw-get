@@ -96,7 +96,24 @@ static int create_output_stream( const char *name, int mode )
     /* Overwrite prevention was triggered; diagnose.
      */
     dmh_notify_extraction_failed( name );
-    dmh_notify( DMH_ERROR, "cannot replace existing file\n" );
+    if( errno == EEXIST )
+    {
+      /* The exception was triggered by an already existing file;
+       * this likely indicates a conflict between two packages.
+       */
+      dmh_notify( DMH_ERROR,
+	  "%s: probable package conflict; existing file not overwritten\n",
+	  name
+       	);
+    }
+    else
+    { /* Otherwise, the user isn't allowed to write the extracted
+       * file, in the location designated for installation.
+       */
+      dmh_notify( DMH_ERROR,
+	  "%s: permission denied; cannot store file\n", name
+	);
+    }
   }
   return fd;
 }
@@ -146,9 +163,11 @@ int pkgArchiveProcessor::ExtractFile( int fd, const char *pathname, int status )
       }
     }
   }
-  /* Finally, we pass the original status value back to the caller.
+  /* Finally, we pass either the original status value, or the
+   * failing file descriptor as an effective status, if no file
+   * could be extracted, back to the caller.
    */
-  return status;
+  return (fd == -1) ? fd : status;
 }
 
 /*******************

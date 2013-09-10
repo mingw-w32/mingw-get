@@ -1,3 +1,20 @@
+2013-09-10  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Fix MinGW-Bug #2026.
+
+	* src/dmhguix.cpp (DMH_PTY_GUARDBYTES): New manifest constant.
+	(dmhTypePTY::printf) [buffer full]: Use it; it defines a reserved byte
+	count, at end of buffer, where expansion or scroll out is triggered;
+	use memcpy() for scroll out, but avoid overlapping regions.
+	(dmhTypePTY::printf) [output == '\r']: Handle it.
+
+	* src/tarproc.cpp (create_output_stream): Improve diagnostic messages;
+	discriminate between file collision and other privilege violations.
+	(pkgArchiveProcessor::ExtractFile): Don't return a zero status code,
+	when the output stream could not be successfully opened, so that...
+	(pkgTarArchiveInstaller::ProcessDataStream): ...we may avoid writing a
+	spurious manifest entry here.
+
 2013-09-06  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Update version, pre-empting subsequent release.
