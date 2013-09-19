@@ -1,3 +1,11 @@
+2013-09-19  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Handle meta-package removal correctly; (cf. MinGW-Bug #2051)
+
+	* src/pkgunst.cpp (pkgRemove) [archive == none]: Ensure the pending
+	action flag is cleared; previously this was done during manifest clean
+	up, and since a meta-package has no manifest, it was overlooked.
+
 2013-09-10  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	mingw-get-0.6.1-mingw32-beta-20130910-1 released.

@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2011, 2012, MinGW.org Project
+ * Copyright (C) 2011-2013, MinGW.org Project
  *
  *
  * Implementation of the primary package removal methods.
@@ -330,9 +330,14 @@ EXTERN_C void pkgRemove( pkgActionItem *current )
      * have no associated archive file, no installed footprint on disk,
      * and no associated content manifest to process; thus...
      */
-    if( ! match_if_explicit( pkg->ArchiveName(), value_none ) )
+    if( match_if_explicit( pkg->ArchiveName(), value_none ) )
     {
-      /* ...only in the case of packages identified as "real", (which
+      /* ...we may simply assert the removal action as successful...
+       */
+      current->Assert( 0UL, ~ACTION_REMOVE_FAILED );
+    }
+    else
+    { /* ...but, in the case of packages identified as "real", (which
        * we expect to be in a substantial majority), do we need to refer
        * to any installation manifest, to identify actual disk files to
        * be removed.
