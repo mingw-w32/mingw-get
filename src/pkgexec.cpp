@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, 2012, 2013, MinGW.org Project
+ * Copyright (C) 2009-2013, MinGW.org Project
  *
  *
  * Implementation of package management task scheduler and executive.
@@ -752,12 +752,13 @@ static const char *action_key = "action";
 static const char *normal_key = "normal";
 
 static inline __attribute__((__always_inline__)) bool init_lua_path()
+# define LUA_LIBEXEC_PATH  "\\libexec\\mingw-get\\?.lua"
 {
   /* A one time initialisation hook, to ensure that the built-in Lua script
    * interpreter will load scripts from the libexec directory associated with
    * the running mingw-get.exe instance.
    */
-  putenv( "LUA_PATH=!\\libexec\\mingw-get\\?.lua;!\\..\\libexec\\mingw-get\\?.lua" );
+  putenv( "LUA_PATH=!\\?.lua;!"LUA_LIBEXEC_PATH";!\\.."LUA_LIBEXEC_PATH );
   return true;
 }
 

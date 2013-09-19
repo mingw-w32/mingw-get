@@ -1,5 +1,12 @@
 2013-09-19  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Correct LUA_PATH assignment for GUI; (cf. MinGW-Bug #2052)
+
+	* src/pkgexec.cpp (LUA_LIBEXEC_PATH): New manifest string; define it.
+	(init_lua_path) <LUA_PATH>: Use it; add guimain.exe app directory.
+
+2013-09-19  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Handle meta-package removal correctly; (cf. MinGW-Bug #2051)
 
 	* src/pkgunst.cpp (pkgRemove) [archive == none]: Ensure the pending
