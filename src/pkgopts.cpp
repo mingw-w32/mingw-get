@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, MinGW Project
+ * Copyright (C) 2012, 2013, MinGW.org Project
  *
  *
  * Implementation of XML interpreter for configuation of preferences.
@@ -83,6 +83,7 @@ class pkgPreferenceEvaluator
 /* XML tag/attribute key names, used exclusively within this module.
  */
 static const char *prefs_key = "preferences";
+static const char *client_key = "client";
 static const char *option_key = "option";
 static const char *value_key = "value";
 
@@ -306,7 +307,7 @@ void pkgPreferenceEvaluator::SetScriptHook( const char *key, ... )
   }
 }
 
-void pkgXmlDocument::EstablishPreferences()
+void pkgXmlDocument::EstablishPreferences( const char *client )
 {
   /* Method to interpret the content of any "preferences" sections
    * appearing within the XML database.
@@ -325,37 +326,44 @@ void pkgXmlDocument::EstablishPreferences()
     pkgXmlNode *prefs = dbase_root->FindFirstAssociate( prefs_key );
     while( prefs != NULL )
     {
-      /* ...and interpret any contained "enable" specifications.
+      /* ...then, for it and any of its siblings which apply within
+       * the active application profile classification...
        */
-      pkgPreferenceEvaluator opt( prefs->FindFirstAssociate( option_key ));
-      while( opt.Current() != NULL )
+      if( (client == NULL)
+      ||  (strcasecmp( client, prefs->GetPropVal( client_key, client )) == 0)  )
       {
-	const char *optname;
-	if( (optname = opt.SetName()) != NULL )
-	{
-	  if( opt_strcmp( optname, desktop_option ) == 0 )
-	    /*
-	     * Enable post-install hook for creation of desktop shortcuts;
-	     * by default, these are defined for current user only, but may
-	     * optionally be provided for all users.
-	     */
-	    opt.SetScriptHook( PKG_DESKTOP_HOOK, NULL );
-
-	  else if( opt_strcmp( optname, start_menu_option ) == 0 )
-	    /*
-	     * Similarly, enable hook for creation of start menu shortcuts.
-	     */
-	    opt.SetScriptHook( PKG_START_MENU_HOOK, NULL );
-
-	  else
-	    /* Any unrecognised option specification is simply ignored,
-	     * after posting an appropriate diagnostic message.
-	     */
-	    dmh_notify( DMH_WARNING, "unknown option '%s' ignored\n", optname );
-	}
-	/* Repeat for any further "enable" specifations...
+	/* ...interpret any contained "enable" specifications.
 	 */
-	opt.GetNext( option_key );
+	pkgPreferenceEvaluator opt( prefs->FindFirstAssociate( option_key ));
+	while( opt.Current() != NULL )
+	{
+	  const char *optname;
+	  if( (optname = opt.SetName()) != NULL )
+	  {
+	    if( opt_strcmp( optname, desktop_option ) == 0 )
+	      /*
+	       * Enable post-install hook for creation of desktop shortcuts;
+	       * by default, these are defined for current user only, but may
+	       * optionally be provided for all users.
+	       */
+	      opt.SetScriptHook( PKG_DESKTOP_HOOK, NULL );
+
+	    else if( opt_strcmp( optname, start_menu_option ) == 0 )
+	      /*
+	       * Similarly, enable hook for creation of start menu shortcuts.
+	       */
+	      opt.SetScriptHook( PKG_START_MENU_HOOK, NULL );
+
+	    else
+	      /* Any unrecognised option specification is simply ignored,
+	       * after posting an appropriate diagnostic message.
+	       */
+	      dmh_notify( DMH_WARNING, "unknown option '%s' ignored\n", optname );
+	  }
+	  /* Repeat for any further "enable" specifations...
+	   */
+	  opt.GetNext( option_key );
+	}
       }
       /* ...and for any additional "preferences" sections.
        */

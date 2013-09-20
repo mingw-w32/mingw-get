@@ -4,7 +4,7 @@
     $Id$
 
     Written by Keith Marshall  <keithmarshall@users.sourceforge.net>
-    Copyright (C) 2009, 2010, 2012, MinGW Project
+    Copyright (C) 2009, 2010, 2012, 2013, MinGW.org Project
 
 
     Master configuration profile for mingw-get.
@@ -31,7 +31,7 @@
     arising from the use of this software.
   -->
 
-  <preferences>
+  <preferences client="cli">
     <!--
       "preferences" specifications provide a mechanism for defining
       user specified default attributes for command line options such
@@ -50,6 +50,24 @@
 
     <!--option name="start-menu" /-->
     <!--option name="start-menu" value="all-users" /-->
+  </preferences>
+
+  <preferences client="gui">
+    <!--
+      The preceding "preferences" section applies exclusively to the
+      CLI client, (where command line options may be used); here, we
+      specify defaults for the GUI client, (which provides no support
+      for command line options), such that shortcuts will be created
+      on the desktop, and in the start menu, for the current user.
+
+      Note that matching of the "client" attribute will be performed
+      case-insensitively, against a keyword defined by the respective
+      client; any "preferences" section with no "client" assignment
+      will be matched for ALL clients.
+    -->
+
+    <option name="desktop" />
+    <option name="start-menu" />
   </preferences>
 
   <repository uri="http://prdownloads.sourceforge.net/mingw/%F.xml.lzma?download">

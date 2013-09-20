@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, 2012, MinGW Project
+ * Copyright (C) 2009-2013, MinGW.org Project
  *
  *
  * Implementation of the main program function, which is invoked by
@@ -223,7 +223,7 @@ EXTERN_C int climain( int argc, char **argv )
 	/* ...initialise any preferences which the user may
 	 * have specified within profile.xml...
 	 */
-	dbase.EstablishPreferences();
+	dbase.EstablishPreferences( "cli" );
 
 	/* ...and invoke the appropriate action handler.
 	 */

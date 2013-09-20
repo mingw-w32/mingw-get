@@ -1,5 +1,23 @@
 2013-09-20  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Establish default preferences for GUI; (cf. MinGW-Feature #2036)
+
+	* src/pkgbase.h (pkgXmlDocument::EstablishPreferences): Adjust its
+	prototype; add argument identifying prospective client classification.
+
+	* src/pkgopts.cpp (client_key): New XML property keyword; define it.
+	(pkgXmlDocument::EstablishPreferences): Implement filter, based on new
+	client classification argument, to restrict preference selection to a
+	matching client class specification.
+
+	* src/climain.cpp (dbase.EstablishPreferences): Filter on class "cli".
+	* src/guiexec.cpp (pkgData->EstablishPreferences): Likewise, on "gui".
+
+	* xml/profile.xml (preferences): Add client="cli" attribute for the
+	existing specification; add another for client="gui".
+
+2013-09-20  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Force canonical comparison of shell links; (cf. MinGW-Bug #2054)
 
 	* scripts/libexec/unlink.js [FileExists(filename) && (chklink != "")]:

@@ -175,9 +175,14 @@ void AppWindowMaker::LoadPackageData( bool force_update )
     throw WTK::runtime_error( "Cannot read package catalogue" );
 
   /* Finally, load the installation records pertaining to
-   * the active system map.
+   * the active system map...
    */
   pkgData->LoadSystemMap();
+
+  /* ...and establish any preferences which the user may have
+   * specified within profile.xml
+   */
+  pkgData->EstablishPreferences( "gui" );
 }
 
 static void pkgInvokeInitDataLoad( void *window )

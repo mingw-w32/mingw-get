@@ -5,7 +5,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, 2012, 2013, MinGW.org Project
+ * Copyright (C) 2009-2013, MinGW.org Project
  *
  *
  * Public interface for the package directory management routines;
@@ -409,7 +409,7 @@ class pkgXmlDocument : public TiXmlDocument
      * options, which are specified within profile.xml rather than on
      * the command line.
      */
-    void EstablishPreferences();
+    void EstablishPreferences( const char* = NULL );
 
     /* Method to synchronise the state of the local package manifest
      * with the master copy held on the distribution server.
