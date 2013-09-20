@@ -1,3 +1,13 @@
+2013-09-20  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Force canonical comparison of shell links; (cf. MinGW-Bug #2054)
+
+	* scripts/libexec/unlink.js [FileExists(filename) && (chklink != "")]:
+	The value of 'chklink' may not be canonical; instantiate an (unsaved)
+	link reference from it, then compare the canonicalized reference from
+	within it, to the reference within 'filename', thus avoiding possible
+	lexical mismatch between canonical and non-canonical forms.
+
 2013-09-19  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Correct LUA_PATH assignment for GUI; (cf. MinGW-Bug #2052)

@@ -40,7 +40,7 @@
  * This file is a component of mingw-get.
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, MinGW Project
+ * Copyright (C) 2012, 2013, MinGW.org Project
  *
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -222,11 +222,12 @@ for( i = 0; i < argv.length; i++ )
        */
       if( chklink != "" )
       {
-	/* ...but when "--if-linked is in effect, we must verify
-	 * that the link target is matched, before...
+	/* ...but when "--if-linked is in effect, we must verify that
+	 * the link target is matched (case-insensitively), before...
 	 */
 	var ref = WinShell.CreateShortcut( filename );
-	if( ref.TargetPath.toLowerCase() == chklink.toLowerCase() )
+	var chk = WinShell.CreateShortcut( filename ); chk.TargetPath = chklink;
+	if( ref.TargetPath.toLowerCase() == chk.TargetPath.toLowerCase() )
 	  /*
 	   * ...we may proceed with deletion.
 	   */
