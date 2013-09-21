@@ -1,5 +1,13 @@
 2013-09-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Reorder controls within "Apply Changes" dialogue.
+
+	* src/guimain.rc (IDD_APPLY_APPROVE): Move definition of the "Okay to
+	proceed?" GROUPBOX, and its contained PUSHBUTTONs, to the top; we want
+	it to get the default focus.
+
+2013-09-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Reimplement wsh.lua in C/C++; (cf. MinGW-Bug #2057).
 
 	* src/pkgexec.cpp (LUA_INLINE): New function attribute definition.
