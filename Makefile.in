@@ -194,9 +194,10 @@ script_srcdir = ${srcdir}/scripts/libexec
 
 BIN_PROGRAMS = pkginfo$(EXEEXT) mingw-get$(EXEEXT)
 LIBEXEC_PROGRAMS = guistub$(EXEEXT) guimain$(EXEEXT) lastrites$(EXEEXT)
-LIBEXEC_SCRIPTS = ${script_srcdir}/setup.lua ${script_srcdir}/wsh.lua \
-   ${script_srcdir}/shlink.js ${script_srcdir}/unlink.js
 LIBEXEC_DATA = mingw-get-0.dll
+
+LIBEXEC_SCRIPTS = ${script_srcdir}/setup.lua \
+   ${script_srcdir}/shlink.js ${script_srcdir}/unlink.js
 
 # Primary build goals...
 #

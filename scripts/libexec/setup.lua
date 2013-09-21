@@ -9,7 +9,7 @@
 -- This file is a component of mingw-get.
 --
 -- Written by Keith Marshall <keithmarshall@users.sourceforge.net>
--- Copyright (C) 2012, MinGW Project
+-- Copyright (C) 2012, 2013, MinGW.org Project
 --
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a
@@ -41,17 +41,25 @@
      return wsh.libexec_path( script, subsystem )
    end
 --
+   function M.argwrap( arglist, ... )
+     for argind, argval in ipairs {...}
+     do
+       arglist = arglist .. " " .. argval
+     end
+     return arglist
+   end
+--
    function M.shlink( args, ... )
      if args
      then
-       wsh.execute( M.libexec_path( "shlink.js" ), args, ... )
+       wsh.execute( M.argwrap( M.libexec_path( "shlink.js" ), args, ... ) )
      end
    end
 --
    function M.unlink( args, ... )
      if args
      then
-       wsh.execute( M.libexec_path( "unlink.js" ), args, ... )
+       wsh.execute( M.argwrap( M.libexec_path( "unlink.js" ), args, ... ) )
      end
    end
 --

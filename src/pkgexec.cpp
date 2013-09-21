@@ -747,11 +747,14 @@ pkgActionItem::~pkgActionItem()
  *
  */
 #include "lua.hpp"
+#include <process.h>
 
 static const char *action_key = "action";
 static const char *normal_key = "normal";
 
-static inline __attribute__((__always_inline__)) bool init_lua_path()
+#define LUA_INLINE static inline __attribute__((__always_inline__))
+
+LUA_INLINE bool init_lua_path()
 # define LUA_LIBEXEC_PATH  "\\libexec\\mingw-get\\?.lua"
 {
   /* A one time initialisation hook, to ensure that the built-in Lua script
@@ -760,6 +763,104 @@ static inline __attribute__((__always_inline__)) bool init_lua_path()
    */
   putenv( "LUA_PATH=!\\?.lua;!"LUA_LIBEXEC_PATH";!\\.."LUA_LIBEXEC_PATH );
   return true;
+}
+
+LUA_INLINE bool lua_isstringarg( lua_State *interpreter, int arg_index )
+{
+  /* Convenience function to check if a particular argument was passed
+   * from Lua, and if so, if it has a valid string representation.
+   */
+  return lua_isnoneornil( interpreter, arg_index ) ? false
+    : lua_isstring( interpreter, arg_index );
+}
+
+static int lua_wsh_libexec_path( lua_State *interpreter )
+{
+  /* Implementation for the Lua wsh.libexec_path function; it supports
+   * usage conforming to either of the function prototypes:
+   *
+   *    wsh.libexec_path( script )
+   *    wsh.libexec_path( script, subsystem )
+   *
+   * returning the absolute file system path to "script", within the
+   * libexec tree for the applicable subsystem, (or for the system in
+   * general, if no "subsystem" argument is specified).
+   */
+  const char *approot = approot_path();
+  const char *script = lua_tostring( interpreter, 1 );
+
+  if( lua_isstringarg( interpreter, 2 ) )
+  {
+    /* This is the case where a "subsystem" is specified, so we encode
+     * the applicable subsystem inclusive path name...
+     */
+    const char *path = "%slibexec\\%s\\%s";
+    const char *subsystem = lua_tostring( interpreter, 2 );
+    char ref[1 + snprintf( NULL, 0, path, approot, subsystem, script )];
+    snprintf( ref, sizeof( ref ), path, approot, subsystem, script );
+
+    /* ...which we then pass back to the Lua caller.
+     */
+    lua_pushstring( interpreter, ref );
+  }
+  else
+  { /* This is the case where no subsystem has been specified,
+     * so we encode the general system libexec path name...
+     */
+    const char *path = "%slibexec\\%s";
+    char ref[1 + snprintf( NULL, 0, path, approot, script )];
+    snprintf( ref, sizeof( ref ), path, approot, script );
+
+    /* ...again passing it back to the Lua caller.
+     */
+    lua_pushstring( interpreter, ref );
+  }
+  /* In either case, we have one result to pass back.
+   */
+  return 1;
+}
+
+static int lua_wsh_execute( lua_State *interpreter )
+{
+  /* Implementation for the Lua wsh.execute function; it conforms to
+   * an effective function prototype equivalent to:
+   *
+   *    wsh.execute( command )
+   *
+   * delivering a capability similar to os.execute, but using wscript
+   * as the command interpreter, rather than the system shell.
+   */
+  if( lua_isstringarg( interpreter, 1 ) )
+  {
+    /* If no "command" is specified, we silently process this as a no-op;
+     * when a command IS specified, we hand it off to the interpreter.
+     */
+    const char *wsh = "wscript", *mode = "-nologo";
+    spawnlp( _P_WAIT, wsh, wsh, mode, lua_tostring( interpreter, 1 ), NULL );
+  }
+  /* Either way, we have nothing to return to the Lua caller.
+   */
+  return 0;
+}
+
+static int luaload_wsh( lua_State *interpreter )
+{
+  /* Declare the functions provided by our Windows Script Host
+   * interface, wrapping them into the Lua "wsh" module...
+   */
+  static struct luaL_Reg wsh_function_registry[] =
+  {
+    /* Lua Name 	Handler Function     */
+    /* --------------   -------------------- */
+    {  "execute",	lua_wsh_execute      },
+    {  "libexec_path",	lua_wsh_libexec_path },
+    {	NULL,		NULL		     }
+  };
+
+  /* ...and register the module within the active interpreter.
+   */
+  luaL_newlib( interpreter, wsh_function_registry );
+  return 1;
 }
 
 int pkgXmlNode::DispatchScript
@@ -792,12 +893,16 @@ int pkgXmlNode::DispatchScript
        * have not yet attached an interpreter to this node, then...
        */
       if( (interpreter == NULL) && ((interpreter = luaL_newstate()) != NULL) )
-	/*
-	 * ...start one now, and initialise it by loading the standard
+      {
+	/* ...start one now, initialise it by loading the standard
 	 * lua libraries...
 	 */
 	luaL_openlibs( interpreter );
 
+	/* ...and register our Windows Script Host interface...
+	 */
+	luaL_requiref( interpreter, "wsh", luaload_wsh, 1 );
+      }
       /* ...then hand off the current script fragment to this active
        * lua interpreter...
        */

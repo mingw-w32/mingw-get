@@ -1,3 +1,23 @@
+2013-09-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Reimplement wsh.lua in C/C++; (cf. MinGW-Bug #2057).
+
+	* src/pkgexec.cpp (LUA_INLINE): New function attribute definition.
+	(init_lua_path): Use it, reproducing the original function attributes.
+	(lua_isstringarg): New LUA_INLINE helper function; implement it.
+	(lua_wsh_libexec_path): New function; it implements wsh.libexec_path
+	(lua_wsh_execute): New function; it implements wsh.execute
+	(luaload_wsh): New function; it wraps references to lua_wsh_execute()
+	and lua_wsh_libexec_path() to provide the wsh module implementation.
+	(pkgXmlNode::DispatchScript): Preload it into the Lua interpreter.
+
+	* scripts/libexec/setup.lua (M.argwrap): New method; implement it.
+	(M.shlink, M.unlink): Use it to collect their arguments into a single
+	string, to be passed as the command to be invoked by wsh.execute
+
+	* scripts/libexec/wsh.lua: File is no longer required; delete it.
+	* Makefile.in (LIBEXEC_SCRIPTS): Remove reference to it.
+
 2013-09-20  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Establish default preferences for GUI; (cf. MinGW-Feature #2036)
