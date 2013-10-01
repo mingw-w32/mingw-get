@@ -466,7 +466,7 @@ bool AppWindowMaker::IsPackageGroupAffiliate( pkgXmlNode *package )
        * check for any further "affiliate" declarations at the
        * current level within the XML document hierarchy...
        */
-      group = group->FindNextAssociate( group_key );
+      group = group->FindNextAssociate( affiliate_key );
     }
     /* ...and at enclosing levels, as may be necessary.
      */

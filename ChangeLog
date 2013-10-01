@@ -1,3 +1,11 @@
+2013-10-01  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Correct processing of package group associations.
+
+	* src/pkgtree.cpp (AppWindowMaker::IsPackageGroupAffiliate): Iterate
+	over "affiliate_key" elements in FindNextAssociate() calls; original
+	implementation was incorrectly iterating over "group_key" elements.
+
 2013-09-21  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Reorder controls within "Apply Changes" dialogue.
