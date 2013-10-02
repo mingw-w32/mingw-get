@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, MinGW Project
+ * Copyright (C) 2012, 2013, MinGW.org Project
  *
  *
  * Implementation of the methods for the pkgListViewMaker class, and
@@ -129,7 +129,13 @@ inline bool pkgXmlNode::IsVisibleGroupMember()
   return AppWindowMaker::IsPackageGroupAffiliate( this );
 }
 
-inline bool pkgXmlNode::IsVisibleClass(){ return true; }
+/* FIXME: Complementary check for component class visibility requires a
+ * future component class visibility control; for the time being, we may
+ * assume that any component package should be visible if it belongs to
+ * any visible package group, (including a component subset of such a
+ * group, which may comprise only itself).
+ */
+inline bool pkgXmlNode::IsVisibleClass(){ return IsVisibleGroupMember(); }
 
 static char *pkgGetTitle( pkgXmlNode *pkg, const pkgXmlNode *xml_root )
 {
@@ -437,7 +443,7 @@ void pkgListViewMaker::Dispatch( pkgXmlNode *package )
    * dispatching the content of the directory to the display service,
    * (which, in this case, populates the list view window pane).
    */
-  if( package->IsElementOfType( package_key ) && package->IsVisibleGroupMember() )
+  if( package->IsElementOfType( package_key ) )
   {
     /* Assemble the package name into the list view record block.
      */
@@ -455,8 +461,9 @@ void pkgListViewMaker::Dispatch( pkgXmlNode *package )
       dir->InOrder( this );
       delete dir;
     }
-    else
-      /* ...otherwise, simply insert an unclassified list entry
+    else if( package->IsVisibleGroupMember() )
+      /*
+       * ...otherwise, simply insert an unclassified list entry
        * for the bare package name, omitting the component class.
        */
       InsertItem( package, (char *)("") );

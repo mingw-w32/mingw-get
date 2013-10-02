@@ -1,3 +1,14 @@
+2013-10-02  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Support group affiliation with component package granularity.
+
+	* src/pkglist.cpp (pkgXmlNode::IsVisibleClass): Make it synonymous
+	with IsVisibleGroupMember(); this is a temporary adjustment, pending
+	the planned implementation of component class visibility filtering.
+	(pkgListViewMaker::Dispatch): Defer consideration of visibility until
+	traversal of component package directories, except in the particular
+	case of packages which lack defined components.
+
 2013-10-01  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Correct processing of package group associations.
