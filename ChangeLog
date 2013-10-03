@@ -1,3 +1,10 @@
+2013-10-03  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Propagate RELEASE_CLASS setting from mingw-get-setup.
+
+	* configure.ac (CLI_RELEASE_CLASS, GUI_RELEASE_CLASS): Adopt...
+	(RELEASE_CLASS) [defined]: ...this as default value.
+
 2013-10-02  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Support group affiliation with component package granularity.

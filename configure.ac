@@ -44,8 +44,8 @@
 # to update the configuration for the "preview" class), when we wish
 # to build snapshots for distribution between formal releases.
 #
-  AC_SUBST([CLI_RELEASE_CLASS],[${SNAPSHOT_CLASS-"beta"}])
-  AC_SUBST([GUI_RELEASE_CLASS],[${SNAPSHOT_CLASS-"alpha"}])
+  AC_SUBST([CLI_RELEASE_CLASS],[${SNAPSHOT_CLASS-${RELEASE_CLASS-"beta"}}])
+  AC_SUBST([GUI_RELEASE_CLASS],[${SNAPSHOT_CLASS-${RELEASE_CLASS-"alpha"}}])
 
 # Override the normal UNIX-centric autoconf default prefix;
 # substitute the MinGW standard in its place.
