@@ -9,6 +9,49 @@ historical record is restricted to recent releases; the full history is
 recorded in the NEWS file, which is included in the source code package.
 
 
+mingw-get-0.6.2-mingw32-beta-20131004-1
+---------------------------------------
+
+Release date: 2013-10-04
+
+This is a further bug fix release; it addresses the following issues:--
+
+- MinGW-Feature&nbsp;#2036 partially implemented: profile.xml now
+  provides for separate assignment of preferences for each of the CLI
+  and GUI clients.  Users are advised to review the changes which have
+  been made in the distributed copy of defaults.xml, and to incorporate
+  such adjustments as they see fit, into their own local copies of
+  profile.xml; (alternatively, those who don't care to maintain their
+  own copy of profile.xml should replace any pre-existing copy of
+  profile.xml with a copy of the distributed defaults.xml).
+
+- MinGW-Bug&nbsp;#2028 partially resolved: affiliation of individual
+  component packages with any package group is now supported; also the
+  issue of only the first affiliation for each package being honoured,
+  when displaying the package list, has been corrected.
+
+- MinGW-Bug&nbsp;#2051 fixed: successful removal of meta-packages is now
+  correctly recorded when updating the GUI's package list display.
+
+- MinGW-Bug&nbsp;#2052 fixed: the LUA_PATH environment variable is now
+  correctly specified, for both CLI and GUI clients.
+
+- MinGW-Bug&nbsp;#2054 fixed: pre-remove scripts calling the unlink.js
+  helper to remove program shortcuts are now assured that the reference
+  path specified with the '--if-linked' attribute will be normalized to
+  a canonical file system form, before comparison with the similarly
+  normalized path name stored in any possibly matching shortcut.
+
+- MinGW-Bug&nbsp;#2057 fixed: mingw-get's embedded Lua interpreter now
+  provides its own built-in wsh.execute method, which allows invocation
+  of the Windows Scripting Host, to run any JScript or VBScript helper,
+  without any need to open a redundant Windows Console.
+
+- The "Apply Changes" dialogue now assigns default focus to the "Apply"
+  button, rather than to the list of packages to be removed; this avoids
+  an ugly highlighting issue, when the dialogue is displayed.
+
+
 mingw-get-0.6.1-mingw32-beta-20130910-1
 ---------------------------------------
 

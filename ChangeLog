@@ -1,3 +1,11 @@
+2013-10-04  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	mingw-get-0.6.2-mingw32-beta-20131004-1 released.
+
+	* VERSION.m4 (VERSION_PATCH): Increment it.
+	* srcdist-doc/NEWS.in: Release notes updated.
+	* All files (r0-6-4-beta-20131004-1): Tag assigned.
+
 2013-10-03  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Propagate RELEASE_CLASS setting from mingw-get-setup.
