@@ -1,3 +1,12 @@
+2013-10-15  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Add automated build time configuration management.
+
+	* Makefile.in (Makefile): Add regeneration rules, depending on...
+	(VERSION.m4, configure.ac, aclocal.m4, missing.m4, makeopts.m4):
+	...these, if modified by the package maintainer, directed via...
+	(config.status, configure): ...these, regenerated as required.
+
 2013-10-04  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	mingw-get-0.6.2-mingw32-beta-20131004-1 released.

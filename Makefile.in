@@ -247,6 +247,22 @@ WITH_REQUEST = $(QUIET_MAKE) COMMAND
 execute-command:
 	$(COMMAND)
 
+# Build system configuration management...
+#
+vpath configure @top_srcdir@
+vpath configure.ac @top_srcdir@
+vpath %.m4 @top_srcdir@:@top_srcdir@/build-aux/m4
+vpath Makefile.in @top_srcdir@
+
+Makefile: Makefile.in VERSION.m4 config.status
+	./config.status
+
+config.status: configure
+	./config.status --recheck
+
+configure: configure.ac VERSION.m4 aclocal.m4 missing.m4 makeopts.m4
+	cd ${abs_top_srcdir}; autoconf
+
 # Compilation and dependency tracking...
 #
 DEPFLAGS = -MMD -MP
