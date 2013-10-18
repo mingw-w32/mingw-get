@@ -1,5 +1,17 @@
 2013-10-18  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
+	Don't attempt to resolve dependencies for unidentified packages.
+
+	* src/pkgdeps.cpp (pkgXmlDocument::ResolveDependencies):
+	[selected == NULL]: Current dependency is unresolved; do not make any
+	recursive call for this unidentified requirement.  This avoids posting
+	misleading "can't get 'tarname' for non-release element <<<unknown>>>"
+	diagnostic messages, where the subsequent "unresolved dependency"
+	message is sufficient; include dmhmsgs.h, and add...
+	(PKGMSG_SPECIFICATION_ERROR): ...this preamble instead.
+
+2013-10-18  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
 	Implement foundation for future NLS enabled diagnostics.
 
 	* src/dmhmsgs.h: New file; it declares the NLS capable DMH interface.

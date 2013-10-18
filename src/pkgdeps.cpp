@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include "dmh.h"
+#include "dmhmsgs.h"
 #include "debug.h"
 
 #include "pkginfo.h"
@@ -501,10 +502,13 @@ pkgXmlDocument::ResolveDependencies( pkgXmlNode* package, pkgActionItem* rank )
 
 	/* Regardless of the action scheduled, we must recursively
 	 * consider further dependencies of the resolved prerequisite;
+	 * (but note that attempting to do this would be pointless if
+	 * the prerequisite package could not be identified).
+	 *
 	 * FIXME: do we need to do this, when performing a removal?
 	 * Right now, I (KDM) don't think so...
 	 */
-	if( (request & ACTION_INSTALL) != 0 )
+	if( (selected != NULL) && ((request & ACTION_INSTALL) != 0) )
 	  ResolveDependencies( selected, rank );
       }
 
@@ -518,6 +522,7 @@ pkgXmlDocument::ResolveDependencies( pkgXmlNode* package, pkgActionItem* rank )
 	const char *requestor = refpkg->GetPropVal( tarname_key, value_unknown );
 
 	dmh_control( DMH_BEGIN_DIGEST );
+	dmh_notify( DMH_ERROR, PKGMSG_SPECIFICATION_ERROR );
 	dmh_notify( DMH_ERROR, "%s: requires...\n", requestor );
 	for( int i = 0; i < sizeof( key ) / sizeof( char* ); i++ )
 	  if( (ref = dep->GetPropVal( key[i], NULL )) != NULL )
