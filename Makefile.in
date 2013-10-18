@@ -160,7 +160,8 @@ LIBS = -Wl,-Bstatic -llua -lz -lbz2 -llzma -Wl,-Bdynamic -lwininet
 
 # Define the content of package deliverables.
 #
-CORE_DLL_OBJECTS  =  climain.$(OBJEXT) pkgshow.$(OBJEXT) dmhcore.$(OBJEXT) \
+CORE_DLL_OBJECTS  =  \
+   climain.$(OBJEXT) pkgshow.$(OBJEXT) dmhcore.$(OBJEXT) dmhmsgs.$(OBJEXT) \
    pkgbind.$(OBJEXT) pkginet.$(OBJEXT) pkgstrm.$(OBJEXT) pkgname.$(OBJEXT) \
    pkgexec.$(OBJEXT) pkgfind.$(OBJEXT) pkginfo.$(OBJEXT) pkgspec.$(OBJEXT) \
    pkgopts.$(OBJEXT) sysroot.$(OBJEXT) pkghash.$(OBJEXT) pkgkeys.$(OBJEXT) \

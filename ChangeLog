@@ -1,3 +1,17 @@
+2013-10-18  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Implement foundation for future NLS enabled diagnostics.
+
+	* src/dmhmsgs.h: New file; it declares the NLS capable DMH interface.
+	* src/dmhmsgs.c: New file; it implements rudimentary NLS hooks, (but
+	currently does not direct them to any NLS provider), together with an
+	initial subset of a default (compiled in) message catalogue.
+
+	* Makefile.in (CORE_DLL_OBJECTS): Add dmhmsgs.$OBJEXT
+
+	* src/pkgname.cpp (pkgArchiveName): Modify diagnostics, to use...
+	(PKGMSG_SPECIFICATION_ERROR): ...this dmhmsgs.h declared message.
+
 2013-10-15  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Add automated build time configuration management.

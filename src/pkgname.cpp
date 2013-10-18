@@ -31,6 +31,7 @@
 #include <string.h>
 
 #include "dmh.h"
+#include "dmhmsgs.h"
 #include "pkgbase.h"
 #include "pkgkeys.h"
 #include "pkginfo.h"
@@ -56,7 +57,7 @@ const char *pkgArchiveName( pkgXmlNode *rel, const char *tag, unsigned opt )
     /* Complain that this XML element type is invalid, in this context...
      */
     dmh_control( DMH_BEGIN_DIGEST );
-    dmh_notify( DMH_ERROR, "internal package specification error\n" );
+    dmh_notify( DMH_ERROR, PKGMSG_SPECIFICATION_ERROR );
     dmh_notify( DMH_ERROR, "can't get 'tarname' for non-release element %s\n", reftype );
     dmh_notify( DMH_ERROR, "please report this to the package maintainer\n" );
     dmh_control( DMH_END_DIGEST );
