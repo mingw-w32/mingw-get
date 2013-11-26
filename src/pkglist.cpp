@@ -78,8 +78,7 @@ void AppWindowMaker::InitPackageListView()
     /* Specify the column headings for the package list table.
      */
     { ID_PKGLIST_TABLE_HEADINGS,  20, ""  },
-    { ID_PKGNAME_COLUMN_HEADING, 150, "Package" },
-    { ID_PKGTYPE_COLUMN_HEADING,  48, "Class" },
+    { ID_PKGNAME_COLUMN_HEADING, 198, "Package" },
     { ID_INSTVER_COLUMN_HEADING, 125, "Installed Version" },
     { ID_REPOVER_COLUMN_HEADING, 125, "Repository Version" },
     { ID_PKGDESC_COLUMN_HEADING, 400, "Description" },
@@ -412,9 +411,10 @@ void pkgListViewMaker::UpdateItem( char *class_name, bool new_entry )
      * ...and fill in the text for the package name, class name,
      * and package description columns...
      */
-    ListView_SetItemText( ListView, content.iItem, 1, package_name );
-    ListView_SetItemText( ListView, content.iItem, 2, class_name );
-    ListView_SetItemText( ListView, content.iItem, 5, pkgGetTitle( package ) );
+    char name[len]; const char *fmt = "%s-%s";
+    sprintf( name, *class_name ? fmt : fmt + 3, package_name, class_name );
+    ListView_SetItemText( ListView, content.iItem, 1, name );
+    ListView_SetItemText( ListView, content.iItem, 4, pkgGetTitle( package ) );
   }
   else
     /* ...otherwise, this is simply a request to update an
@@ -428,12 +428,12 @@ void pkgListViewMaker::UpdateItem( char *class_name, bool new_entry )
    * column which identifies the currently installed version,
    * if any, or clear it if the package is not installed.
    */
-  ListView_SetItemText( ListView, content.iItem, 3, buf );
+  ListView_SetItemText( ListView, content.iItem, 2, buf );
 
   /* Finally, fill in the text of the column which identifies
    * the latest available version of the package.
    */
-  ListView_SetItemText( ListView, content.iItem, 4, pkgVersionString( buf, &latest ) );
+  ListView_SetItemText( ListView, content.iItem, 3, pkgVersionString( buf, &latest ) );
 }
 
 void pkgListViewMaker::Dispatch( pkgXmlNode *package )

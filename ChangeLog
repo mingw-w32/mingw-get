@@ -1,3 +1,14 @@
+2013-11-26  Keith Marshall  <keithmarshall@users.sourceforge.net>
+
+	Conflate name and class columns in GUI package list.
+
+	* src/pkglist.cpp (AppWindowMaker::InitPackageListView): Remove...
+	<ID_PKGTYPE_COLUMN_HEADING>: ...column with this heading; add its width
+	allocation to the original pixel count alloted for the width of...
+	<ID_PKGNAME_COLUMN_HEADING>: ...this column.
+	(pkgListViewMaker::UpdateItem): Conflate content of original name and
+	class columns into first column; renumber successive columns.
+
 2013-10-18  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Don't attempt to resolve dependencies for unidentified packages.
