@@ -24,7 +24,7 @@
 #
   m4_define([VERSION_MAJOR], [0])
   m4_define([VERSION_MINOR], [6])
-  m4_define([VERSION_PATCH], [2])
+  m4_define([VERSION_PATCH], [3])
 #
   m4_define([__VERSION__], [VERSION_MAJOR.VERSION_MINOR.VERSION_PATCH])
 #

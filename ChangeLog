@@ -1,3 +1,10 @@
+2017-09-01  Keith Marshall  <keith@users.osdn.me>
+
+	Increment version for first OSDN hosted release.
+
+	* VERSION.m4 (VERSION_PATCH): Increment to 3; thus...
+	(__VERSION__): ...this is auto-incremented to 0.6.3
+
 2013-11-26  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
 	Conflate name and class columns in GUI package list.
