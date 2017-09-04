@@ -1,3 +1,14 @@
+2017-09-04  Keith Marshall  <keith@users.osdn.me>
+
+	Improve probability of establishing successful URL connections.
+
+	* src/pkginet.cpp (pkgInternetAgent::OpenURL): Add...
+	(INTERNET_FLAG_KEEP_CONNECTION, INTERNET_FLAG_IGNORE_CERT_CN_INVALID)
+	(INTERNET_FLAG_IGNORE_CERT_DATE_INVALID, INTERNET_FLAG_PRAGMA_NOCACHE)
+	(INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTPS)
+	(INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTP): ...these flags, when calling
+	the InternetOpenUrl() function.
+
 2017-09-01  Keith Marshall  <keith@users.osdn.me>
 
 	Increment version for first OSDN hosted release.

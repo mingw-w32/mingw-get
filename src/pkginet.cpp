@@ -4,7 +4,7 @@
  * $Id$
  *
  * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009-2013, MinGW.org Project
+ * Copyright (C) 2009-2013, 2017, MinGW.org Project
  *
  *
  * Implementation of the package download machinery for mingw-get.
@@ -458,7 +458,14 @@ HINTERNET pkgInternetAgent::OpenURL( const char *URL )
 	    * specify it anyway, on the off-chance that it may introduce
 	    * an undocumented benefit beyond wishful thinking.
 	    */
-	   SessionHandle, URL, NULL, 0, INTERNET_FLAG_EXISTING_CONNECT, 0
+	   SessionHandle, URL, NULL, 0,
+	   INTERNET_FLAG_EXISTING_CONNECT
+	   | INTERNET_FLAG_IGNORE_CERT_CN_INVALID
+	   | INTERNET_FLAG_IGNORE_CERT_DATE_INVALID
+	   | INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTPS
+	   | INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTP
+	   | INTERNET_FLAG_KEEP_CONNECTION
+	   | INTERNET_FLAG_PRAGMA_NOCACHE, 0
 	 );
        if( ResourceHandle == NULL )
        {
@@ -469,11 +476,14 @@ HINTERNET pkgInternetAgent::OpenURL( const char *URL )
 	 {
 	   /* ...in which case, we diagnose failure to open the URL.
 	    */
+	   unsigned int status = GetLastError();
 	   DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_INTERNET_REQUESTS ),
 	     dmh_printf( "%s\nConnection failed(status=%u); abandoned.\n",
-		 URL, GetLastError() )
+		 URL, status )
 	     );
-	   dmh_notify( DMH_ERROR, "%s:cannot open URL\n", URL );
+	   dmh_notify(
+	       DMH_ERROR, "%s:cannot open URL; status = %u\n", URL, status
+	     );
 	 }
 	 else DEBUG_INVOKE_IF( DEBUG_REQUEST( DEBUG_TRACE_INTERNET_REQUESTS ),
 	   dmh_printf( "%s\nConnecting ... failed(status=%u); retrying in %ds...\n",
