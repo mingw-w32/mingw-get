@@ -1,3 +1,9 @@
+2017-09-05  Keith Marshall  <keith@users.osdn.me>
+
+	mingw-get-0.6.3-mingw32-pre-20170905-1 posted on OSDN.net
+
+	* All files (r0-6-3-beta-20170905-1): Tag assigned.
+
 2017-09-04  Keith Marshall  <keith@users.osdn.me>
 
 	Improve probability of establishing successful URL connections.
@@ -68,7 +74,7 @@
 
 	* VERSION.m4 (VERSION_PATCH): Increment it.
 	* srcdist-doc/NEWS.in: Release notes updated.
-	* All files (r0-6-4-beta-20131004-1): Tag assigned.
+	* All files (r0-6-2-beta-20131004-1): Tag assigned.
 
 2013-10-03  Keith Marshall  <keithmarshall@users.sourceforge.net>
 
