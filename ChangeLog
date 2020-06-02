@@ -1,3 +1,11 @@
+2020-06-02  Keith Marshall  <keith@users.osdn.me>
+
+	Do not use .hgtags for repository tag tracking.
+
+	* .hgtags: Delete file; it serves no purpose within a git repository,
+	and may actually interfere with tag inheritance, when cloning from git
+	into hg.
+
 2017-09-05  Keith Marshall  <keith@users.osdn.me>
 
 	mingw-get-0.6.3-mingw32-pre-20170905-1 posted on OSDN.net
