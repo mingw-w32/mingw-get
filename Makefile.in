@@ -5,8 +5,8 @@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 
-# Written by Keith Marshall <keithmarshall@users.sourceforge.net>
-# Copyright (C) 2009-2013, MinGW.org Project
+# Written by Keith Marshall <keith@users.osdn.me>
+# Copyright (C) 2009-2013, 2020, MinGW.org Project
 #
 #
 # Makefile template for mingw-get
@@ -46,7 +46,7 @@ srcdir = @srcdir@
 abs_top_srcdir = @abs_top_srcdir@
 
 vpath %.ico @srcdir@/icons
-VPATH = @top_srcdir@/src:@top_srcdir@/src/pkginfo:@top_srcdir@/tinyxml
+VPATH = @top_srcdir@/src @top_srcdir@/src/pkginfo @top_srcdir@/tinyxml
 
 # Identify common build tools, and set their default options.
 #
@@ -252,7 +252,7 @@ execute-command:
 #
 vpath configure @top_srcdir@
 vpath configure.ac @top_srcdir@
-vpath %.m4 @top_srcdir@:@top_srcdir@/build-aux/m4
+vpath %.m4 @top_srcdir@ @buildauxdir@/m4
 vpath Makefile.in @top_srcdir@
 
 Makefile: Makefile.in VERSION.m4 config.status

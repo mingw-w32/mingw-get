@@ -2,8 +2,8 @@
 #
 # $Id$
 #
-# Written by Keith Marshall <keithmarshall@users.sourceforge.net>
-# Copyright (C) 2009-2013, MinGW.org Project
+# Written by Keith Marshall <keith@users.osdn.me>
+# Copyright (C) 2009-2013, 2020, MinGW.org Project
 #
 #
 # Configuration script for mingw-get
@@ -26,7 +26,7 @@
   AC_INIT([mingw-get],__VERSION__,[http://mingw.org/Reporting_Bugs])
 
   AC_SUBST([COPYRIGHT_HOLDER],["MinGW.org Project"])
-  AC_SUBST([YEARS_OF_ISSUE],["2009-2013"])
+  AC_SUBST([YEARS_OF_ISSUE],["2009-2013, 2017, 2020"])
 
 # Specify the default internet domain and relative directory path,
 # whence packages are to be offered for download; user may remap these
@@ -62,8 +62,8 @@
 # calls ${srcdir}/build-aux/config.sub, if the user specifies a short
 # form which it cannot resolve -- e.g. "--build=linux" will fail).
 #
-  AC_CONFIG_AUX_DIR([build-aux])
-  build_alias=`${srcdir}/build-aux/config.guess`
+  MINGW_AC_CONFIG_AUX_DIR([build-aux])
+  build_alias=`${ac_aux_dir}/config.guess`
   AC_CANONICAL_HOST
 
 # Establish the appropriate mechanism for invoking 'make' recursively,

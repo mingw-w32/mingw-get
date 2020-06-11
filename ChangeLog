@@ -1,3 +1,28 @@
+2020-06-11  Keith Marshall  <keith@users.osdn.me>
+
+	Discontinue formal use of the build-aux submodule.
+
+	* .gitmodules .hgsub: Files are obsolete; delete them.
+	* .gitignore .hgignore (build-aux): Add to SCM exclusion list.
+
+	* aclocal.m4 (build_aux_prefix): New macro; define it.  This provides
+	a mechanism for informally locating an external, separately maintained
+	implementation of the requisite "build-aux" module; use it in...
+	(aux_include): ...this new macro; define, and use it, to access those
+	"build-aux" M4 macros which are required at configure generation time.
+	(MINGW_AC_CONFIG_AUX_DIR, MINGW_AC_CONFIG_AUX_DIRS): New macros;
+	define them.  Together, they implement a replacement for the standard
+	AC_CONFIG_AUX_DIR macro, but offering extended path search capability,
+	at configure run time, in addition to defining...
+	(buildauxdir): ...this new AC_SUBST variable.
+
+	* configure.ac (build_alias): Define it using...
+	(ac_aux_dir): ...this autoconf path reference, defined by using...
+	(MINGW_AC_CONFIG_AUX_DIR): ...this, instead of...
+	(AC_CONFIG_AUX_DIR): ...this.
+
+	* Makefile.in (buildauxdir): Use it, for M4 file references.
+
 2020-06-02  Keith Marshall  <keith@users.osdn.me>
 
 	Do not use .hgtags for repository tag tracking.
