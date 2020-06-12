@@ -3,8 +3,8 @@
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2013, MinGW.org Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2013, 2017, 2020, MinGW.org Project
  *
  *
  * Resource definitions for the mingw-get-setup.exe implementation.
@@ -93,9 +93,9 @@ STRINGTABLE DISCARDABLE
     ID_MAIN_WINDOW_CLASS		"mingw-get"
     ID_MAIN_WINDOW_CAPTION		"MinGW Installation Manager"
     ID_MAIN_DIALOGUE_CAPTION		 VERINFO_FILE_DESCRIPTION
-    ID_DOWNLOAD_HOST_URI		"%PACKAGE_DIST_URL%/%F?download"
     ID_PACKAGE_BASE_DISTNAME		"%PACKAGE_BASE_DISTNAME%"
     ID_PACKAGE_DATA_DISTNAME		"%PACKAGE_DATA_DISTNAME%"
+    ID_DOWNLOAD_HOST_URI		"%PACKAGE_DIST_URL%/%F"
     ID_FONT_PREF			"Verdana"
   END
 

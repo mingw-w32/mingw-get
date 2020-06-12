@@ -3,8 +3,8 @@
   <!--
     $Id$
 
-    Written by Keith Marshall  <keithmarshall@users.sourceforge.net>
-    Copyright (C) 2013, MinGW.org Project
+    Written by Keith Marshall  <keith@users.osdn.me>
+    Copyright (C) 2013, 2017, 2020, MinGW.org Project
 
 
     Initial configuration profile for mingw-get-setup.
@@ -24,7 +24,7 @@
     arising from the use of this software.
   -->
 
-  <repository uri="http://prdownloads.sourceforge.net/mingw/%F.xml.lzma?download">
+  <repository uri="%PACKAGE_DIST_URL%/%F.xml.lzma">
     <!--
       The "repository" specification identifies the URI whence package
       list catalogues may be downloaded; each catalogue download URI is

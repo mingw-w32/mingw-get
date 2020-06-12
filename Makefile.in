@@ -357,9 +357,12 @@ install: installdirs install-profile
 	  $(INSTALL_DATA) $$image ${libexecdir}/${PACKAGE_TARNAME}; \
 	  done
 
-install-profile:
-	$(INSTALL_DATA) ${srcdir}/xml/profile.xml \
-	  ${PACKAGE_CONFIG_DIR}/defaults.xml
+vpath %.xml.in ${srcdir}/xml
+install-profile: install-%: %.xml
+	$(INSTALL_DATA) $*.xml ${PACKAGE_CONFIG_DIR}/defaults.xml
+
+%.xml: %.xml.in
+	$(TAG_SCRIPT) $< > $@
 
 install-strip: install
 	for image in $(BIN_PROGRAMS); do \

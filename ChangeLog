@@ -1,3 +1,23 @@
+2020-06-12  Keith Marshall  <keith@users.osdn.me>
+
+	Use XML templates to adapt to download host changes.
+
+	* configure.ac (MINGW_PACKAGE_DIST_URL): Update to OSDN host URL.
+
+	* xml/profile.xml: Rename it as...
+	* xml/profile.xml.in: ...this; replace hard-coded repository URL...
+	(%PACKAGE_LIST_URL%/%F.xml.lzma): ...this template.
+
+	* xml/setup.xml: Likewise, rename it as...
+	* xml/setup.xml.in: ...this, with corresponding URL update.
+
+	* Makefile.in (install-profile): Modify procedure, using...
+	(%.xml: %.xml.in): ...this new pattern rule, to generate installed XML
+	files, from source templates.
+
+	* src/setup.rc (STRINGTABLE) <ID_DOWNLOAD_HOST_URI>: Remove trailing
+	"?download" qualifier.
+
 2020-06-11  Keith Marshall  <keith@users.osdn.me>
 
 	Discontinue formal use of the build-aux submodule.

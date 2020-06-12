@@ -33,7 +33,7 @@
 # at configure time, by specifying alternatives for either, or both of
 # the precious variables, PACKAGE_DIST_DOMAIN and PACKAGE_DIST_DIR.
 #
-  MINGW_AC_PACKAGE_DIST_URL([http://prdownloads.sourceforge.net],[mingw])
+  MINGW_AC_PACKAGE_DIST_URL([https://osdn.net],[dl/mingw])
 
 # Identify the formal release classes for each of the CLI and the GUI
 # application sub-packages; these may be overriden at configure time,
