@@ -1,5 +1,13 @@
 2020-06-19  Keith Marshall  <keith@users.osdn.me>
 
+	Accommodate C++11 string constant conflation limitations.
+
+	* src/dllhook.cpp (MSG_INTERNAL_ERROR)
+	* src/pkgexec.cpp (LUA_LIBEXEC_PATH): Insert white space, to separate
+	adjacent string constants in conflated text.
+
+2020-06-19  Keith Marshall  <keith@users.osdn.me>
+
 	Force "C" linkage for setup key definitions.
 
 	* src/setup.cpp (uri_key, mirror_key, value_none): Wrap them...

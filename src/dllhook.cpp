@@ -3,8 +3,8 @@
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2013, MinGW.org Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2013, 2020, MinGW.org Project
  *
  *
  * Implementation of the processing redirector hook, to be provided
@@ -56,7 +56,7 @@ static const char *setup_key = "setup";
 bool AppWindowMaker::SetupToolInvoked = true;
 
 static const char *internal_error = "internal error";
-#define MSG_INTERNAL_ERROR(MSG) "%s: "MSG_##MSG"\n", internal_error
+#define MSG_INTERNAL_ERROR(MSG) "%s: " MSG_ ## MSG "\n", internal_error
 
 #define MSG_INVALID_REQUEST	"invalid request code specified"
 #define MSG_NOTIFY_MAINTAINER	"please report this to the mingw-get maintainer"

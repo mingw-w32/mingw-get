@@ -3,8 +3,8 @@
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009-2013, MinGW.org Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2009-2013, 2020, MinGW.org Project
  *
  *
  * Implementation of package management task scheduler and executive.
@@ -761,7 +761,7 @@ LUA_INLINE bool init_lua_path()
    * interpreter will load scripts from the libexec directory associated with
    * the running mingw-get.exe instance.
    */
-  putenv( "LUA_PATH=!\\?.lua;!"LUA_LIBEXEC_PATH";!\\.."LUA_LIBEXEC_PATH );
+  putenv( "LUA_PATH=!\\?.lua;!" LUA_LIBEXEC_PATH ";!\\.." LUA_LIBEXEC_PATH );
   return true;
 }
 
