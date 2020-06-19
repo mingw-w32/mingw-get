@@ -1,3 +1,12 @@
+2020-06-19  Keith Marshall  <keith@users.osdn.me>
+
+	Support all-static linking with recent GCC versions.
+
+	* Makefile.in (LDFLAGS): Add "-static" unconditionally.
+	(LIBS, SETUP_TOOL_LIBS): Remove all "-Wl,-Bstatic" and "-Wl,-Bdynamic"
+	references; the latter, in particular, appears to induce dynamic
+	linking of libstdc++-6.dll, overriding "--static-libstdc++".
+
 2020-06-12  Keith Marshall  <keith@users.osdn.me>
 
 	Use XML templates to adapt to download host changes.

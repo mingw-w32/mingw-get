@@ -154,9 +154,9 @@ RC_INCLUDES = -I . -I ${srcdir}/src -I ${srcdir}/icons
 OBJEXT = @OBJEXT@
 EXEEXT = @EXEEXT@
 
-LDFLAGS = @LDFLAGS@
+LDFLAGS = -static @LDFLAGS@
 GUI_LDFLAGS = -mwindows $(LDFLAGS)
-LIBS = -Wl,-Bstatic -llua -lz -lbz2 -llzma -Wl,-Bdynamic -lwininet
+LIBS = -llua -lz -lbz2 -llzma -lwininet
 
 # Define the content of package deliverables.
 #
@@ -184,7 +184,7 @@ GUIMAIN_LIB_OBJECTS = \
 GUIMAIN_LIBS = -lwtklite -lcomctl32
 
 SETUP_TOOL_OBJECTS = setup.$(OBJEXT) setup.res.$(OBJEXT) apihook.$(OBJEXT)
-SETUP_TOOL_LIBS = -lwtklite -lwininet -lcomctl32 -lole32 -Wl,-Bstatic -llzma
+SETUP_TOOL_LIBS = -lwtklite -lwininet -lcomctl32 -lole32 -llzma
 
 SETUP_DLL_OBJECTS =  \
    dllhook.$(OBJEXT) $(GUIMAIN_LIB_OBJECTS) guimain.res.$(OBJEXT)
