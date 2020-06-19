@@ -1,5 +1,12 @@
 2020-06-19  Keith Marshall  <keith@users.osdn.me>
 
+	Force "C" linkage for setup key definitions.
+
+	* src/setup.cpp (uri_key, mirror_key, value_none): Wrap them...
+	(BEGIN_C_DECLS, END_C_DECLS): ...between these.
+
+2020-06-19  Keith Marshall  <keith@users.osdn.me>
+
 	Support all-static linking with recent GCC versions.
 
 	* Makefile.in (LDFLAGS): Add "-static" unconditionally.

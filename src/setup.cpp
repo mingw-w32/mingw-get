@@ -3,8 +3,8 @@
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2013, MinGW.org Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2013, 2020, MinGW.org Project
  *
  *
  * Implementation of the mingw-get setup tool's dialogue controller.
@@ -138,10 +138,17 @@ static inline void BrowseLicenceDocument( HWND dlg, long x = 0, long y = 0 )
 /* The following string constants are abstracted from pkgkeys.c;
  * we redefine this minimal subset here, to avoid the overhead of
  * importing the entire content of the pkgkeys module.
+ *
+ * Note: All of these must be defined with "C" linkage, to comply
+ * with their original declarations in "pkgkeys.h".
  */
+BEGIN_C_DECLS
+
 static const char *uri_key = "uri";
 static const char *mirror_key = "mirror";
 static const char *value_none = "none";
+
+END_C_DECLS
 
 class SetupTool
 {
