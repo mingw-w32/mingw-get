@@ -185,109 +185,15 @@ char **cli_setargv( HMODULE my_dll, struct pkgopts *opts, char **argv )
   return argv;
 }
 
-/* FIXME: We may ultimately choose to factor the following atoi() replacement
- * into a separate, free-standing module.  For now we keep it here, as a static
- * function, but we keep the required #include adjacent.
- */
-#include <ctype.h>
-
 static int xatoi( const char *input )
 {
   /* A replacement for the standard atoi() function; this implementation
-   * supports conversion of octal or hexadecimal representations, in addition
-   * to the decimal representation required by standard atoi().
-   *
-   * We begin by initialising the result accumulator to zero...
+   * directs the call to strtol(), and so supports conversion of octal or
+   * hexadecimal representations, in addition to the decimal representation
+   * required by standard atoi(), while also protecting against the adverse
+   * effect of passing a NULL input pointer.
    */
-  int result = 0;
-
-  /* ...then, provided we have an input string to interpret...
-   */
-  if( input != NULL )
-  {
-    /* ...we proceed with interpretation and accumulation of the result,
-     * noting that we may have to handle an initial minus sign, (but we
-     * don't know yet, so assume that not for now).
-     */
-    int negate = 0;
-    while( isspace( *input ) )
-      /*
-       * Ignore leading white space.
-       */
-      ++input;
-
-    if( *input == '-' )
-      /*
-       * An initial minus sign requires negation
-       * of the accumulated result...
-       */
-      negate = *input++;
-
-    else if( *input == '+' )
-      /*
-       * ...while an initial plus sign is redundant,
-       * and may simply be ignored.
-       */
-      ++input;
-
-    if( *input == '0' )
-    {
-      /* An initial zero signifies either hexadecimal
-       * or octal representation...
-       */
-      if( (*++input | '\x20') == 'x' )
-	/*
-	 * ...with following 'x' or 'X' indicating
-	 * the hexadecimal case.
-	 */
-	while( isxdigit( *++input ) )
-	{
-	  /* Interpret sequence of hexadecimal digits...
-	   */
-	  result = (result << 4) + *input;
-	  if( *input > 'F' )
-	    /*
-	     * ...with ASCII to binary conversion for
-	     * lower case digits 'a'..'f',...
-	     */
-	    result -= 'a' - 10;
-
-	  else if( *input > '9' )
-	    /*
-	     * ...ASCII to binary conversion for
-	     * upper case digits 'A'..'F',...
-	     */
-	    result -= 'A' - 10;
-
-	  else
-	    /* ...or ASCII to decimal conversion,
-	     * as appropriate.
-	     */
-	    result -= '0';
-	}
-      else while( (*input >= '0') && (*input < '8') )
-	/*
-	 * Interpret sequence of octal digits...
-	 */
-	result = (result << 3) + *input++ - '0';
-    }
-
-    else while( isdigit( *input ) )
-      /*
-       * Interpret sequence of decimal digits...
-       */
-      result = (result << 1) + (result << 3) + *input++ - '0';
-
-    if( negate )
-      /*
-       * We had an initial minus sign, so we must
-       * return the negated result...
-       */
-      return (0 - result);
-  }
-  /* ...otherwise, we simply return the accumulated result
-   */
-  return result;
+  return (input != NULL) ? strtol( input, NULL, 0 ) : 0;
 }
 
 #define atmost( lim, val )		((lim) < (val)) ? (lim) : (val)

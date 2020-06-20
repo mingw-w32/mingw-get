@@ -1,3 +1,11 @@
+2020-06-20  Keith Marshall  <keith@users.osdn.me>
+
+	Simplify numeric argument interpreter function.
+
+	* src/clistub.c (xatoi) [input != NULL]: Delegate to...
+	(strtol): ...this standard library function; hence delete redundant
+	local implementation, within the NULL pointer rejection guard.
+
 2020-06-19  Keith Marshall  <keith@users.osdn.me>
 
 	Accommodate C++11 string constant conflation limitations.
