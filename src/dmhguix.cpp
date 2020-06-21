@@ -3,8 +3,8 @@
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009-2013, MinGW.org Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2009-2013, 2020, MinGW.org Project
  *
  *
  * Implementation of GUI specific API extensions, providing support
@@ -395,6 +395,7 @@ int dmhTypeGUI::notify( const dmh_severity code, const char *fmt, va_list argv )
        * to the buffered collection.
        */
       msglen += vsprintf( (msgbuf = newbuf) + msglen, fmt, argv );
+      return newlen - 1;
     }
   }
   else if( (msgbuf = (char *)(malloc( newlen ))) != NULL )
@@ -406,6 +407,10 @@ int dmhTypeGUI::notify( const dmh_severity code, const char *fmt, va_list argv )
     mode = code | (mode & ~DMH_SEVERITY_MASK);
     return dispatch_message( vsprintf( msgbuf, fmt, argv ) );
   }
+  /* If we get to here, then no message was dispatched; the
+   * effective message length should be returned as zero.
+   */
+  return 0;
 }
 
 static inline HWND last_active_popup( HWND owner )

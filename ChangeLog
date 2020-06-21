@@ -1,3 +1,15 @@
+2020-06-21  Keith Marshall  <keith@users.osdn.me>
+
+	Ensure non-void functions always return explicit values.
+
+	* src/guimain.cpp (WinMain): Remove explicit EXIT_FAILURE returns from
+	individual exception handlers; relocate it to the default execution
+	path, to which all such handlers will fall through.
+
+	* src/dmhguix.cpp (dmhTypeGUI::notify) [DMH_COMPILE_DIGEST]: Return
+	number of bytes added to message queue; fall through, to return zero,
+	on failure to extend the queue.
+
 2020-06-20  Keith Marshall  <keith@users.osdn.me>
 
 	Simplify numeric argument interpreter function.

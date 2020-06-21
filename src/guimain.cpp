@@ -3,8 +3,8 @@
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, 2013, MinGW.org Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2012, 2013, 2020, MinGW.org Project
  *
  *
  * Implementation of the WinMain() function, providing the program
@@ -95,7 +95,6 @@ int APIENTRY WinMain
      * and identified by the diagnostic message handler...
      */
     MessageBox( NULL, e.what(), "WinMain", MB_ICONERROR );
-    return EXIT_FAILURE;
   }
   catch( runtime_error &e )
   {
@@ -104,15 +103,14 @@ int APIENTRY WinMain
      * processing of its message loop...
      */
     MessageBox( NULL, e.what(), "WinMain", MB_ICONERROR );
-    return EXIT_FAILURE;
   }
   catch(...)
   { /* ...and here, we diagnose any other error which we weren't
      * able to explicitly identify.
      */
     MessageBox( NULL, "Unknown exception", "WinMain", MB_ICONERROR );
-    return EXIT_FAILURE;
   }
+  return EXIT_FAILURE;
 }
 
 /* $RCSfile$: end of file */
