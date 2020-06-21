@@ -4,8 +4,8 @@
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, 2012, MinGW.org Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2009-2012, 2020, MinGW.org Project
  *
  *
  * Public declaration of the download metering class, and support
@@ -67,7 +67,7 @@ class pkgDownloadMeter
     /* The working method to refresh the download progress display;
      * each derived class MUST furnish an implementation for this.
      */
-    virtual int Update( unsigned long ) = 0;
+    virtual void Update( unsigned long ) = 0;
 
   protected:
     /* Reference pointer to the primary instance of the download

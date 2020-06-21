@@ -3,8 +3,8 @@
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, 2013, MinGW.org Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2012, 2013, 2020, MinGW.org Project
  *
  *
  * Implementation of the network download agent interface, through
@@ -42,7 +42,7 @@ class pkgDownloadMeterGUI: public pkgDownloadMeter
     pkgDownloadMeterGUI( HWND );
 
     virtual void ResetGUI( const char *, unsigned long );
-    virtual int Update( unsigned long );
+    virtual void Update( unsigned long );
 
     inline ~pkgDownloadMeterGUI();
 
@@ -202,7 +202,7 @@ void pkgDownloadMeterGUI::ResetGUI( const char *filename, unsigned long size )
   SendMessage( progress_bar, PBM_SETPOS, 0, 0 );
 }
 
-int pkgDownloadMeterGUI::Update( unsigned long count )
+void pkgDownloadMeterGUI::Update( unsigned long count )
 {
   /* Method to update the download progress report; the download
    * agent invokes this after each block of archive data has been

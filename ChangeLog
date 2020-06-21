@@ -1,5 +1,16 @@
 2020-06-21  Keith Marshall  <keith@users.osdn.me>
 
+	Declare functions as void when return value is immaterial.
+
+	* src/pkginet.h (pkgDownloadMeter::Update): Declare it as a pure
+	virtual void function, rather than as pure virtual int.
+
+	* src/pkginet.cpp (pkgDownloadMeterTTY::Update)
+	* src/pkgnget.cpp (pkgDownloadMeterGUI::Update): Amend derivative
+	implementations to match; do not return anything.
+
+2020-06-21  Keith Marshall  <keith@users.osdn.me>
+
 	Ensure non-void functions always return explicit values.
 
 	* src/guimain.cpp (WinMain): Remove explicit EXIT_FAILURE returns from

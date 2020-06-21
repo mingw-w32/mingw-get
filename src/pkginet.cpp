@@ -3,8 +3,8 @@
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009-2013, 2017, MinGW.org Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2009-2013, 2017, 2020, MinGW.org Project
  *
  *
  * Implementation of the package download machinery for mingw-get.
@@ -89,7 +89,7 @@ class pkgDownloadMeterTTY: public pkgDownloadMeter
     pkgDownloadMeterTTY( const char*, unsigned long );
     virtual ~pkgDownloadMeterTTY();
 
-    virtual int Update( unsigned long );
+    virtual void Update( unsigned long );
 
   private:
     /* This buffer is used to store each compiled status report,
@@ -126,7 +126,7 @@ class pkgDownloadMeterTTY: public pkgDownloadMeter
    */
   public:
     pkgDownloadMeterTTY( const char*, unsigned long ){}
-    virtual int Update( unsigned long ){ return 0; }
+    virtual void Update( unsigned long ){}
 };
 
 #endif
@@ -161,7 +161,7 @@ unsigned long percentage( unsigned long x, unsigned long q )
 
 #if IMPLEMENTATION_LEVEL == PACKAGE_BASE_COMPONENT
 
-int pkgDownloadMeterTTY::Update( unsigned long count )
+void pkgDownloadMeterTTY::Update( unsigned long count )
 {
   /* Implementation of method to update the download progress report,
    * displaying the current byte count and anticipated final byte count,
@@ -193,7 +193,7 @@ int pkgDownloadMeterTTY::Update( unsigned long count )
     dmh_printf( "%s\n", source_url );
     source_url = NULL;
   }
-  return dmh_printf( "\r%s%%", status_report );
+  (void)(dmh_printf( "\r%s%%", status_report ));
 }
 
 #endif
