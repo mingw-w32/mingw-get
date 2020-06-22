@@ -3,8 +3,8 @@
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, 2013, MinGW.org Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2012, 2013, 2020, MinGW.org Project
  *
  *
  * Implementation of XML interpreter for configuation of preferences.
@@ -231,7 +231,8 @@ void pkgPreferenceEvaluator::PresetScriptHook( int index, const char *key, ... )
    * and initialise associated environment variable hooks, such
    * that they override XML preference settings.
    */
-  if( pkgOptions()->IsSet( index ) && (key != NULL) && (*key != '\0') )
+  pkgOpts *options = pkgOptions();
+  if( options && options->IsSet( index ) && (key != NULL) && (*key != '\0') )
   {
     /* The indexed command line option has been specified, and
      * it is associated with a viable environment variable name;
@@ -241,7 +242,7 @@ void pkgPreferenceEvaluator::PresetScriptHook( int index, const char *key, ... )
     va_list argv;
     va_start( argv, key );
     const char *value = va_arg( argv, const char * );
-    const char *preset = pkgOptions()->GetString( index );
+    const char *preset = options->GetString( index );
     if( (value = SetOptions( SetName( value ), argv, preset )) != NULL )
     {
       /* ...initialise the environment variable accordingly,
@@ -375,6 +376,53 @@ void pkgXmlDocument::EstablishPreferences( const char *client )
      */
     opt.SetScriptHook( MINGW_GET_DESKTOP_HOOK, NULL );
     opt.SetScriptHook( MINGW_GET_START_MENU_HOOK, NULL );
+  }
+}
+
+unsigned pkgOpts::IsSet( pkgOpts *ref, int index )
+{
+  return ref
+    ? ref->flags[OPTION_ASSIGNED_FLAGS].numeric & OPTION_ASSIGNED(index)
+    : 0;
+}
+
+unsigned pkgOpts::Test( pkgOpts *ref, unsigned mask, int index )
+{
+  /* Test the state of specified bits within
+   * a bit-mapped numeric data (flags) entry.
+   */
+  return ref ? ref->flags[index].numeric & mask : 0;
+}
+
+unsigned pkgOpts::GetValue( pkgOpts *ref, int index )
+{
+  /* Retrieve the value of a numeric data entry.
+   */
+  return ref ? ref->flags[index & 0xFFF].numeric : 0;
+}
+
+const char *pkgOpts::GetString( pkgOpts *ref, int index )
+{
+  /* Retrieve a pointer to a string data entry.
+   */
+  return ref ? ref->flags[index & 0xFFF].string : NULL;
+}
+
+void pkgOpts::SetFlags( pkgOpts *ref, unsigned value )
+{
+  /* This is a mask and store operation, to set a specified
+   * bit-field within the first pair of flags slots; it mimics
+   * the options setting operation performed in the CLI start-up
+   * code, where the input value represents a 12-bit flag code,
+   * packaged with a 12-bit combining mask, and an alignment
+   * shift count between 0 and 52, in 4-bit increments.
+   */
+  if( ref )
+  { unsigned shift;
+    if( (shift = (value & OPTION_SHIFT_MASK) >> 22) < 53 )
+    { *(uint64_t *)(ref->flags) &= ~((uint64_t)((value & 0xfff000) >> 12) << shift);
+      *(uint64_t *)(ref->flags) |= (uint64_t)(value) << shift;
+    }
   }
 }
 

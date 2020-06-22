@@ -1,3 +1,18 @@
+2020-06-22  Keith Marshall  <keith@users.osdn.me>
+
+	Support options interpretation from an unborn options object.
+
+	* src/pkgopts.h (pkgOpts::Test, pkgOpts::IsSet, pkgOpts::GetValue)
+	(pkgOpts::GetString, pkgOpts::SetFlags): Delegate then to static class
+	methods, with inline wrappers passing "this" pointer explicitly.
+
+	* src/pkgopts.cpp (pkgOpts::Test, pkgOpts::IsSet, pkgOpts::GetValue)
+	(pkgOpts::GetString, pkgOpts::SetFlags): Implement the static methods.
+	(pkgPreferenceEvaluator::PresetScriptHook) [! pkgOptions()]: Do not
+	evaluate pkgOptions()->IsSet(); assume that it would implicitly return
+	false, thus suppressing all dependent processing, including subsequent
+	evaluation of pkgOptions()->GetString().
+
 2020-06-21  Keith Marshall  <keith@users.osdn.me>
 
 	Declare functions as void when return value is immaterial.

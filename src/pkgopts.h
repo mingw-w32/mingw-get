@@ -1,11 +1,10 @@
-#ifndef PKGOPTS_H
 /*
  * pkgopts.h
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2011, 2012, MinGW Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2011, 2012, 2020, MinGW Project
  *
  *
  * Public declarations of the data structures, values and functions
@@ -26,6 +25,7 @@
  * arising from the use of this software.
  *
  */
+#ifndef PKGOPTS_H
 #define PKGOPTS_H  1
 
 #include <stdint.h>		/* required for uint64_t typedef */
@@ -126,48 +126,20 @@ class pkgOpts : protected pkgopts
   /* A derived "convenience" class, associating a collection
    * of utility methods with the pkgopts structure.
    */
+  private:
+    static unsigned IsSet( pkgOpts *, int );
+    static unsigned GetValue( pkgOpts *, int );
+    static const char *GetString( pkgOpts *, int );
+    static unsigned Test( pkgOpts *, unsigned, int );
+    static void SetFlags( pkgOpts *, unsigned );
+
   public:
-    inline unsigned IsSet( int index )
-    {
-      return this
-	? flags[OPTION_ASSIGNED_FLAGS].numeric & OPTION_ASSIGNED(index)
-	: 0;
-    }
-    inline unsigned GetValue( int index )
-    {
-      /* Retrieve the value of a numeric data entry.
-       */
-      return this ? (flags[index & 0xFFF].numeric) : 0;
-    }
-    inline const char *GetString( int index )
-    {
-      /* Retrieve a pointer to a string data entry.
-       */
-      return this ? (flags[index & 0xFFF].string) : NULL;
-    }
+    inline unsigned IsSet( int index ){ return IsSet( this, index ); }
+    inline unsigned GetValue( int index ){ return GetValue( this, index ); }
+    inline const char *GetString( int index ){ return GetString( this, index ); }
+    inline void SetFlags( unsigned value ){ SetFlags( this, value ); }
     inline unsigned Test( unsigned mask, int index = OPTION_FLAGS )
-    {
-      /* Test the state of specified bits within
-       * a bit-mapped numeric data (flags) entry.
-       */
-      return this ? (flags[index].numeric & mask) : 0;
-    }
-    inline void SetFlags( unsigned value )
-    {
-      /* This is a mask and store operation, to set a specified
-       * bit-field within the first pair of flags slots; it mimics
-       * the options setting operation performed in the CLI start-up
-       * code, where the input value represents a 12-bit flag code,
-       * packaged with a 12-bit combining mask, and an alignment
-       * shift count between 0 and 52, in 4-bit increments.
-       */
-      unsigned shift;
-      if( (shift = (value & OPTION_SHIFT_MASK) >> 22) < 53 )
-      {
-	*(uint64_t *)(flags) &= ~((uint64_t)((value & 0xfff000) >> 12) << shift);
-	*(uint64_t *)(flags) |= (uint64_t)(value) << shift;
-      }
-    }
+    { return Test( this, mask, index ); }
 };
 
 /* Access modes for the following global options accessor function.
