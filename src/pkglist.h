@@ -1,11 +1,10 @@
-#ifndef PKGLIST_H
 /*
  * pkglist.h
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2010, 2012, MinGW Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2010, 2012, 2020, MinGW.org Project
  *
  *
  * Declarations of the classes used to implement the package list
@@ -26,6 +25,7 @@
  * arising from the use of this software.
  *
  */
+#ifndef PKGLIST_H
 #define PKGLIST_H  1
 
 class pkgDirectory;
@@ -86,10 +86,15 @@ class pkgDirectory
    * binary tree, such that an in-order traversal will produce
    * an alpha-numerically sorted package list.
    */
+  private:
+    static void InOrder( pkgDirectory *, pkgDirectoryViewerEngine * );
+    static pkgDirectory *Insert( pkgDirectory *, const char *, pkgDirectory * );
   public:
     pkgDirectory( pkgXmlNode * );
-    pkgDirectory *Insert( const char *, pkgDirectory * );
-    void InOrder( pkgDirectoryViewerEngine * );
+    inline pkgDirectory *Insert( const char *key, pkgDirectory *entry )
+    { return Insert( this, key, entry ); }
+    inline void InOrder( pkgDirectoryViewerEngine *form )
+    { InOrder( this, form ); }
     ~pkgDirectory();
 
   protected:

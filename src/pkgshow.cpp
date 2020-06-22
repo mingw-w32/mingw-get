@@ -3,8 +3,8 @@
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2012, MinGW Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2009, 2010, 2012, 2020, MinGW Project
  *
  *
  * Implementation of the classes and methods required to support the
@@ -439,19 +439,20 @@ pkgNroffLayoutEngine::WriteLn( int style, int offset, int maxlen )
 pkgDirectory::pkgDirectory( pkgXmlNode *item ):
 entry( item ), prev( NULL ), next( NULL ){}
 
-pkgDirectory *pkgDirectory::Insert( const char *keytype, pkgDirectory *newentry )
+pkgDirectory *pkgDirectory::Insert
+( pkgDirectory *dir, const char *keytype, pkgDirectory *newentry )
 {
   /* Add a new package or component reference to a directory compilation,
    * using an unbalanced binary tree representation to achieve a sorted
    * listing, in ascending alpha-numeric collating order.
    */
-  if( this && newentry )
+  if( dir && newentry )
   {
     /* We have an existing directory to augment, and a valid reference
      * pointer for a new directory entry; we must locate the appropriate
      * insertion point, to achieve correct sort order.
      */
-    pkgDirectory *refpt, *pt = this;
+    pkgDirectory *refpt, *pt = dir;
     const char *mt = "", *ref = newentry->entry->GetPropVal( keytype, mt );
     do { refpt = pt;
 	 if( pt->prev && strcmp( ref, pt->prev->entry->GetPropVal( keytype, mt )) < 0 )
@@ -522,32 +523,32 @@ pkgDirectory *pkgDirectory::Insert( const char *keytype, pkgDirectory *newentry 
    * directory tree, or if that had never been previously assigned, then the
    * new entry, which will become the root of a new directory tree.
    */
-  return this ? this : newentry;
+  return dir ? dir : newentry;
 }
 
-void pkgDirectory::InOrder( pkgDirectoryViewerEngine *action )
+void pkgDirectory::InOrder
+( pkgDirectory *dir, pkgDirectoryViewerEngine *action )
 {
   /* Perform an in-order traversal of a package directory tree,
    * invoking a specified processing action on each node in turn;
    * note that this requires a pointer to a concrete instance of
    * a "Viewer" class, derived from the abstract "ViewerEngine".
    */
-  if( this )
-  {
-    /* Proceeding only when we have a valid directory object,
+  if( dir )
+  { /* Proceeding only when we have a valid directory object,
      * recursively traverse the "left hand" (prev) sub-tree...
      */
-    prev->InOrder( action );
+    InOrder( dir->prev, action );
     /*
      * ...processing the current node when no unprocessed
      * "left hand" sub-tree nodes remain...
      */
-    action->Dispatch( entry );
+    action->Dispatch( dir->entry );
     /*
      * ...then finish off with a recursive traversal of the
      * "right-hand" (next) sub-tree...
      */
-    next->InOrder( action );
+    InOrder( dir->next, action );
   }
 }
 
@@ -800,24 +801,25 @@ void pkgDirectoryViewer::Dispatch( pkgXmlNode *entry )
    */
   if( entry->IsElementOfType( package_key ) )
   {
-    /* The selected entity is a full package;
-     * create an auxiliary directory...
-     */
-    pkgDirectory *dir = EnumerateComponents( entry );
-
-    /* Signalling that a component list is to be included...
+    /* The selected entity is a full package; signalling that a
+     * component list is to be included, print the standard form
+     * package name header...
      */
     ct = 0;
-    /* ...print the standard form package name header...
-     */
     EmitHeader( entry );
+
+    /* ...then compile an auxiliary directory, in which we may
+     * enumerate the components of the package...
+     */
+    pkgDirectory *dir = EnumerateComponents( entry );
     if( dir != NULL )
     {
-      /* ...with included enumeration of the component names...
+      /* ...to be printed in alphanumerically sorted order of
+       * component names...
        */
       dir->InOrder( this ); putchar( '\n' );
-      /*
-       * ...before discarding the auxiliary directory.
+
+      /* ...before discarding the auxiliary directory.
        */
       delete dir;
     }

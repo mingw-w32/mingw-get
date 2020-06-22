@@ -1,5 +1,18 @@
 2020-06-22  Keith Marshall  <keith@users.osdn.me>
 
+	Do not dereference nullptr in package directory trees.
+
+	* src/pkglist.h (pkgDirectory::Insert, pkgDirectory::InOrder):
+	Delegate them to static class methods, with inline wrappers passing
+	"this" pointer explicitly, thus obviating any need for...
+	[this != NULL]: ...this invalid comparison.
+
+	* src/pkgshow.cpp (pkgDirectory::Insert, pkgDirectory::InOrder):
+	Modify them, reimplementing as the requisite static class methods.
+	(pkgDirectoryViewer::Dispatch): Reorganize process flow.
+
+2020-06-22  Keith Marshall  <keith@users.osdn.me>
+
 	Ignore spin wait requests with no designated referrer.
 
 	* src/pkgstat.h (pkgSpinWait::UpdateIndex) [this]: Cannot test for
