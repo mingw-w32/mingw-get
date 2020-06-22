@@ -4,8 +4,8 @@
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, MinGW.org Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2012, 2020, MinGW.org Project
  *
  *
  * Public declaration of the pkgSpinWait class, which provides an
@@ -47,7 +47,7 @@ class pkgSpinWait
   protected:
     static pkgSpinWait *referrer; int index;
     pkgSpinWait( void ): index( 0 ){ referrer = this; }
-    int UpdateIndex(){ return this ? index = (1 + index) % 4 : 0; }
+    int UpdateIndex(){ return referrer ? index = (1 + index) % 4 : 0; }
     virtual int DispatchReport( const char *, va_list ) = 0;
     ~pkgSpinWait(){ referrer = NULL; }
 };

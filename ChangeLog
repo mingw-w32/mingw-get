@@ -1,5 +1,13 @@
 2020-06-22  Keith Marshall  <keith@users.osdn.me>
 
+	Ignore spin wait requests with no designated referrer.
+
+	* src/pkgstat.h (pkgSpinWait::UpdateIndex) [this]: Cannot test for
+	nullptr, since C++ specifies result as "undefined behaviour"; test...
+	[referrer]: ...this predesignated static class property instead.
+
+2020-06-22  Keith Marshall  <keith@users.osdn.me>
+
 	Support options interpretation from an unborn options object.
 
 	* src/pkgopts.h (pkgOpts::Test, pkgOpts::IsSet, pkgOpts::GetValue)
