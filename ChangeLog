@@ -1,3 +1,73 @@
+2020-06-23  Keith Marshall  <keith@users.osdn.me>
+
+	Eliminate invalid comparisons of "this" with nullptr.
+
+	C++ forbids calling any non-static class member function through
+	a null pointer, but makes it impossible to verify, within any such
+	function; the result of comparing the "this" pointer with nullptr
+	is deemed to be undefined behaviour.
+
+	* src/climain.cpp (pkgActionItem::GetScheduledSourceArchives)
+	[this != NULL]: Do not test; execute dependent code unconditionally.
+
+	* src/dllhook.cpp (pkgXmlNodeStack::pop) [this == NULL]: Remove
+	invalid comparison; condition should never arise, at point of call.
+	(pkgSetupAction::UpdateDatabase) [this != NULL]: Relocate test...
+	(update_database) [setup == NULL]: ...to here; do not update.
+
+	* src/pkgbase.h (pkgXmlNode::GetName, pkgXmlNode::GetParent)
+	(pkgXmlNode::GetChildren, pkgXmlNode::GetNext, pkgXmlNode::GetPropVal)
+	(pkgXmlNode::GetDocumentRoot, pkgXmlNode::IsElementOfType)
+	(pkgXmlNode::AddChild, pkgXmlNode::DeleteChild): Do not implement...
+	[this ? result : fallback]: ...any such checks; the behaviour will be
+	undefined, and the "fallback" outcome can never be achieved; simply
+	return the "result" outcome unconditionally.
+	(pkgActionItem::HasAttribute, pkgActionItem::SelectPackage)
+	[this != NULL]: Cannot verify this; return result unconditionally.
+	(pkgActionItem::Selection) [this == NULL]: Test is invalid; remove it.
+	(pkgActionItem::CancelScheduledAction): Change return type to void.
+	(pkgXmlDocument::ExecuteActions) [actions == NULL]: Do not execute.
+
+	* src/pkgdata.cpp (pkgActionItem::EnumeratePendingActions)
+	[this != NULL]: Cannot verify; relocate test...
+	(AppWindowMaker::UpdatePackageMenuBindings): ...to here; verify...
+	[pkgData->Schedule() != NULL]: ...this, before attempting to invoke...
+	(pkgData->Schedule()->EnumeratePendingActions): ...this.
+	(AppWindowMaker::UnmarkSelectedPackage): Likewise, verify both...
+	[pkgData->Schedule() != NULL]: ...this, and then...
+	[pkgData->Schedule()->GetReference() != NULL]: ...this, before...
+	(pkgData->Schedule()->GetReference()->CancelScheduledAction): ...this.
+	(pkgActionItem::CancelScheduledAction) [this != NULL]: Remove test; it
+	results in undefined behaviour, and in any case, has become redundant.
+	Change return type to void; set flags, but otherwise return nothing.
+
+	* src/pkgdeps.cpp (pkgActionItem::GetReference) [this != NULL]: Remove
+	invalid test; it has been made redundant, by testing at point of call.
+	(pkgXmlDocument::Schedule) [this != NULL]: Likewise; additionally...
+	[component != NULL]: ...verify this, before attempting to test...
+	[component->FindNextAssociate() != NULL]: ...this.
+
+	* src/pkgexec.cpp (pkgActionItem::Execute) [this != NULL]
+	(pkgActionItem::Append, pkgActionItem::Insert) [this == NULL]: Remove
+	invalid tests; delegate onus for validation to respective call sites.
+	(pkgXmlDocument::Schedule): Validate referring pointers as required.
+
+	* src/guiexec.cpp (AppWindowMaker::LoadPackageData): Confirm that...
+	[pkgXmlDocument() != NULL]: ...is true, before evaluation of...
+	[pkgXmlDocument()->IsOK()]: ...this status check.
+	(AppWindowMaker::ConfirmActionRequest): Likewise, confirm that...
+	[pkgData->Schedule() != NULL]: ...is true, before evaluation of...
+	[pkgData->Schedule()->EnumeratePendingActions() > 0]: ...this.
+
+	* src/pkgunst.cpp (pkgManifest::GetSysRootReference) [this != NULL]
+	* src/pkginst.cpp (pkgManifest::AddEntry) [this != NULL]: Remove test;
+	assume that its outcome is always effectively true, requiring callers
+	to guarantee that this is so.
+
+	* src/setup.cpp (pkgSetupAction::HasAttribute) [this != NULL]: Remove
+	invalid test, assuming true; relocate inline implementation...
+	* src/setup.h: ...to here.
+
 2020-06-22  Keith Marshall  <keith@users.osdn.me>
 
 	Do not dereference nullptr in package directory trees.

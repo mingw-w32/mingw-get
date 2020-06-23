@@ -172,10 +172,11 @@ void update_database( pkgSetupAction *setup )
     /* Having successfully loaded the restricted profile, load the
      * map of the installation it specifies, and update it to reflect
      * the installation of the mingw-get packages we are currently
-     * installing.
+     * installing; (note that we must take care not to attempt to
+     * update the database, if passed a NULL setup object).
      */
     dbase.LoadSystemMap();
-    setup->UpdateDatabase( dbase );
+    if( setup != NULL ) setup->UpdateDatabase( dbase );
   }
   /* We're finished with the setup.xml profile; delete it, and free
    * the memory which xmlfile() allocated to store its path name.
@@ -351,16 +352,12 @@ inline pkgXmlNodeStack *pkgXmlNodeStack::pop( pkgXmlNode **node )
   /* Method to pop a pkgXmlNode from the top of the stack, while
    * saving a reference pointer for it, and returning the updated
    * stack pointer.
-   */
-  if( this == NULL )
-    /*
-     * The stack is empty; there's nothing more to do!
-     */
-    return NULL;
-
-  /* When the stack is NOT empty, capture the reference pointer
-   * for the SECOND entry (if any), store the top entry, delete
-   * its stack frame, and return the new stack pointer.
+   *
+   * This should never be called when the stack is empty; (this
+   * must be checked at the call site).  When the stack is known
+   * to NOT be empty, capture the reference pointer for the SECOND
+   * entry (if any), store the top entry, delete its stack frame,
+   * and return the new stack pointer.
    */
   pkgXmlNodeStack *rtn = next; *node = entry;
   delete this; return rtn;
@@ -371,169 +368,168 @@ void pkgSetupAction::UpdateDatabase( pkgXmlDocument &dbase )
   /* Method to ensure that the mingw-get package components which are
    * specified in the setup actions list are recorded as "installed", in
    * the installation database manifests.
+   *
+   * This method should NEVER be invoked on an empty setup actions list;
+   * (this must be verified at the call site).  When it is known that the
+   * list is NOT empty, we must ensure that we commence processing from
+   * its first entry...
    */
-  if( this != NULL )
+  pkgSetupAction *current = this;
+  while( current->prev != NULL ) current = current->prev;
+  dmh_notify( DMH_INFO, "%s: updating installation database\n", setup_key );
+  while( current != NULL )
   {
-    /* The setup actions list is not empty; ensure that we commence
-     * processing from its first entry...
+    /* ...then processing all entries sequentially, in turn,
+     * parse the package tarname specified in the current action
+     * entry, to identify the associated package name, component
+     * class and subsystem name.
      */
-    pkgSetupAction *current = this;
-    while( current->prev != NULL ) current = current->prev;
-    dmh_notify( DMH_INFO, "%s: updating installation database\n", setup_key );
-    while( current != NULL )
+    const char *name_fmt = "%s-%s";
+    pkgSpecs lookup( current->package_name );
+    char lookup_name[1 + strlen( current->package_name )];
+    const char *component = lookup.GetComponentClass();
+    const char *subsystem = lookup.GetSubSystemName();
+    if( (component != NULL) && *component )
+      /*
+       * The package name is qualified by an explicit component
+       * name; form the composite package name string.
+       */
+      sprintf( lookup_name, name_fmt, lookup.GetPackageName(), component );
+    else
+      /* There is no explicit component name; just save a copy
+       * of the unqualified package name.
+       */
+      strcpy( lookup_name, lookup.GetPackageName() );
+
+    /* Locate the corresponding component package entry, if any,
+     * in the package catalogue.
+     */
+    if( dbase.FindPackageByName( lookup_name, subsystem ) != NULL )
     {
-      /* ...then processing all entries sequentially, in turn,
-       * parse the package tarname specified in the current action
-       * entry, to identify the associated package name, component
-       * class and subsystem name.
+      /* Lookup was successful; now search the installation records,
+       * if any, for any matching package entry.
        */
-      const char *name_fmt = "%s-%s";
-      pkgSpecs lookup( current->package_name );
-      char lookup_name[1 + strlen( current->package_name )];
-      const char *component = lookup.GetComponentClass();
-      const char *subsystem = lookup.GetSubSystemName();
-      if( (component != NULL) && *component )
-	/*
-	 * The package name is qualified by an explicit component
-	 * name; form the composite package name string.
-	 */
-	sprintf( lookup_name, name_fmt, lookup.GetPackageName(), component );
-      else
-	/* There is no explicit component name; just save a copy
-	 * of the unqualified package name.
-	 */
-	strcpy( lookup_name, lookup.GetPackageName() );
-
-      /* Locate the corresponding component package entry, if any,
-       * in the package catalogue.
-       */
-      if( dbase.FindPackageByName( lookup_name, subsystem ) != NULL )
+      pkgXmlNodeStack *stack = NULL;
+      pkgXmlNode *sysroot = dbase.GetRoot()->GetSysRoot( subsystem );
+      pkgXmlNode *installed = sysroot->FindFirstAssociate( installed_key );
+      while( installed != NULL )
       {
-	/* Lookup was successful; now search the installation records,
-	 * if any, for any matching package entry.
+	/* There is at least one installation record; walk the chain
+	 * of all such records...
 	 */
-	pkgXmlNodeStack *stack = NULL;
-        pkgXmlNode *sysroot = dbase.GetRoot()->GetSysRoot( subsystem );
-	pkgXmlNode *installed = sysroot->FindFirstAssociate( installed_key );
-	while( installed != NULL )
+	const char *tarname = installed->GetPropVal( tarname_key, NULL );
+	if( tarname != NULL )
 	{
-	  /* There is at least one installation record; walk the chain
-	   * of all such records...
+	  /* ...extracting package and component names from the tarname
+	   * specification within each...
 	   */
-	  const char *tarname = installed->GetPropVal( tarname_key, NULL );
-	  if( tarname != NULL )
-	  {
-	    /* ...extracting package and component names from the tarname
-	     * specification within each...
+	  pkgSpecs ref( tarname );
+	  char ref_name[1 + strlen( tarname )];
+	  if( ((component = ref.GetComponentClass()) != NULL) && *component )
+	    /*
+	     * ...once again forming the composite name, when applicable...
 	     */
-	    pkgSpecs ref( tarname );
-	    char ref_name[1 + strlen( tarname )];
-	    if( ((component = ref.GetComponentClass()) != NULL) && *component )
-	      /*
-	       * ...once again forming the composite name, when applicable...
-	       */
-	      sprintf( ref_name, name_fmt, ref.GetPackageName(), component );
-	    else
-	      /* ...or simply storing the unqualified package name if not.
-	       */
-	      strcpy( ref_name, ref.GetPackageName() );
+	    sprintf( ref_name, name_fmt, ref.GetPackageName(), component );
+	  else
+	    /* ...or simply storing the unqualified package name if not.
+	     */
+	    strcpy( ref_name, ref.GetPackageName() );
 
-	    /* Check for a match between the installed package name, and
-	     * the name we wish to record as newly installed...
-	     */
-	    if( (strcasecmp( ref_name, lookup_name ) == 0)
-	    &&  (strcasecmp( tarname, current->package_name ) != 0)  )
-	      /*
-	       * ...pushing the current installation record on to the
-	       * update stack, in case of a match...
-	       */
-	      stack = stack->push( installed );
-	  }
-	  /* ...then move on to the next installation record, if any.
+	  /* Check for a match between the installed package name, and
+	   * the name we wish to record as newly installed...
 	   */
-	  installed = installed->FindNextAssociate( installed_key );
+	  if( (strcasecmp( ref_name, lookup_name ) == 0)
+	  &&  (strcasecmp( tarname, current->package_name ) != 0)  )
+	    /*
+	     * ...pushing the current installation record on to the
+	     * update stack, in case of a match...
+	     */
+	    stack = stack->push( installed );
 	}
-
-	/* Create a temporary package "release" descriptor...
+	/* ...then move on to the next installation record, if any.
 	 */
-	pkgXmlNode *reference_hook = new pkgXmlNode( release_key );
-	if( reference_hook != NULL )
-	{
-	  /* ...which we may conveniently attach to the root
-	   * of the XML catalogue tree.
-	   */
-	  dbase.GetRoot()->AddChild( reference_hook );
-	  reference_hook->SetAttribute( tarname_key, current->package_name );
-
-	  /* Run the installer...
-	   */
-	  pkgTarArchiveInstaller registration_server( reference_hook );
-	  if( registration_server.IsOk() )
-	  {
-	    /* ...reporting the installation as a "registration" of
-	     * the specified package, but...
-	     */
-	    dmh_notify( DMH_INFO, "%s: register %s\n",
-		setup_key, current->package_name
-	      );
-	    /* ...noting that the package content has already been
-	     * "installed" by the setup tool, but without recording
-	     * any details, we run this without physically extracting
-	     * any files, to capture the side effect of compiling an
-	     * installation record.
-	     */
-	    registration_server.SaveExtractedFiles( false );
-	    registration_server.Process();
-	  }
-	  /* With the installation record safely compiled, we may
-	   * discard the temporary "release" descriptor from which
-	   * we compiled it.
-	   */
-	  dbase.GetRoot()->DeleteChild( reference_hook );
-	}
-
-	/* When the update stack, constructed above, is not empty...
-	 */
-	if( stack != NULL )
-	{ while( stack != NULL )
-	  {
-	    /* ...pop each installation record, which is to be updated,
-	     * off the update stack, in turn...
-	     */
-	    const char *tarname;
-	    pkgXmlNode *installed;
-	    stack = stack->pop( &installed );
-	    if( (tarname = installed->GetPropVal( tarname_key, NULL )) != NULL )
-	    {
-	      /* ...identify its associated installed files manifest, and
-	       * disassociate it from the sysroot of the current installation;
-	       * (note that this automatically deletes the manifest itself, if
-	       * it is associated with no other sysroots).
-	       */
-	      pkgManifest inventory( package_key, tarname );
-	      inventory.DetachSysRoot( sysroot->GetPropVal( id_key, subsystem ) );
-	    }
-	    /* Delete the installation record from the current sysroot...
-	     */
-	    sysroot->DeleteChild( installed );
-	  }
-	  /* ...and mark the sysroot record as "modified", as a result of
-	   * all preceding updates.
-	   */
-	  sysroot->SetAttribute( modified_key, value_yes );
-	}
+	installed = installed->FindNextAssociate( installed_key );
       }
 
-      /* Repeat for all packages with an associated setup action...
+      /* Create a temporary package "release" descriptor...
        */
-      current = current->next;
+      pkgXmlNode *reference_hook = new pkgXmlNode( release_key );
+      if( reference_hook != NULL )
+      {
+	/* ...which we may conveniently attach to the root
+	 * of the XML catalogue tree.
+	 */
+	dbase.GetRoot()->AddChild( reference_hook );
+	reference_hook->SetAttribute( tarname_key, current->package_name );
+
+	/* Run the installer...
+	 */
+	pkgTarArchiveInstaller registration_server( reference_hook );
+	if( registration_server.IsOk() )
+	{
+	  /* ...reporting the installation as a "registration" of
+	   * the specified package, but...
+	   */
+	  dmh_notify( DMH_INFO, "%s: register %s\n",
+	      setup_key, current->package_name
+	    );
+	  /* ...noting that the package content has already been
+	   * "installed" by the setup tool, but without recording
+	   * any details, we run this without physically extracting
+	   * any files, to capture the side effect of compiling an
+	   * installation record.
+	   */
+	  registration_server.SaveExtractedFiles( false );
+	  registration_server.Process();
+	}
+	/* With the installation record safely compiled, we may
+	 * discard the temporary "release" descriptor from which
+	 * we compiled it.
+	 */
+	dbase.GetRoot()->DeleteChild( reference_hook );
+      }
+
+      /* When the update stack, constructed above, is not empty...
+       */
+      if( stack != NULL )
+      { while( stack != NULL )
+	{
+	  /* ...pop each installation record, which is to be updated,
+	   * off the update stack, in turn...
+	   */
+	  const char *tarname;
+	  pkgXmlNode *installed;
+	  stack = stack->pop( &installed );
+	  if( (tarname = installed->GetPropVal( tarname_key, NULL )) != NULL )
+	  {
+	    /* ...identify its associated installed files manifest, and
+	     * disassociate it from the sysroot of the current installation;
+	     * (note that this automatically deletes the manifest itself, if
+	     * it is associated with no other sysroots).
+	     */
+	    pkgManifest inventory( package_key, tarname );
+	    inventory.DetachSysRoot( sysroot->GetPropVal( id_key, subsystem ) );
+	  }
+	  /* Delete the installation record from the current sysroot...
+	   */
+	  sysroot->DeleteChild( installed );
+	}
+	/* ...and mark the sysroot record as "modified", as a result of
+	 * all preceding updates.
+	 */
+	sysroot->SetAttribute( modified_key, value_yes );
+      }
     }
-    /* ...and finally, report completion of all database updates, while also
-     * committing all recorded changes to disk storage.
+
+    /* Repeat for all packages with an associated setup action...
      */
-    dmh_notify( DMH_INFO, "%s: installation database updated\n", setup_key );
-    dbase.UpdateSystemMap();
+    current = current->next;
   }
+  /* ...and finally, report completion of all database updates, while also
+   * committing all recorded changes to disk storage.
+   */
+  dmh_notify( DMH_INFO, "%s: installation database updated\n", setup_key );
+  dbase.UpdateSystemMap();
 }
 
 /* $RCSfile$: end of file */

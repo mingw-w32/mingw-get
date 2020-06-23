@@ -170,7 +170,7 @@ pkgXmlNode *pkgManifest::GetSysRootReference( const char *key )
    * a reference to any sysroot which claims it, returning
    * a pointer to the first such reference found.
    */
-  if( (this != NULL) && (manifest != NULL) && (key != NULL) )
+  if( (manifest != NULL) && (key != NULL) )
   {
     /* We appear to have a valid manifest, and a valid sysroot
      * key to match; locate this manifest's first, (and nominally

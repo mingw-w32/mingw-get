@@ -3,8 +3,8 @@
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009, 2010, 2011, 2012, MinGW Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2009-2012, 2020, MinGW.org Project
  *
  *
  * Implementation of the package dependency resolver method, of the
@@ -859,47 +859,42 @@ void pkgActionItem::ApplyBounds( pkgXmlNode *release, const char *bounds )
 
 pkgActionItem *pkgActionItem::GetReference( pkgXmlNode *package )
 {
-  /* Method to locate a scheduled action, if any, which relates
-   * to a specified package.
+  /* Method to locate a scheduled action, if any, which relates to
+   * a specified package.  Assume that the initial 'this' pointer is
+   * closer to the end, than to the beginning of the current list of
+   * scheduled actions, (which MUST NOT be empty), and...
    */
-  if( this != NULL )
+  pkgActionItem *item = this;
+  while( item->next != NULL )
+    /*
+     * ...advance, to locate the very last entry in the list.
+     */
+    item = item->next;
+
+  /* Now, working backward toward the beginning of the list...
+   */
+  while( item != NULL )
   {
-    /* The schedule of actions is not empty.  Assume that the
-     * initial 'this' pointer is closer to the end, than to the
-     * beginning of the list of scheduled actions, and...
+    /* ...identify a "release" specification associated with
+     * each action item in turn...
      */
-    pkgActionItem *item = this;
-    while( item->next != NULL )
-      /*
-       * ...advance, to locate the very last entry in the list.
-       */
-      item = item->next;
-
-    /* Now, working backward toward the beginning of the list...
-     */
-    while( item != NULL )
+    pkgXmlNode *ref = item->Selection();
+    if( (ref != NULL) || ((ref = item->Selection( to_remove )) != NULL) )
     {
-      /* ...identify a "release" specification associated with
-       * each action item in turn...
+      /* ...convert this to an actual component package, or
+       * full package, reference...
        */
-      pkgXmlNode *ref = item->Selection();
-      if( (ref != NULL) || ((ref = item->Selection( to_remove )) != NULL) )
-      {
-	/* ...convert this to an actual component package, or
-	 * full package, reference...
-	 */
-	while( ref->IsElementOfType( release_key ) )
-	  ref = ref->GetParent();
+      while( ref->IsElementOfType( release_key ) )
+	ref = ref->GetParent();
 
-	/* ...and, if it matches the search target, return it.
-	 */
-	if( ref == package ) return item;
-      }
-      /* ...or, when we haven't yet found a matching package,
-       * try the preceding scheduled action item, if any.
+      /* ...and, if it matches the search target, return it.
        */
-      item = item->prev;
+      if( ref == package ) return item;
     }
+    /* ...or, when we haven't yet found a matching package,
+     * try the preceding scheduled action item, if any.
+     */
+    item = item->prev;
   }
   /* If we fall through to here, then we found no action to be
    * performed on the specified package; report accordingly.
@@ -945,12 +940,6 @@ pkgActionItem* pkgXmlDocument::Schedule( unsigned long action, const char* name 
    * dependencies for the package specified by "name", honouring
    * any appended version bounds specified for the parent.
    */
-  if( this == NULL )
-    /*
-     * An unassigned XML database document cannot have any
-     * assigned action; bail out, with appropriate status.
-     */
-    return NULL;
 
   /* We may call this method without any assigned package name,
    * in which case, we interpret it as a request to return the
@@ -1184,8 +1173,8 @@ pkgActionItem* pkgXmlDocument::Schedule( unsigned long action, const char* name 
 	      ResolveDependencies( upgrade, Schedule( action, latest ));
 	  }
 	}
-
-	if( (component = component->FindNextAssociate( component_key )) != NULL )
+	if(  (component != NULL)
+	&&  ((component = component->FindNextAssociate( component_key )) != NULL)  )
 	  /*
 	   * When evaluating a component-package, we extend our
 	   * evaluation, to consider for any further components of

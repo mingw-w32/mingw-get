@@ -209,16 +209,13 @@ pkgActionItem::Append( pkgActionItem *item )
    * being appended to the list, but the implementation preserves
    * integrity of any following list items, thus also fulfilling
    * an "insert after this" function.
-   */
-  if( this == NULL )
-    /*
-     * No list exists yet;
-     * return "item" as first and only entry in new list.
-     */
-    return item;
-
-  /* Ensure "item" physically exists, or if not, create a generic
-   * placeholder in which to construct it...
+   *
+   * Note that this method must NEVER be invoked with a NULL "this"
+   * pointer; however, conformance with this requirement CANNOT be
+   * verified here, so MUST be verified at the call site.
+   *
+   * The "item" to be added must physically exist; if not, we create
+   * a generic placeholder in which to construct it...
    */
   if( (item == NULL) && ((item = new pkgActionItem()) == NULL) )
     /*
@@ -249,17 +246,10 @@ pkgActionItem*
 pkgActionItem::Insert( pkgActionItem *item )
 {
   /* Add an "item" to an ActionItems list, inserting it immediately
-   * before the item referenced by the "this" pointer.
-   */
-  if( this == NULL )
-    /*
-     * No list exists yet;
-     * return "item" as first and only entry in new list.
-     */
-    return item;
-
-  /* Ensure "item" physically exists, or if not, create a generic
-   * placeholder in which to construct it...
+   * before the item referenced by the "this" pointer, (which should
+   * NEVER be NULL, but this must be verified at the call site).  The
+   * "item" to be added must physically exist; if not, we create a
+   * generic placeholder in which to construct it...
    */
   if( (item == NULL) && ((item = new pkgActionItem()) == NULL) )
     /*
@@ -451,12 +441,12 @@ pkgActionItem* pkgXmlDocument::Schedule
    * the action list, (or at the end of the list if no ranking
    * position is specified)...
    */
-  pkgActionItem *ref = rank ? rank : actions;
+  pkgActionItem *ref = rank ? rank : actions ? actions : &item;
 
   /* If we already have a prior matching item...
    */
   pkgActionItem *prior;
-  if( (prior = actions->GetReference( item )) != NULL )
+  if( (prior = (actions ? actions->GetReference( item ) : NULL)) != NULL )
   {
     /* ...then, when the current request refers to a primary action,
      * we update the already scheduled request to reflect this...
@@ -486,15 +476,14 @@ pkgActionItem* pkgXmlDocument::Schedule
     /* ...and, when successfully raised, add it to the task list...
      */
     if( rank )
-      /*
-       * ...at the specified ranking position, if any...
+      /* ...at the specified ranking position, if any...
        */
       return rank->Insert( ref );
 
     else
       /* ...otherwise, at the end of the list.
        */
-      return actions = actions->Append( ref );
+      return actions = actions ? actions->Append( ref ) : ref;
   }
 
   /* If we get to here, then no new action was scheduled; we simply
@@ -517,147 +506,145 @@ int reinstall_action_scheduled( pkgActionItem *package )
 
 void pkgActionItem::Execute( bool with_download )
 {
-  if( this != NULL )
-  { pkgActionItem *current = this;
-    bool init_rites_pending = true;
-    while( current->prev != NULL ) current = current->prev;
+  pkgActionItem *current = this;
+  bool init_rites_pending = true;
+  while( current->prev != NULL ) current = current->prev;
 
-    /* Unless normal operations have been suppressed by the
-     * --print-uris option, (in order to obtain a list of all
-     * package URIs which the operation would access)...
+  /* Unless normal operations have been suppressed by the
+   * --print-uris option, (in order to obtain a list of all
+   * package URIs which the operation would access)...
+   */
+  if( pkgOptions()->Test( OPTION_PRINT_URIS ) < OPTION_PRINT_URIS )
+    do {
+	 /* ...we initiate any download requests which may
+	  * be necessary to fetch all required archives into
+	  * the local package cache.
+	  */
+	 if( with_download )
+	   DownloadArchiveFiles( current );
+       } while( SetAuthorities( current ) > 0 );
+
+  else while( current != NULL )
+  {
+    /* The --print-uris option is in effect: we simply loop
+     * over all packages with an assigned action, printing
+     * the associated download URI for each; (note that this
+     * will print the URI regardless of prior existence of
+     * the associated package in the local cache).
      */
-    if( pkgOptions()->Test( OPTION_PRINT_URIS ) < OPTION_PRINT_URIS )
-      do {
-	   /* ...we initiate any download requests which may
-	    * be necessary to fetch all required archives into
-	    * the local package cache.
-	    */
-	   if( with_download )
-	     DownloadArchiveFiles( current );
-	 } while( SetAuthorities( current ) > 0 );
+    current->PrintURI( current->Selection()->ArchiveName() );
+    current = current->next;
+  }
 
-    else while( current != NULL )
-    {
-      /* The --print-uris option is in effect: we simply loop
-       * over all packages with an assigned action, printing
-       * the associated download URI for each; (note that this
-       * will print the URI regardless of prior existence of
-       * the associated package in the local cache).
-       */
-      current->PrintURI( current->Selection()->ArchiveName() );
-      current = current->next;
-    }
-
-    /* If the --download-only option is in effect, then we have
-     * nothing more to do...
+  /* If the --download-only option is in effect, then we have
+   * nothing more to do...
+   */
+  if( pkgOptions()->Test( OPTION_DOWNLOAD_ONLY ) != OPTION_DOWNLOAD_ONLY )
+  {
+    /* ...otherwise...
      */
-    if( pkgOptions()->Test( OPTION_DOWNLOAD_ONLY ) != OPTION_DOWNLOAD_ONLY )
+    while( current != NULL )
     {
-      /* ...otherwise...
+      /* ...processing only those packages with assigned actions...
        */
-      while( current != NULL )
+      if( (current->flags & ACTION_MASK) != 0 )
       {
-	/* ...processing only those packages with assigned actions...
+	/* ...print a notification of the installation process to
+	 * be performed, identifying the package to be processed.
 	 */
-	if( (current->flags & ACTION_MASK) != 0 )
+	const char *tarname;
+	pkgXmlNode *ref = current->Selection();
+	if( (tarname = ref->GetPropVal( tarname_key, NULL )) == NULL )
 	{
-	  /* ...print a notification of the installation process to
-	   * be performed, identifying the package to be processed.
-	   */
-	  const char *tarname;
-	  pkgXmlNode *ref = current->Selection();
-	  if( (tarname = ref->GetPropVal( tarname_key, NULL )) == NULL )
-	  {
-	    ref = current->Selection( to_remove );
-	    tarname = ref->GetPropVal( tarname_key, value_unknown );
-	  }
-	  dmh_printf( "%s: %s\n", reinstall_action_scheduled( current )
-	      ? "reinstall" : action_name( current->flags & ACTION_MASK ),
-	      tarname
-	    );
+	  ref = current->Selection( to_remove );
+	  tarname = ref->GetPropVal( tarname_key, value_unknown );
+	}
+	dmh_printf( "%s: %s\n", reinstall_action_scheduled( current )
+	    ? "reinstall" : action_name( current->flags & ACTION_MASK ),
+	    tarname
+	  );
 
-	  /* Package pre/post processing scripts may need to
-	   * refer to the sysroot path for the package; place
-	   * a copy in the environment, to facilitate this.
+	/* Package pre/post processing scripts may need to
+	 * refer to the sysroot path for the package; place
+	 * a copy in the environment, to facilitate this.
+	 */
+	pkgSpecs lookup( tarname );
+	ref = ref->GetSysRoot( lookup.GetSubSystemName() );
+	const char *path = ref->GetPropVal( pathname_key, NULL );
+	if( path != NULL )
+	{
+	  /* Format the sysroot path into an environment variable
+	   * assignment specification; note that the recorded path
+	   * name is likely to include macros such as "%R", so we
+	   * filter it through mkpath(), to expand them.
 	   */
-	  pkgSpecs lookup( tarname );
-	  ref = ref->GetSysRoot( lookup.GetSubSystemName() );
-	  const char *path = ref->GetPropVal( pathname_key, NULL );
-	  if( path != NULL )
-	  {
-	    /* Format the sysroot path into an environment variable
-	     * assignment specification; note that the recorded path
-	     * name is likely to include macros such as "%R", so we
-	     * filter it through mkpath(), to expand them.
-	     */
-	    const char *nothing = "";
-	    char varspec_template[9 + strlen( path )];
-	    sprintf( varspec_template, "SYSROOT=%s", path );
-	    char varspec[mkpath( NULL, varspec_template, nothing, NULL )];
-	    mkpath( varspec, varspec_template, nothing, NULL );
-	    pkgPutEnv( PKG_PUTENV_DIRSEP_MSW, varspec );
-	  }
+	  const char *nothing = "";
+	  char varspec_template[9 + strlen( path )];
+	  sprintf( varspec_template, "SYSROOT=%s", path );
+	  char varspec[mkpath( NULL, varspec_template, nothing, NULL )];
+	  mkpath( varspec, varspec_template, nothing, NULL );
+	  pkgPutEnv( PKG_PUTENV_DIRSEP_MSW, varspec );
+	}
 
-	  /* Check for any outstanding requirement to invoke the
-	   * "self upgrade rites" process, so that we may install an
-	   * upgrade for mingw-get itself...
-	   */
-	  if( init_rites_pending )
-	    /*
-	     * ...discontinuing the check once this has been completed,
-	     * since it need not be performed more than once.
-	     */
-	    init_rites_pending = self_upgrade_rites( tarname );
-
-	  /* If we are performing an upgrade...
-	   */
-	  if( ((current->flags & ACTION_MASK) == ACTION_UPGRADE)
+	/* Check for any outstanding requirement to invoke the
+	 * "self upgrade rites" process, so that we may install an
+	 * upgrade for mingw-get itself...
+	 */
+	if( init_rites_pending )
 	  /*
-	   * ...and the latest version of the package is already installed...
+	   * ...discontinuing the check once this has been completed,
+	   * since it need not be performed more than once.
 	   */
-	  &&  (current->Selection() == current->Selection( to_remove ))
-	  /*
-	   * ...and the `--reinstall' option hasn't been specified...
-	   */
-	  &&  (pkgOptions()->Test( OPTION_REINSTALL ) == 0)  )
-	    /*
-	     * ...then simply report the up-to-date status...
-	     */
-	    dmh_notify( DMH_INFO, "package %s is up to date\n", tarname );
+	  init_rites_pending = self_upgrade_rites( tarname );
 
-	  else
-	  { /* ...otherwise, proceed to perform remove and install
-	     * operations, as appropriate.
+	/* If we are performing an upgrade...
+	 */
+	if( ((current->flags & ACTION_MASK) == ACTION_UPGRADE)
+	/*
+	 * ...and the latest version of the package is already installed...
+	 */
+	&&  (current->Selection() == current->Selection( to_remove ))
+	/*
+	 * ...and the `--reinstall' option hasn't been specified...
+	 */
+	&&  (pkgOptions()->Test( OPTION_REINSTALL ) == 0)  )
+	  /*
+	   * ...then simply report the up-to-date status...
+	   */
+	  dmh_notify( DMH_INFO, "package %s is up to date\n", tarname );
+
+	else
+	{ /* ...otherwise, proceed to perform remove and install
+	   * operations, as appropriate.
+	   */
+	  if(   reinstall_action_scheduled( current )
+	  ||  ((current->flags & ACTION_REMOVE) == ACTION_REMOVE)  )
+	  {
+	    /* The selected package has been marked for removal, either
+	     * explicitly, or as an implicit prerequisite for upgrade, or
+	     * in preparation for reinstallation.
 	     */
+	    pkgRemove( current );
+	  }
+
+	  if( (current->flags & ACTION_INSTALL) == ACTION_INSTALL )
+	  {
+	    /* The selected package has been marked for installation,
+	     * either explicitly, or implicitly to complete a package upgrade.
+	     */
+	    pkgXmlNode *tmp = current->Selection( to_remove );
 	    if(   reinstall_action_scheduled( current )
-	    ||  ((current->flags & ACTION_REMOVE) == ACTION_REMOVE)  )
-	    {
-	      /* The selected package has been marked for removal, either
-	       * explicitly, or as an implicit prerequisite for upgrade, or
-	       * in preparation for reinstallation.
-	       */
-	      pkgRemove( current );
-	    }
-
-	    if( (current->flags & ACTION_INSTALL) == ACTION_INSTALL )
-	    {
-	      /* The selected package has been marked for installation,
-	       * either explicitly, or implicitly to complete a package upgrade.
-	       */
-	      pkgXmlNode *tmp = current->Selection( to_remove );
-	      if(   reinstall_action_scheduled( current )
-	      ||  ((current->flags & ACTION_MASK) == ACTION_UPGRADE)  )
-		current->selection[ to_remove ] = NULL;
-	      pkgInstall( current );
-	      current->selection[ to_remove ] = tmp;
-	    }
+	    ||  ((current->flags & ACTION_MASK) == ACTION_UPGRADE)  )
+	      current->selection[ to_remove ] = NULL;
+	    pkgInstall( current );
+	    current->selection[ to_remove ] = tmp;
 	  }
 	}
-	/* Proceed to the next package, if any, with scheduled actions.
-	 */
-	pkgSpinWait::Report( "Processing... (%c)", pkgSpinWait::Indicator() );
-	current = current->next;
       }
+      /* Proceed to the next package, if any, with scheduled actions.
+       */
+      pkgSpinWait::Report( "Processing... (%c)", pkgSpinWait::Indicator() );
+      current = current->next;
     }
   }
 }

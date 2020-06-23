@@ -3,8 +3,8 @@
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, 2013, MinGW.org Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2012, 2013, 2020, MinGW.org Project
  *
  *
  * Implementation of XML data loading services for the mingw-get GUI.
@@ -141,10 +141,10 @@ void AppWindowMaker::LoadPackageData( bool force_update )
      */
     delete pkgData;
   }
-
   /* Commence loading...
    */
-  if( ! (pkgData = new pkgXmlDocument( dfile ))->IsOk() )
+  pkgData = new pkgXmlDocument( dfile );
+  if( (pkgData == NULL) || ! pkgData->IsOk() )
     /*
      * ...bailing out on failure to access the initial file.
      */
@@ -705,7 +705,8 @@ bool AppWindowMaker::ConfirmActionRequest( const char *desc )
    * dialogue procedure when appropriate, or simply allowing the
    * action to proceed, otherwise.
    */
-  return (pkgData->Schedule()->EnumeratePendingActions() > 0)
+  pkgActionItem *pending = pkgData->Schedule();
+  return (pending && pending->EnumeratePendingActions() > 0)
     ? DialogBox( AppInstance, MAKEINTRESOURCE( IDD_CONFIRMATION ),
 	AppWindow, ConfirmActionDialogue
       ) == IDOK

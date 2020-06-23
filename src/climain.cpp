@@ -403,27 +403,21 @@ void pkgActionItem::GetScheduledSourceArchives( unsigned long category )
    * for the case when the "--all-related" option is in effect for a
    * "source" or "licence" request.
    */
-  if( this != NULL )
-  {
-    /* The package list is NOT empty; ensure that we begin with
-     * a reference to its first entry.
-     */
-    pkgActionItem *scheduled = this;
-    while( scheduled->prev != NULL ) scheduled = scheduled->prev;
+  pkgActionItem *scheduled = this;
+  while( scheduled->prev != NULL ) scheduled = scheduled->prev;
 
-    /* For each scheduled list entry...
+  /* For each scheduled list entry...
+   */
+  while( scheduled != NULL )
+  {
+    /* ...process the "source" or "licence" request, as appropriate,
+     * in respect of the associated package...
      */
-    while( scheduled != NULL )
-    {
-      /* ...process the "source" or "licence" request, as appropriate,
-       * in respect of the associated package...
-       */
-      scheduled->GetSourceArchive( scheduled->Selection(), category );
-      /*
-       * ...then move on to the next entry, if any.
-       */
-      scheduled = scheduled->next;
-    }
+    scheduled->GetSourceArchive( scheduled->Selection(), category );
+    /*
+     * ...then move on to the next entry, if any.
+     */
+    scheduled = scheduled->next;
   }
 }
 

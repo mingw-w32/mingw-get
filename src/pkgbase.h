@@ -4,8 +4,8 @@
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2009-2013, MinGW.org Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2009-2013, 2020, MinGW.org Project
  *
  *
  * Public interface for the package directory management routines;
@@ -74,24 +74,20 @@ class pkgXmlNode : public TiXmlElement
     inline pkgXmlNode( const pkgXmlNode& src ):TiXmlElement( src ){}
 
     /* Accessors...
-     *
-     * Note that tinyxml is generally careless about checking for
-     * possible dereferencing of NULL pointers; thus, many of these
-     * wrappers include appropriate checks, to prevent this.
      */
     inline const char* GetName()
     {
       /* Retrieve the identifying name of the XML tag;
        * tinyxml calls this the element "value"...
        */
-      return this ? Value() : NULL;
+      return Value();
     }
     inline pkgXmlNode* GetParent()
     {
       /* wxXmlNode provides this equivalant of tinyxml's
        * Parent() method.
        */
-      return this ? (pkgXmlNode*)(Parent()) : NULL;
+      return (pkgXmlNode*)(Parent());
     }
     inline pkgXmlNode* GetChildren()
     {
@@ -99,7 +95,7 @@ class pkgXmlNode : public TiXmlElement
        * the children of an element; it is equivalent to the
        * FirstChild() method in tinyxml's arsenal.
        */
-      return this ? (pkgXmlNode*)(FirstChild()) : NULL;
+      return (pkgXmlNode*)(FirstChild());
     }
     inline pkgXmlNode* GetNext()
     {
@@ -107,7 +103,7 @@ class pkgXmlNode : public TiXmlElement
        * of an element, after the first found by GetChildren();
        * it is equivalent to tinyxml's NextSibling().
        */
-      return this ? (pkgXmlNode*)(NextSibling()) : NULL;
+      return (pkgXmlNode*)(NextSibling());
     }
     inline const char* GetPropVal( const char* name, const char* subst )
     {
@@ -115,15 +111,16 @@ class pkgXmlNode : public TiXmlElement
        * (which substitutes default "subst" text for an omitted property),
        * but it may be trivially emulated, using the Attribute() method.
        */
-      const char* retval = this ? Attribute( name ) : subst;
-      return retval ? retval : subst;
+      const char *retval;
+      if( (retval = Attribute( name )) == NULL ) return subst;
+      return retval;
     }
     inline pkgXmlNode* AddChild( TiXmlNode *child )
     {
       /* This is wxXmlNode's method for adding a child node, it is
        * equivalent to tinyxml's LinkEndChild() method.
        */
-      return this ? (pkgXmlNode*)(LinkEndChild( child )) : NULL;
+      return (pkgXmlNode*)(LinkEndChild( child ));
     }
     inline bool DeleteChild( pkgXmlNode *child )
     {
@@ -132,7 +129,7 @@ class pkgXmlNode : public TiXmlElement
        * simply use the RemoveChild method here, where for wxXmlNode, we
        * would use RemoveChild followed by `delete child'.
        */
-      return this ? RemoveChild( child ) : false;
+      return RemoveChild( child );
     }
 
     /* Additional methods specific to the application.
@@ -141,14 +138,14 @@ class pkgXmlNode : public TiXmlElement
     {
       /* Convenience method to retrieve a pointer to the document root.
        */
-      return this ? (pkgXmlNode*)(GetDocument()->RootElement()) : NULL;
+      return (pkgXmlNode*)(GetDocument()->RootElement());
     }
     inline bool IsElementOfType( const char* tagname )
     {
       /* Confirm if the owner XML node represents a data element
        * with the specified "tagname".
        */
-      return this ? strcmp( GetName(), tagname ) == 0 : false;
+      return strcmp( GetName(), tagname ) == 0;
     }
 
     /* Methods to determine which packages should be displayed
@@ -269,13 +266,13 @@ class pkgActionItem
     unsigned long SetAuthorities( pkgActionItem* );
     inline unsigned long HasAttribute( unsigned long required )
     {
-      return (this != NULL) ? flags & required : 0UL;
+      return flags & required;
     }
     pkgActionItem* GetReference( pkgXmlNode* );
     pkgActionItem* GetReference( pkgActionItem& );
     pkgActionItem* Schedule( unsigned long, pkgActionItem& );
     inline pkgActionItem* SuppressRedundantUpgrades( void );
-    inline unsigned long CancelScheduledAction( void );
+    inline void CancelScheduledAction( void );
     inline void SetPrimary( pkgActionItem* );
 
     /* Method to enumerate and identify pending changes,
@@ -293,13 +290,13 @@ class pkgActionItem
     {
       /* Mark a package as the selection for a specified action.
        */
-      if (this != NULL) selection[ opt ] = pkg;
+      selection[ opt ] = pkg;
     }
     inline pkgXmlNode* Selection( int mode = to_install )
     {
       /* Retrieve the package selection for a specified action.
        */
-      return (this != NULL) ? selection[ mode ] : NULL;
+      return selection[ mode ];
     }
     void ConfirmInstallationStatus();
 
@@ -454,7 +451,7 @@ class pkgXmlDocument : public TiXmlDocument
 
     /* Method to execute a sequence of scheduled actions.
      */
-    inline void ExecuteActions(){ actions->Execute(); }
+    inline void ExecuteActions(){ if( actions ) actions->Execute(); }
 
     /* Method to clear the list of scheduled actions.
      */

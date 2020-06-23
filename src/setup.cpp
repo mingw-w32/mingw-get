@@ -263,14 +263,6 @@ EXTERN_C void dmh_init( const dmh_class subsystem, const char *progname )
     dmh = new dmhTypeGUI( strdup( progname ) );
 } 
 
-inline unsigned long pkgSetupAction::HasAttribute( unsigned long mask )
-{
-  /* Helper function to examine the flags within a setup action
-   * item, checking for the presence of a specified attribute.
-   */
-  return (this != NULL) ? mask & flags : 0UL;
-}
-
 void pkgSetupAction::ClearAllActions( void )
 {
   /* Routine to clear an entire list of setup action items,

@@ -227,9 +227,10 @@ void pkgManifest::AddEntry( const char *key, const char *pathname )
    * entries to the tracked inventory of package content.
    *
    * Tracking is enabled only if the manifest structure is valid,
-   * AND an inventory table has been allocated...
+   * (which must have been verified by the caller), AND an inventory
+   * table has been allocated...
    */
-  if( (this != NULL) && (inventory != NULL) )
+  if( inventory != NULL )
   {
     /* ...in which case we allocate a new tracking record, with
      * "dir" or "file" reference key as appropriate, fill it out

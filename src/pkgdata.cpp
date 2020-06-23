@@ -3,8 +3,8 @@
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2012, 2013, MinGW.org Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2012, 2013, 2020, MinGW.org Project
  *
  *
  * Implementation of the classes and methods required to support the
@@ -1085,10 +1085,9 @@ void AppWindowMaker::UpdatePackageMenuBindings()
    * this is also a convenient point to consider activation of the
    * "Apply Changes" capability.
    */
-  EnableMenuItem( menu, IDM_REPO_APPLY,
-      (pkgData->Schedule()->EnumeratePendingActions() > 0) ? MF_ENABLED
-	: MF_GRAYED
-    );
+  pkgActionItem *pending = pkgData->Schedule();
+  unsigned long count = (pending != NULL) ? pending->EnumeratePendingActions() : 0UL;
+  EnableMenuItem( menu, IDM_REPO_APPLY, (count > 0UL) ? MF_ENABLED : MF_GRAYED );
 }
 
 inline void AppWindowMaker::MarkSchedule( pkgActionItem *pending_actions )
@@ -1191,11 +1190,11 @@ void AppWindowMaker::Schedule
   }
 }
 
-inline unsigned long pkgActionItem::CancelScheduledAction( void )
+inline void pkgActionItem::CancelScheduledAction( void )
 {
   /* Helper method to mark a scheduled action as "cancelled".
    */
-  return (this != NULL) ? (flags &= ~ACTION_MASK) : 0UL;
+  flags &= ~ACTION_MASK;
 }
 
 void AppWindowMaker::UnmarkSelectedPackage( void )
@@ -1223,7 +1222,9 @@ void AppWindowMaker::UnmarkSelectedPackage( void )
      * ...search the action schedule, for an action associated with
      * this package, if any, and cancel it.
      */
-    pkgData->Schedule()->GetReference( pkg )->CancelScheduledAction();
+    pkgActionItem *pkgref = pkgData->Schedule();
+    if( (pkgref != NULL) && ((pkgref = pkgref->GetReference( pkg )) != NULL) )
+      pkgref->CancelScheduledAction();
 
     /* The scheduling state for packages shown in the list view
      * may have changed, so refresh the icon associations and the
@@ -1401,74 +1402,72 @@ unsigned long pkgActionItem::EnumeratePendingActions( int classified )
    * scheduled action list.
    */
   unsigned long count = 0;
-  if( this != NULL )
-  {
-    /* Regardless of the position of the 'this' pointer,
-     * within the list of scheduled actions...
-     */
-    pkgActionItem *item = this;
-    while( item->prev != NULL )
-      /*
-       * ...we want to get a reference to the first
-       * item in the list.
-       */
-      item = item->prev;
 
-    /* Now, working through the list...
+  /* Regardless of the position of the 'this' pointer,
+   * within the list of scheduled actions...
+   */
+  pkgActionItem *item = this;
+  while( item->prev != NULL )
+    /*
+     * ...we want to get a reference to the first
+     * item in the list.
      */
-    while( item != NULL )
+    item = item->prev;
+
+  /* Now, working through the list...
+   */
+  while( item != NULL )
+  {
+    /* ...note items with any scheduled action...
+     */
+    int action;
+    if( (action = item->flags & ACTION_MASK) != 0 )
     {
-      /* ...note items with any scheduled action...
+      /* ...and, when one is found, (noting that ACTION_UPGRADE may
+       * also be considered as a special case of ACTION_INSTALL)...
        */
-      int action;
-      if( (action = item->flags & ACTION_MASK) != 0 )
+      if(  (action == classified)
+      ||  ((action == ACTION_UPGRADE) && (classified == ACTION_INSTALL))  )
       {
-	/* ...and, when one is found, (noting that ACTION_UPGRADE may
-	 * also be considered as a special case of ACTION_INSTALL)...
+	/* ...and it matches the classification in which
+	 * we are interested, then we retrieve the tarname
+	 * for the related package...
 	 */
-	if(  (action == classified)
-	||  ((action == ACTION_UPGRADE) && (classified == ACTION_INSTALL))  )
+	pkgXmlNode *selected = (classified & ACTION_REMOVE)
+	  ? item->Selection( to_remove )
+	  : item->Selection();
+	const char *notification = (selected != NULL)
+	  ? selected->GetPropVal( tarname_key, NULL )
+	  : NULL;
+	if( notification != NULL )
 	{
-	  /* ...and it matches the classification in which
-	   * we are interested, then we retrieve the tarname
-	   * for the related package...
+	  /* ...and, provided it is valid, we append it to
+	   * the DMH driven dialogue in which the enumeration
+	   * is being reported...
 	   */
-	  pkgXmlNode *selected = (classified & ACTION_REMOVE)
-	    ? item->Selection( to_remove )
-	    : item->Selection();
-	  const char *notification = (selected != NULL)
-	    ? selected->GetPropVal( tarname_key, NULL )
-	    : NULL;
-	  if( notification != NULL )
-	  {
-	    /* ...and, provided it is valid, we append it to
-	     * the DMH driven dialogue in which the enumeration
-	     * is being reported...
-	     */
-	    dmh_printf( "%s\n", notification );
-	    /*
-	     * ...and include it in the accumulated count...
-	     */
-	    ++count;
-	  }
-	}
-	else if( (classified == 0)
+	  dmh_printf( "%s\n", notification );
 	  /*
-	   * ...otherwise, when we aren't interested in any particular
-	   * class of action regardless of classification...
-	   */
-	|| ((classified == ACTION_UNSUCCESSFUL) && ((flags & classified) != 0)) )
-	  /*
-	   * ...or when we are checking for unsuccessful actions, we
-	   * count all those which are found, either unclassified, or
-	   * marked as unsuccessful, respectively.
+	   * ...and include it in the accumulated count...
 	   */
 	  ++count;
+	}
       }
-      /* ...then move on, to consider the next entry, if any.
-       */
-      item = item->next;
+      else if( (classified == 0)
+	/*
+	 * ...otherwise, when we aren't interested in any particular
+	 * class of action regardless of classification...
+	 */
+      || ((classified == ACTION_UNSUCCESSFUL) && ((flags & classified) != 0)) )
+	/*
+	 * ...or when we are checking for unsuccessful actions, we
+	 * count all those which are found, either unclassified, or
+	 * marked as unsuccessful, respectively.
+	 */
+	++count;
     }
+    /* ...then move on, to consider the next entry, if any.
+     */
+    item = item->next;
   }
   /* Ultimately, return the count of pending actions,
    * as noted while processing the above loop.

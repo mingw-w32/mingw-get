@@ -4,8 +4,8 @@
  *
  * $Id$
  *
- * Written by Keith Marshall <keithmarshall@users.sourceforge.net>
- * Copyright (C) 2013, MinGW.org Project
+ * Written by Keith Marshall <keith@users.osdn.me>
+ * Copyright (C) 2013, 2020, MinGW.org Project
  *
  *
  * Resource ID definitions and class declarations which are specific
@@ -96,12 +96,12 @@ class pkgSetupAction
    * specifically to the requirements of the setup tool.
    */
   public:
-    inline unsigned long HasAttribute( unsigned long );
     pkgSetupAction( pkgSetupAction *, const char *, const char * = 0 );
+    inline unsigned long HasAttribute( unsigned long mask){ return flags & mask; }
     inline void DownloadArchiveFiles( void );
     inline int UnpackScheduledArchives( void );
-    void ClearAllActions( void );
     void UpdateDatabase( pkgXmlDocument & );
+    void ClearAllActions( void );
 
   private:
     unsigned long flags;
