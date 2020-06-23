@@ -102,7 +102,6 @@ count( IDD( dlg, VAL ) ), lim( IDD( dlg, MAX ) ), frac( IDD( dlg, PCT ) )
    */
   owner->AttachProgressMeter( this );
   SetRange( 0, 1 ); SetValue( 0 );
-  SetValue( 0 );
 }
 
 #include "pmihook.cpp"

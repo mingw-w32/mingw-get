@@ -1,5 +1,12 @@
 2020-06-23  Keith Marshall  <keith@users.osdn.me>
 
+	Delete an unnecessary duplicate function call.
+
+	* src/guiexec.cpp (PROGRESS_METER_CLASS): In constructor, call...
+	(SetValue): ...this only once; delete redundant second call.
+
+2020-06-23  Keith Marshall  <keith@users.osdn.me>
+
 	Eliminate invalid comparisons of "this" with nullptr.
 
 	C++ forbids calling any non-static class member function through
