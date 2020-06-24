@@ -107,11 +107,6 @@
   AC_PROG_INSTALL
   AC_PROG_LN_S
 
-# As for the archive librarian, we need to ensure that the tool
-# for stripping binaries is compatible with the compiler
-#
-  AC_CHECK_TOOL([STRIP],[strip],[strip])
-
 # Identify features to be traced to facilitate debugging; make
 # it precious, to avoid introducing accidental inconsistencies.
 #

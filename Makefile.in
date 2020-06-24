@@ -195,7 +195,7 @@ script_srcdir = ${srcdir}/scripts/libexec
 
 BIN_PROGRAMS = pkginfo$(EXEEXT) mingw-get$(EXEEXT)
 LIBEXEC_PROGRAMS = guistub$(EXEEXT) guimain$(EXEEXT) lastrites$(EXEEXT)
-LIBEXEC_DATA = mingw-get-0.dll
+LIBEXEC_DLLS = mingw-get-0.dll
 
 LIBEXEC_SCRIPTS = ${script_srcdir}/setup.lua \
    ${script_srcdir}/shlink.js ${script_srcdir}/unlink.js
@@ -203,7 +203,7 @@ LIBEXEC_SCRIPTS = ${script_srcdir}/setup.lua \
 # Primary build goals...
 #
 all: all-core all-setup
-all-core: $(BIN_PROGRAMS) $(LIBEXEC_PROGRAMS) $(LIBEXEC_DATA)
+all-core: $(BIN_PROGRAMS) $(LIBEXEC_PROGRAMS) $(LIBEXEC_DLLS)
 all-setup: all-setup-dll all-setup-exe
 all-setup-dll: mingw-get-setup-0.dll
 
@@ -222,7 +222,7 @@ mingw-get$(EXEEXT): $(CLI_EXE_OBJECTS)
 guistub$(EXEEXT): guistub.$(OBJEXT) pkgicon.$(OBJEXT)
 	$(CXX) -o $@ $(CXXFLAGS) $(GUI_LDFLAGS) $+
 
-guimain$(EXEEXT): $(GUIMAIN_OBJECTS) $(LIBEXEC_DATA)
+guimain$(EXEEXT): $(GUIMAIN_OBJECTS) $(LIBEXEC_DLLS)
 	$(CXX) -o $@ $(CXXFLAGS) $(GUI_LDFLAGS) $+ $(GUIMAIN_LIBS)
 
 lastrites$(EXEEXT): rites.$(OBJEXT)
@@ -336,7 +336,6 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 
-STRIP = @STRIP@
 LN_S = @LN_S@
 
 # Installation rules...
@@ -346,16 +345,11 @@ installdirs:
 	$(mkinstalldirs) ${libexecdir}/${PACKAGE_TARNAME}
 	$(mkinstalldirs) ${PACKAGE_CONFIG_DIR}
 
-install: installdirs install-profile
-	for image in $(BIN_PROGRAMS); do \
-	  $(INSTALL_PROGRAM) $$image ${bindir}; \
-	  done
-	for image in $(LIBEXEC_PROGRAMS); do \
-	  $(INSTALL_PROGRAM) $$image ${libexecdir}/${PACKAGE_TARNAME}; \
-	  done
-	for image in $(LIBEXEC_DATA) $(LIBEXEC_SCRIPTS); do \
-	  $(INSTALL_DATA) $$image ${libexecdir}/${PACKAGE_TARNAME}; \
-	  done
+install: all installdirs install-profile
+	$(INSTALL_PROGRAM) $(BIN_PROGRAMS) ${bindir}
+	$(INSTALL_PROGRAM) $(LIBEXEC_DLLS) ${libexecdir}/${PACKAGE_TARNAME}
+	$(INSTALL_PROGRAM) $(LIBEXEC_PROGRAMS) ${libexecdir}/${PACKAGE_TARNAME}
+	$(INSTALL_DATA) $(LIBEXEC_SCRIPTS) ${libexecdir}/${PACKAGE_TARNAME}
 
 vpath %.xml.in ${srcdir}/xml
 install-profile: install-%: %.xml
@@ -364,13 +358,8 @@ install-profile: install-%: %.xml
 %.xml: %.xml.in
 	$(TAG_SCRIPT) $< > $@
 
-install-strip: install
-	for image in $(BIN_PROGRAMS); do \
-	  $(STRIP) ${bindir}/$$image; \
-	  done
-	for image in $(LIBEXEC_PROGRAMS) $(LIBEXEC_DATA); do \
-	  $(STRIP) ${libexecdir}/${PACKAGE_TARNAME}/$$image; \
-	  done
+install-strip:
+	$(QUIET_MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
 
 # Packaging and distribution...
 # "Native" source files, (i.e. those specific to mingw-get), are...
